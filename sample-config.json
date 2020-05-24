@@ -1,0 +1,46 @@
+﻿{
+  "outputFolder": "monads",
+  "recordset": {
+    "csv": "myrecords.csv",
+    "title": "My nature records",
+    "GRCol": "Spatial Reference",
+    "TaxonCol": "Taxon Name",
+    "DateCol": "Date",
+    //"YearCol": "Year",
+    "ObsKeyCol": "Obs Key"
+  },
+  "useMonadsNoHectads": true,
+  "font_filename": "afontfile.ttf",
+  "basemap": {
+    "file": "CumbriaIncRoads2016x2683blank.png",
+    "north": 589703.6682,
+    "west": 293169.8607,
+    "east": 390500,
+    "south": 460155.7305,
+    "scaledown": 4,
+    "showhectadname": false
+    //  QGIS export image: 1:570000, 300dpi
+  },
+  "datecolours": [
+    {
+      "minyear": 0,
+      "maxyear": 1959,
+      "colour": "rgba(255,255,0, 1)" // Yellow
+    },
+    {
+      "minyear": 1960,
+      "maxyear": 1999,
+      "colour": "rgba(0,0,255, 1)" // Blue
+    },
+    {
+      "minyear": 2000,
+      "maxyear": 2019,
+      "colour": "rgba(255,0,0, 1)" // Red
+    },
+    {
+      "minyear": 2020,
+      "maxyear": 2039,
+      "colour": "rgba(0,255,0, 1)" // Green
+    }
+  ]
+}
