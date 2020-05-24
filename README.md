@@ -24,7 +24,11 @@ npm install
 * Now run mkdistmaps at the command line, specifying your config file:
 
 ```
-node index.js vc101-config.txt
+node mkdistmaps.js vc101-config.txt
+```
+Or more simply:
+```
+node . vc101-config.txt
 ```
 
 The code reads all the records in the specified CSV file(s) and then creates one map for each found species in the output folder.
@@ -35,7 +39,10 @@ If you opt to make monad maps, then:
 * the monad is shown as a circle if there is only one record for the monad
 * any records that are only at hectad level are shown as outline squares, rather than filled squares
 
+Example hectad map:
 ![Example hectad map](https://raw.githubusercontent.com/chriscant/mkdistmaps/master/docs/example-hectad.png)
+
+Example monad map:
 ![Example monad map](https://raw.githubusercontent.com/chriscant/mkdistmaps/master/docs/example-monad.png)
 
 The code generates basic output as it processes the data, finishing like this:
@@ -53,9 +60,9 @@ Runtime: 189 seconds
 
 ## Configuration
 
-What the program run is determined by a configuration file.
+Specify what you want done in a configuration file.
 The config file must be in [JavaScript Object Notation (JSON) format](https://www.w3schools.com/js/js_json.asp).
-The sample config file shows some of the options available.
+The sample config file [sample-config.json](sample-config.json) shows some of the options available.
 
 ### outputFolder
 
@@ -63,25 +70,25 @@ The sample config file shows some of the options available.
 
 ### recordset
 
-* **csv** path to csv, optionally including wildcard asterisks
-* **title** text that is added to every generated map
-* **GRCol** name of the CSV column that contains the grid reference
-* **TaxonCol** name of the CSV column that contains the species name
-* **ObsKeyCol** optional name of the CSV column containing an observation key - used to show errors
-* **DateCol** specify either this or **YearCol** as the name of the CSV column containing the date
-* **YearCol** name of the CSV column containing the year
-* **DateFormats** optional date formats tried. The defaul is `[ "DD/MM/YYYY", "YYYY" ]` - [see here](https://momentjs.com/docs/#/parsing/string-formats/)
-* **headers** optional array of strings containing the CSV column names
-* **renameHeaders** optional specify true to replace the CSV header line with that in **headers**. The default is `false`
+* **csv** - path to csv, optionally including wildcard asterisks
+* **title** - text that is added to every generated map
+* **GRCol** - name of the CSV column that contains the grid reference
+* **TaxonCol** - name of the CSV column that contains the species name
+* **ObsKeyCol** - optional name of the CSV column containing an observation key - used to show errors
+* **DateCol** - specify either this or **YearCol** as the name of the CSV column containing the date
+* **YearCol** - name of the CSV column containing the year
+* **DateFormats** - optional date formats tried. The default is `[ "DD/MM/YYYY", "YYYY" ]` - [see here for format details](https://momentjs.com/docs/#/parsing/string-formats/)
+* **headers** - optional array of strings containing the CSV column names
+* **renameHeaders** - optional specify true to replace the CSV header line with that in **headers**. The default is `false`
 
 If your CSV file doesn't contains a header line, then supply the column names in **headers**.
 
 If your CSV files does contain a header line but it contains duplicate column names, then you can replace it with the 
 column names given in **headers** and set **renameHeaders** to `true`.  Here is an example for **headers**:
 
-`[ "Location", "Grid ref", "VC", "checked?", "Recorders", "Date(s)", "Altitude", "Site and visit comments", "BLS no.", "Species", "BLS no.2", "Taxon name", "Group", "Status", "Substrate", "Small scale habitats", "Abundance", "Record notes", "Herbarium", "Specimen", "Determiner", "Photo", "Ccref", "SpecimenCC" ]`
+`[ "Location", "Grid ref", "VC", "checked?", "Recorders", "Date(s)", "Altitude", "Site and visit comments", "BLS no.", "Species", "BLS no.2", "Taxon name", "Group", "Status", "Substrate", "Small scale habitats", "Abundance", "Record notes", "Herbarium", "Specimen", "Determiner" ]`
 
-Note: the CSV file has columns `Eastings` and `Northings` then these are cross-checked against the grid reference.
+Note: if the CSV file has columns `Eastings` and `Northings` then these are cross-checked against the grid reference.
 
 ### useMonadsNoHectads
 
@@ -95,13 +102,13 @@ Note: the CSV file has columns `Eastings` and `Northings` then these are cross-c
 
 The base map would typically be generated in QGIS using "Export as image", noting the N/W/E/S values
 
-* **file** path to the base map
-* **north** north bound of supplied base map
-* **west** west bound of supplied base map
-* **east** east bound of supplied base map
-* **south**  south bound of supplied base map
-* **scaledown** scale reduction factor for output 
-* **showhectadname** set to `true` to show the hectad name on each map
+* **file** - path to the base map
+* **north** - north bound of supplied base map
+* **west** - west bound of supplied base map
+* **east** - east bound of supplied base map
+* **south** - south bound of supplied base map
+* **scaledown** - scale reduction factor for output 
+* **showhectadname** - set to `true` to show the hectad name on each map
 
 ### datecolours
 
