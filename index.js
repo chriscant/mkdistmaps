@@ -2,6 +2,9 @@
 
 // mkdistmaps
 
+// For each new release, create a new tag
+// git tag -a v1.1 -m "v1.1"
+
 const dt_start = new Date()
 
 const fs = require('fs')
