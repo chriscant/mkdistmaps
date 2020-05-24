@@ -138,4 +138,4 @@ I used data from the [British Lichen Society](https://www.britishlichensociety.o
 
 # License
 
-This code is licensed under the GPL v2.
+[MIT](LICENCE)
