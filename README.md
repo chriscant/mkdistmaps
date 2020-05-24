@@ -49,7 +49,8 @@ If you opt to make monad maps, then:
 
 The code generates basic output as it processes the data, finishing like this:
 
-```...
+```
+...
 Parsed 56980 rows
 Errors 1
 #0 LC0003050000XIWC Date invalid:undefined Year:NaN
@@ -116,7 +117,8 @@ The base map would typically be generated in QGIS using "Export as image", notin
 
 * Optionally, specify the date range colours. The default is:
 
-```[
+```
+[
   { "minyear": 0, "maxyear": 1959, "colour": "rgba(255,255,0, 1)" },  // Yellow
   { "minyear": 1960, "maxyear": 1999, "colour": "rgba(0,0,255, 1)" }, // Blue
   { "minyear": 2000, "maxyear": 2019, "colour": "rgba(255,0,0, 1)" }, // Red
