@@ -18,25 +18,25 @@ npm install
 
 ```
 
-* Now get your CSV of records, basemap image and a font file into the new mkdistmaps directory
-* Make a text file to configure the run eg [sample-config.json](sample-config.json) which you can rename to have a txt extension if that's easier eg vc101-config.txt
+* Now get your CSV of records, basemap image and a font file into the new `mkdistmaps` directory
+* Make a text file to configure the run eg [sample-config.json](sample-config.json) which you can rename to have a txt extension if that's easier eg `vc101-config.txt`
 * Edit your config file to specify your CSV file(s), a font, an output directory and other options
-* Now do this at the command line eg:
+* Now run mkdistmaps at the command line, specifying your config file:
 
 ```
 node index.js vc101-config.txt
 ```
 
-The code reads all the records in the given CSV file(s) and then creates one map for each found species in the output folder.
+The code reads all the records in the specified CSV file(s) and then creates one map for each found species in the output folder.
 A monad or hectad is coloured in if there are records for that species in that square.
 The fill colour is determined by the date of the most recent record for that square.
 
-If you option to make monad maps, then:
+If you opt to make monad maps, then:
 * the monad is shown as a circle if there is only one record for the monad
 * any records that are only at hectad level are shown as outline squares, rather than filled squares
 
 ![Example hectad map](https://raw.githubusercontent.com/chriscant/mkdistmaps/master/docs/example-hectad.png)
-![Example monad map](https://raw.githubusercontent.com/chriscant/mkdistmaps/master/docs/exampleexample-monad.png)
+![Example monad map](https://raw.githubusercontent.com/chriscant/mkdistmaps/master/docs/example-monad.png)
 
 The code generates basic output as it processes the data, finishing like this:
 
@@ -48,7 +48,8 @@ Species: 1165
 Records: 56980
 Empty rows: 0
 Boxes: 949
-Runtime: 189 seconds```
+Runtime: 189 seconds
+```
 
 ## Configuration
 
