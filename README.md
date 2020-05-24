@@ -90,7 +90,7 @@ column names given in **headers** and set **renameHeaders** to `true`.  Here is 
 
 Note: if the CSV file has columns `Eastings` and `Northings` then these are cross-checked against the grid reference.
 
-### useMonadsNoHectads
+### useMonadsNotHectads
 
 * Optionally specify `true` to map records to monads. Default is `false` for hectads.
 
@@ -119,8 +119,8 @@ The base map would typically be generated in QGIS using "Export as image", notin
   { "minyear": 1960, "maxyear": 1999, "colour": "rgba(0,0,255, 1)" }, // Blue
   { "minyear": 2000, "maxyear": 2019, "colour": "rgba(255,0,0, 1)" }, // Red
   { "minyear": 2020, "maxyear": 2039, "colour": "rgba(0,255,0, 1)" }  // Green
-]```
-
+]
+```
 
 ## Used with thanks
 

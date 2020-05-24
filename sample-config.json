@@ -9,7 +9,7 @@
     //"YearCol": "Year",
     "ObsKeyCol": "Obs Key"
   },
-  "useMonadsNoHectads": true,
+  "useMonadsNotHectads": true,
   "font_filename": "afontfile.ttf",
   "basemap": {
     "file": "CumbriaIncRoads2016x2683blank.png",

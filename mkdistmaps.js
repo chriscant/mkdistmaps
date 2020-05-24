@@ -91,11 +91,11 @@ const monadSCALE = {
   factor2: 10000,
   gridreffigs:4
 }
-if (!config.hasOwnProperty('useMonadsNoHectads')) {
+if (!config.hasOwnProperty('useMonadsNotHectads')) {
   console.log('Using default: map to hectad')
-  config.useMonadsNoHectads = false
+  config.useMonadsNotHectads = false
 }
-const SCALE = config.useMonadsNoHectads ? monadSCALE : hectadSCALE
+const SCALE = config.useMonadsNotHectads ? monadSCALE : hectadSCALE
 
 // Set default datecolours if need be
 if (!config.hasOwnProperty('datecolours')) {
@@ -394,7 +394,7 @@ async function importComplete(rowCount) {
       if (SCALE.gridreffigs === 4 && box.length === 4) {
         ctx.strokeRect(boxloc.x, boxloc.y, boxwidth2, boxwidth2)
       } else {
-        if (boxdata.count === 1 && config.useMonadsNoHectads>1) {
+        if (boxdata.count === 1 && config.useMonadsNotHectads>1) {
           ctx.beginPath()
           ctx.arc(boxloc.x + boxwidthhalf, boxloc.y + boxwidthhalf, boxwidthhalf, 0, 2 * Math.PI, false) // Math.PI
           ctx.closePath()
