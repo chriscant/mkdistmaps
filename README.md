@@ -39,10 +39,12 @@ If you opt to make monad maps, then:
 * the monad is shown as a circle if there is only one record for the monad
 * any records that are only at hectad level are shown as outline squares, rather than filled squares
 
-Example hectad map:
+**Example hectad map:**
+
 ![Example hectad map](https://raw.githubusercontent.com/chriscant/mkdistmaps/master/docs/example-hectad.png)
 
-Example monad map:
+**Example monad map:**
+
 ![Example monad map](https://raw.githubusercontent.com/chriscant/mkdistmaps/master/docs/example-monad.png)
 
 The code generates basic output as it processes the data, finishing like this:
