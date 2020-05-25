@@ -136,6 +136,11 @@ I built base maps using [QGIS](https://qgis.org/en/site/) and [Ordnance Survey o
 
 I used data from the [British Lichen Society](https://www.britishlichensociety.org.uk/)
 
+# To do
+
+* Allow positioning and formatting of the map title etc
+* Option to add date legend to the each map
+
 # License
 
 [MIT](LICENCE)
