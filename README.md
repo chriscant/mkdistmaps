@@ -39,13 +39,18 @@ If you opt to make monad maps, then:
 * the monad is shown as a circle if there is only one record for the monad
 * any records that are only at hectad level are shown as outline squares, rather than filled squares
 
-**Example hectad map:**
-
-![Example hectad map](https://raw.githubusercontent.com/chriscant/mkdistmaps/master/docs/example-hectad.png)
 
 **Example monad map:**
 
-![Example monad map](https://raw.githubusercontent.com/chriscant/mkdistmaps/master/docs/example-monad.png)
+![Example monad map](https://raw.githubusercontent.com/chriscant/mkdistmaps/master/docs/Aspicilia-calcarea-VC69-VC70.png)
+
+![Example monad map](https://raw.githubusercontent.com/chriscant/mkdistmaps/master/docs/Aspicilia-calcarea-GB.png)
+
+**Example hectad map:**
+
+![Example hectad map](https://raw.githubusercontent.com/chriscant/mkdistmaps/master/docs/Peltigera-horizontalis.png)
+
+**Runtime output**
 
 The code generates basic output as it processes the data, finishing like this:
 
@@ -75,6 +80,10 @@ git pull
 Specify what you want done in a configuration file.
 The config file must be in [JavaScript Object Notation (JSON) format](https://www.w3schools.com/js/js_json.asp).
 The sample config file [sample-config.json](sample-config.json) shows some of the options available.
+
+### limit
+
+* If you want to test what the maps look like without generating them all, please the number of species maps that you want to produce, eg 1. Zero means all.
 
 ### outputFolder
 
@@ -126,16 +135,29 @@ The base map would typically be generated in QGIS using "Export as image", notin
 * **scaledown** - scale reduction factor for output 
 * **showhectadname** - set to `true` to show the hectad name on each map
 
+The following basemap parameters determine where and how descriptive text and the legend are written onto the map
+
+* **legend_hide** - set to true to not show a legend
+* **title_x**: X position of start of text. Default: 10
+* **title_y**: Y position of start of text. Default: 10
+* **title_y_inc**: Y increment for next lines of text. Default: 25
+* **title_fontsize**: Title text fontsize. Default: "24pt"
+* **legend_x**: X position of start of legend. Default: 10
+* **legend_y**: Y position of start of legend. Default: half way down map
+* **legend_inc**: Y increment for next lines of text. Default: 15
+* **legend_fontsize**: Legend text fontsize. Default: "12pt"
+* **hectad_fontsize**: Hectad name fontsize. Default: "12pt"
+
 ### datecolours
 
 * Optionally, specify the date range colours. The default is:
 
 ```
 [
-  { "minyear": 0, "maxyear": 1959, "colour": "rgba(255,255,0, 1)" },  // Yellow
-  { "minyear": 1960, "maxyear": 1999, "colour": "rgba(0,0,255, 1)" }, // Blue
-  { "minyear": 2000, "maxyear": 2019, "colour": "rgba(255,0,0, 1)" }, // Red
-  { "minyear": 2020, "maxyear": 2039, "colour": "rgba(0,255,0, 1)" }  // Green
+  { "minyear": 0, "maxyear": 1959, "colour": "rgba(255,255,0, 1)", "legend": "pre-1960" },  // Yellow
+  { "minyear": 1960, "maxyear": 1999, "colour": "rgba(0,0,255, 1)", "legend": "1960-1999" }, // Blue
+  { "minyear": 2000, "maxyear": 2019, "colour": "rgba(255,0,0, 1)", "legend": "2000-2019" }, // Red
+  { "minyear": 2020, "maxyear": 2039, "colour": "rgba(0,255,0, 1)", "legend": "2020-2039" }  // Green
 ]
 ```
 
@@ -151,8 +173,9 @@ I used data from the [British Lichen Society](https://www.britishlichensociety.o
 
 # To do
 
-* Allow positioning and formatting of the map title etc
-* Option to add date legend to each map
+* Support [Irish](https://en.wikipedia.org/wiki/Irish_grid_reference_system) grid references
+* Possibly: cope with having Irish and GB grid references dispalyed on the same map
+* Possibly: cope with map inserts for out-of-main-area locations
 
 # License
 

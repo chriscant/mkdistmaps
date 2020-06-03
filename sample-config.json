@@ -1,4 +1,5 @@
 ﻿{
+  "limit": 0,
   "outputFolder": "monads",
   "recordset": {
     "csv": "myrecords.csv",
@@ -19,29 +20,43 @@
     "east": 390500,
     "south": 460155.7305,
     "scaledown": 4,
-    "showhectadname": false
+    "showhectadname": false,
     //  QGIS export image: 1:570000, 300dpi
+    "title_x": 10,
+    "title_y": 30,
+    "title_y_inc": 25,
+    "title_fontsize": "24pt",
+    "legend_hide": false,
+    "legend_x": 10,
+    "legend_y": 500,
+    "legend_inc": 15,
+    "legend_fontsize": "12pt",
+    "hectad_fontsize": "12pt"
   },
   "datecolours": [
     {
       "minyear": 0,
       "maxyear": 1959,
-      "colour": "rgba(255,255,0, 1)" // Yellow
+      "colour": "rgba(255,255,0, 1)", // Yellow
+      "legend": "pre-1960"
     },
     {
       "minyear": 1960,
       "maxyear": 1999,
-      "colour": "rgba(0,0,255, 1)" // Blue
+      "colour": "rgba(0,0,255, 1)", // Blue
+      "legend": "1960-1999"
     },
     {
       "minyear": 2000,
       "maxyear": 2019,
-      "colour": "rgba(255,0,0, 1)" // Red
+      "colour": "rgba(255,0,0, 1)", // Red
+      "legend": "2000-2019"
     },
     {
       "minyear": 2020,
       "maxyear": 2039,
-      "colour": "rgba(0,255,0, 1)" // Green
+      "colour": "rgba(0,255,0, 1)", // Green
+      "legend": "2020-2039"
     }
   ]
 }

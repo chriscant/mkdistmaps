@@ -101,10 +101,10 @@ const SCALE = config.useMonadsNotHectads ? monadSCALE : hectadSCALE
 if (!config.hasOwnProperty('datecolours')) {
   console.log("Using default datecolours")
   config.datecolours = [
-    { "minyear": 0, "maxyear": 1959, "colour": "rgba(255,255,0, 1)" },  // Yellow
-    { "minyear": 1960, "maxyear": 1999, "colour": "rgba(0,0,255, 1)" }, // Blue
-    { "minyear": 2000, "maxyear": 2019, "colour": "rgba(255,0,0, 1)" }, // Red
-    { "minyear": 2020, "maxyear": 2039, "colour": "rgba(0,255,0, 1)" }  // Green
+    { "minyear": 0, "maxyear": 1959, "colour": "rgba(255,255,0, 1)", "legend": "pre-1960" },  // Yellow
+    { "minyear": 1960, "maxyear": 1999, "colour": "rgba(0,0,255, 1)", "legend": "1960-1999" }, // Blue
+    { "minyear": 2000, "maxyear": 2019, "colour": "rgba(255,0,0, 1)", "legend": "2000-2019" }, // Red
+    { "minyear": 2020, "maxyear": 2039, "colour": "rgba(0,255,0, 1)", "legend": "2020-2039" }  // Green
   ]
 }
 
@@ -119,6 +119,21 @@ if (!config.font_colour) {
   config.font_colour = '#000000'
 }
 
+if (!config.basemap) {
+  console.log("No basemap config given")
+  return
+}
+
+if (!config.basemap.title_x) config.basemap.title_x = 10
+if (!config.basemap.title_y) config.basemap.title_y = 30
+if (!config.basemap.title_y_inc) config.basemap.title_y_inc = 25
+if (!config.basemap.title_fontsize) config.basemap.title_fontsize = '24pt'
+if (!config.basemap.legend_x) config.basemap.legend_x = 10
+if (!config.basemap.legend_x) config.basemap.legend_x = 10
+// config.basemap.legend_y later defaulted to half map height
+if (!config.basemap.legend_inc) config.basemap.legend_inc = 15
+if (!config.basemap.legend_fontsize) config.basemap.legend_fontsize = '12pt'
+if (!config.basemap.hectad_fontsize) config.basemap.hectad_fontsize = '12pt'
 
 /////////////////
 // Do everything!
@@ -334,6 +349,8 @@ async function importComplete(rowCount) {
   const boxwidth2 = width / boxswidth2  // boxheight should be the same if map in proportion
   console.log('boxwidth2', boxwidth2)
 
+  if (!config.basemap.legend_y) config.basemap.legend_y = Math.trunc(height/2)
+
   // Now set image x and y for each box
   for (const [box, boxloc] of Object.entries(boxes)) {
     const n = (boxloc.n * SCALE.factor) - config.basemap.south
@@ -374,11 +391,11 @@ async function importComplete(rowCount) {
 
     // Write summary text
     ctx.fillStyle = config.font_colour
-    ctx.font = "24pt 'TheFont'"
-    ctx.fillText(TaxonName, width / 20, height / 20)
+    ctx.font = config.basemap.title_fontsize + " 'TheFont'"
+    ctx.fillText(TaxonName, config.basemap.title_x, config.basemap.title_y)
 
-    ctx.font = "24pt 'TheFont'"
-    ctx.fillText(config.recordset.title, width / 20, height * 2 / 20)
+    ctx.font = config.basemap.title_fontsize + " 'TheFont'"
+    ctx.fillText(config.recordset.title, config.basemap.title_x, config.basemap.title_y + config.basemap.title_y_inc)
 
     // Go through all boxes found for this species
     let reccount = 0
@@ -413,26 +430,40 @@ async function importComplete(rowCount) {
       // Draw hectad name
       if (config.showhectadname) {
         ctx.fillStyle = config.font_colour
-        ctx.font = "12pt 'TheFont'"
+        ctx.font = config.basemap.hectad_fontsize + " 'TheFont'"
         ctx.fillText(box, boxloc.x, boxloc.y + boxwidth)
       }
     }
     // Write number of records
     ctx.fillStyle = config.font_colour
-    ctx.font = "24pt 'TheFont'"
-    ctx.fillText("Records: " + reccount, width / 20, height * 3 / 20)
+    ctx.font = config.basemap.title_fontsize + " 'TheFont'"
+    ctx.fillText("Records: " + reccount, config.basemap.title_x, config.basemap.title_y + 2 * config.basemap.title_y_inc)
 
     // Write number of records
-    ctx.fillStyle = config.font_colour
-    ctx.font = "12pt 'TheFont'"
-    ctx.fillText(version, width / 20, height / 60)
+    ctx.fillStyle = '#808080'
+    ctx.font = config.basemap.legend_fontsize + " 'TheFont'"
+    ctx.fillText(version, 10, 10)
+
+    if (!config.basemap.legend_hide) {
+      ctx.font = config.basemap.legend_fontsize + " 'TheFont'"
+      let legend_y = config.basemap.legend_y
+      for (const datecolour of Object.values(config.datecolours)) {
+        ctx.fillStyle = datecolour.colour
+        ctx.fillRect(config.basemap.legend_x, legend_y, config.basemap.legend_inc, config.basemap.legend_inc)
+        ctx.strokeStyle = config.font_colour
+        ctx.strokeRect(config.basemap.legend_x, legend_y, config.basemap.legend_inc, config.basemap.legend_inc)
+        ctx.fillStyle = config.font_colour
+        legend_y += config.basemap.legend_inc
+        ctx.fillText(datecolour.legend, config.basemap.legend_x + 2 * config.basemap.legend_inc, legend_y)
+      }
+    }
 
     // Output the final species map
     const outpath = path.join(__dirname, config.outputFolder, TaxonName+".png")
     await PImage.encodePNGToStream(img2, fs.createWriteStream(outpath))
     console.log("done", TaxonName, reccount)
-    //if( done++>0)
-    break
+    if (config.limit && ++done >= config.limit)
+      break
   }
 
   // Report record count, errors, species and boxes
