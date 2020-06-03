@@ -42,9 +42,9 @@ If you opt to make monad maps, then:
 
 **Example monad maps:**
 
-Both these maps use the same data (all records of *Aspicilia calcarea* in VC69 and VC70, Cumbria, January 2020).
+Both these monad-level maps use the same data (all records of *Aspicilia calcarea* in VC69 and VC70, Cumbria, as of January 2020).
 The first shows the data on a map of Cumbria.
-The second shows the data on a map of Great Britain.
+The second shows the data on a map of most of Great Britain.
 
 ![Example monad map](https://raw.githubusercontent.com/chriscant/mkdistmaps/master/docs/Aspicilia-calcarea-VC69-VC70.png)
 
