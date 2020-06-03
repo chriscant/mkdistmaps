@@ -50,7 +50,7 @@ const UKletters2 = [
 ]
 
 // Get version from last git commit
-const version = "mkdistmaps " + execSync('git describe --tags --long')
+const version = "mkdistmaps " + execSync('git describe --tags --long') + ' - ' + moment().format('Do MMMM YYYY, h:mm:ss a')
 console.log(version)
 
 // Display usage
@@ -440,7 +440,7 @@ async function importComplete(rowCount) {
     ctx.font = config.basemap.title_fontsize + " 'TheFont'"
     ctx.fillText("Records: " + reccount, config.basemap.title_x, config.basemap.title_y + 2 * config.basemap.title_y_inc)
 
-    // Write number of records
+    // Write version and today's date-time
     ctx.fillStyle = '#808080'
     ctx.font = config.basemap.legend_fontsize + " 'TheFont'"
     ctx.fillText(version, 10, 10)

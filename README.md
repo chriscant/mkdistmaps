@@ -39,6 +39,7 @@ If you opt to make monad maps, then:
 * the monad is shown as a circle if there is only one record for the monad
 * any records that are only at hectad level are shown as outline squares, rather than filled squares
 
+The mkdistmaps version string and the runtime date and time are added in grey at the top left of each generated map.
 
 **Example monad maps:**
 
