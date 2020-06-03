@@ -7,7 +7,7 @@ species records with grid references.
 
 # Usage
 
-Ensure you have [nodejs](https://nodejs.org/en/download/) installed.
+Ensure you have [git](https://git-scm.com/downloads) and [nodejs](https://nodejs.org/en/download/) installed.
 You will also need your records in CSV format and a base map image.
 
 At a suitable command line prompt:
