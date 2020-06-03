@@ -40,13 +40,19 @@ If you opt to make monad maps, then:
 * any records that are only at hectad level are shown as outline squares, rather than filled squares
 
 
-**Example monad map:**
+**Example monad maps:**
+
+Both these maps use the same data (all records of *Aspicilia calcarea* in VC69 and VC70, Cumbria, January 2020).
+The first shows the data on a map of Cumbria.
+The second shows the data on a map of Great Britain.
 
 ![Example monad map](https://raw.githubusercontent.com/chriscant/mkdistmaps/master/docs/Aspicilia-calcarea-VC69-VC70.png)
 
 ![Example monad map](https://raw.githubusercontent.com/chriscant/mkdistmaps/master/docs/Aspicilia-calcarea-GB.png)
 
 **Example hectad map:**
+
+This map shows some records of *Peltigera horizontalis* across GB, displayed at hectad resolution.
 
 ![Example hectad map](https://raw.githubusercontent.com/chriscant/mkdistmaps/master/docs/Peltigera-horizontalis.png)
 
@@ -83,7 +89,7 @@ The sample config file [sample-config.json](sample-config.json) shows some of th
 
 ### limit
 
-* If you want to test what the maps look like without generating them all, please the number of species maps that you want to produce, eg 1. Zero means all.
+* If you want to test what the maps look like without generating them all, specify the number of species maps that you want to produce, eg 1. Zero means all.
 
 ### outputFolder
 
@@ -144,7 +150,7 @@ The following basemap parameters determine where and how descriptive text and th
 * **title_fontsize**: Title text fontsize. Default: "24pt"
 * **legend_x**: X position of start of legend. Default: 10
 * **legend_y**: Y position of start of legend. Default: half way down map
-* **legend_inc**: Y increment for next lines of text. Default: 15
+* **legend_inc**: Y increment for next legend line. Default: 15
 * **legend_fontsize**: Legend text fontsize. Default: "12pt"
 * **hectad_fontsize**: Hectad name fontsize. Default: "12pt"
 
@@ -174,7 +180,7 @@ I used data from the [British Lichen Society](https://www.britishlichensociety.o
 # To do
 
 * Support [Irish](https://en.wikipedia.org/wiki/Irish_grid_reference_system) grid references
-* Possibly: cope with having Irish and GB grid references dispalyed on the same map
+* Possibly: cope with having Irish and GB grid references displayed on the same map
 * Possibly: cope with map inserts for out-of-main-area locations
 
 # License
