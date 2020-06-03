@@ -2,8 +2,8 @@
 
 // mkdistmaps
 
-// For each new release, create a new tag
-// git tag -a v1.1 -m "v1.1"
+// For each new release, update in package.json and create a new tag eg
+// git tag -a v1.2 -m "v1.2"
 
 const dt_start = new Date()
 
@@ -111,8 +111,14 @@ if (!config.hasOwnProperty('datecolours')) {
 // Set default DateFormats if need be
 if (!config.recordset.DateFormats) {
   console.log("Using default DateFormats")
-  config.recordset.DateFormats = ["DD/MM/YYYY", "YYYY"];
+  config.recordset.DateFormats = ["DD/MM/YYYY", "YYYY"]
 }
+
+if (!config.font_colour) {
+  console.log("Using default font_colour")
+  config.font_colour = '#000000'
+}
+
 
 /////////////////
 // Do everything!
@@ -120,7 +126,7 @@ const headers = config.recordset.headers ? config.recordset.headers: true
 const renameHeaders = config.recordset.renameHeaders ? config.recordset.renameHeaders : false
 
 let totalrecords = 0
-let anyincsv = 0;
+let anyincsv = 0
 async function processFiles() {
   const files = glob.sync(config.recordset.csv)
   if (files.length === 0) {
@@ -215,8 +221,8 @@ function processLine(file, row) {
   }
 
   // From grid reference, work out Eastings and Northings and box name eg NY51 or NY5714
-  let Eastings = 0;
-  let Northings = 0;
+  let Eastings = 0
+  let Northings = 0
 
   let box = SpatialReference
   const grfig = SCALE.gridreffigs / 2
@@ -367,7 +373,7 @@ async function importComplete(rowCount) {
     )
 
     // Write summary text
-    ctx.fillStyle = '#000000'
+    ctx.fillStyle = config.font_colour
     ctx.font = "24pt 'TheFont'"
     ctx.fillText(TaxonName, width / 20, height / 20)
 
@@ -406,18 +412,18 @@ async function importComplete(rowCount) {
 
       // Draw hectad name
       if (config.showhectadname) {
-        ctx.fillStyle = '#000000'
+        ctx.fillStyle = config.font_colour
         ctx.font = "12pt 'TheFont'"
         ctx.fillText(box, boxloc.x, boxloc.y + boxwidth)
       }
     }
     // Write number of records
-    ctx.fillStyle = '#000000'
+    ctx.fillStyle = config.font_colour
     ctx.font = "24pt 'TheFont'"
     ctx.fillText("Records: " + reccount, width / 20, height * 3 / 20)
 
     // Write number of records
-    ctx.fillStyle = '#808080'
+    ctx.fillStyle = config.font_colour
     ctx.font = "12pt 'TheFont'"
     ctx.fillText(version, width / 20, height / 60)
 
@@ -426,7 +432,7 @@ async function importComplete(rowCount) {
     await PImage.encodePNGToStream(img2, fs.createWriteStream(outpath))
     console.log("done", TaxonName, reccount)
     //if( done++>0)
-    //break
+    break
   }
 
   // Report record count, errors, species and boxes

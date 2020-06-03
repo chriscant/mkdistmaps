@@ -60,6 +60,15 @@ Empty rows: 0
 Boxes: 949
 Runtime: 189 seconds
 ```
+## Updates
+
+If the code at github has been updated, you can update your local copy using this command in the `mkdistmaps` directory:
+
+```
+git pull
+```
+
+
 
 ## Configuration
 
@@ -99,7 +108,11 @@ Note: if the CSV file has columns `Eastings` and `Northings` then these are cros
 
 ### font_filename
 
-* Specify the filename of a font eg TTF
+* Specify the filename of a font eg a TTF file. If on Windows, you should be able to find eg Arial.ttf in your C:\Windows folder; copy it to your `mkdistmaps` directory.
+
+### font_colour
+
+* Specify the colour of the written text eg as "#000000" or "rgba(0,255,0, 1)"
 
 ### basemap
 
@@ -139,7 +152,7 @@ I used data from the [British Lichen Society](https://www.britishlichensociety.o
 # To do
 
 * Allow positioning and formatting of the map title etc
-* Option to add date legend to the each map
+* Option to add date legend to each map
 
 # License
 

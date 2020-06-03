@@ -11,6 +11,7 @@
   },
   "useMonadsNotHectads": true,
   "font_filename": "afontfile.ttf",
+  "font_colour": "#000000", // Black
   "basemap": {
     "file": "CumbriaIncRoads2016x2683blank.png",
     "north": 589703.6682,
