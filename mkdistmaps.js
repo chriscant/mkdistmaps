@@ -417,11 +417,12 @@ async function importComplete(rowCount) {
       if (SCALE.gridreffigs === 4 && box.length === 4) {
         ctx.strokeRect(boxloc.x, boxloc.y, boxwidth2, boxwidth2)
       } else {
-        if (boxdata.count === 1 && config.useMonadsNotHectads>1) {
+        if (boxdata.count === 1 && config.useMonadsNotHectads) {
           ctx.beginPath()
           ctx.arc(boxloc.x + boxwidthhalf, boxloc.y + boxwidthhalf, boxwidthhalf, 0, 2 * Math.PI, false) // Math.PI
           ctx.closePath()
           ctx.fill()
+
         } else {
           ctx.fillRect(boxloc.x, boxloc.y, boxwidth, boxwidth)
         }
