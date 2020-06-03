@@ -50,8 +50,8 @@ const UKletters2 = [
 ]
 
 // Get version from last git commit
-const version = "mkdistmaps " + execSync('git describe --tags --long') + ' - ' + moment().format('Do MMMM YYYY, h:mm:ss a')
-console.log(version)
+const gitdescr = execSync('git describe --tags --long')
+const version = "mkdistmaps " + gitdescr.toString('utf8', 0, gitdescr.length-1) + ' - ' + moment().format('Do MMMM YYYY, h:mm:ss a')
 
 // Display usage
 if (process.argv.length <= 2) {
