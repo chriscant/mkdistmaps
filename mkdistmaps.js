@@ -2,8 +2,7 @@
 
 // mkdistmaps
 
-// For each new release, update in package.json and create a new tag eg
-// git tag -a v1.2 -m "v1.2"
+// For each new release, update in package.json and create a new tag in GitHub - used in version string
 
 const dt_start = new Date()
 
