@@ -50,13 +50,14 @@ const UKletters2 = [
 
 // Get version from last git commit
 const gitdescr = execSync('git describe --tags --long')
-const version = "mkdistmaps " + gitdescr.toString('utf8', 0, gitdescr.length-1) + ' - ' + moment().format('Do MMMM YYYY, h:mm:ss a')
+const version = "mkdistmaps " + gitdescr.toString('utf8', 0, gitdescr.length-1) + ' - run at ' + moment().format('Do MMMM YYYY, h:mm:ss a')
 
 // Display usage
 if (process.argv.length <= 2) {
   console.log("usage: node index.js <config.json>")
   return
 }
+console.log(version)
 
 // Load config file and remove UTF-8 BOF and any comments starting with //
 let configtext = fs.readFileSync(path.resolve(__dirname, process.argv[2]), { encoding: 'utf8' })
@@ -440,7 +441,7 @@ async function importComplete(rowCount) {
     ctx.fillText("Records: " + reccount, config.basemap.title_x, config.basemap.title_y + 2 * config.basemap.title_y_inc)
 
     // Write version and today's date-time
-    ctx.fillStyle = '#808080'
+    ctx.fillStyle = '#404040'
     ctx.font = config.basemap.legend_fontsize + " 'TheFont'"
     ctx.fillText(version, 10, 10)
 
