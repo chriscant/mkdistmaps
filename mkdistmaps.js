@@ -123,6 +123,22 @@ if (!config.basemap) {
   console.log("No basemap config given")
   return
 }
+if (!config.basemap.file) {
+  console.log("No basemap file given")
+  return
+}
+config.basemap.filelc = config.basemap.file.toLowerCase()
+config.basemap.isPNG = config.basemap.filelc.indexOf('.png') !== -1
+config.basemap.isJPG = (config.basemap.filelc.indexOf('.jpg') !== -1) || (config.basemap.filelc.indexOf('.jpeg') !== -1)
+if (!config.basemap.isPNG && !config.basemap.isJPG) {
+  console.log("Basemap file must be PNG or JPG -", config.basemap.file)
+  return
+}
+if (!fs.existsSync(config.basemap.file)) {
+  console.log("Basemap file does not exist -", config.basemap.file)
+  return
+}
+
 
 if (!config.basemap.title_x) config.basemap.title_x = 10
 if (!config.basemap.title_y) config.basemap.title_y = 30
@@ -334,7 +350,9 @@ function processLine(file, row) {
 
 async function importComplete(rowCount) {
   // Load base map and work out main box dimensions (assumed to be square)
-  const img = await PImage.decodePNGFromStream(fs.createReadStream(config.basemap.file))
+  const img = config.basemap.isPNG
+    ? await PImage.decodePNGFromStream(fs.createReadStream(config.basemap.file))
+    : await PImage.decodeJPEGFromStream(fs.createReadStream(config.basemap.file))
   const width = img.width / config.basemap.scaledown
   const height = img.height / config.basemap.scaledown
   const mapeastings = config.basemap.east - config.basemap.west     // eg 390500-293169

@@ -31,7 +31,7 @@ Or more simply:
 node . vc101-config.txt
 ```
 
-The code reads all the records in the specified CSV file(s) and then creates one map for each found species in the output folder.
+The code reads all the records in the specified CSV file(s) and then creates one PNG map for each found species in the output folder.
 A monad or hectad is coloured in if there are records for that species in that square.
 The fill colour is determined by the date of the most recent record for that square.
 
@@ -134,7 +134,7 @@ Note: if the CSV file has columns `Eastings` and `Northings` then these are cros
 
 The base map would typically be generated in QGIS using "Export as image", noting the N/W/E/S values
 
-* **file** - path to the base map
+* **file** - path to the base map: must be PNG, JPG or JPEG
 * **north** - north bound of supplied base map
 * **west** - west bound of supplied base map
 * **east** - east bound of supplied base map
