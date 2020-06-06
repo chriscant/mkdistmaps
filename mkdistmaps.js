@@ -239,7 +239,7 @@ function processLine(file, row) {
 
   // Decode Date or Year
   let YearFound = Year
-  if (!config.recordset.YearCol) {
+  if (!YearFound || !config.recordset.YearCol) {
     const ObsDate2 = moment(ObsDate, config.recordset.DateFormats)
     if (ObsDate2.isValid()) {
       YearFound = true
