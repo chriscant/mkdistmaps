@@ -60,6 +60,10 @@ This map shows some records of *Peltigera horizontalis* across GB, displayed at 
 
 ![Example hectad map](https://raw.githubusercontent.com/chriscant/mkdistmaps/master/docs/Peltigera-horizontalis.png)
 
+**Example Irish hectad map:**
+
+![Example Irish hectad map](https://raw.githubusercontent.com/chriscant/mkdistmaps/master/docs/Irish-Species.png)
+
 **Runtime output**
 
 The code generates basic output as it processes the data, finishing like this:
