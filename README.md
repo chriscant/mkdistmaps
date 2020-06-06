@@ -1,9 +1,12 @@
 # mkdistmaps
 
-Command line tool to make species distribution maps on top of a base layer image from 
-[GB](https://en.wikipedia.org/wiki/Ordnance_Survey_National_Grid)
-species records with grid references.
-[Irish](https://en.wikipedia.org/wiki/Irish_grid_reference_system) grid references not supported yet.
+Command line tool to make species distribution maps on top of a base layer image from species records with 
+grid references.
+
+Your data can (currently) contain either [GB](https://en.wikipedia.org/wiki/Ordnance_Survey_National_Grid)
+or [Irish](https://en.wikipedia.org/wiki/Irish_grid_reference_system) grid references, but not both.
+GB grid references start with two letters; Irish grid references start with one letter.
+The code handles 2, 4, 6, 8 or 10 numbers after the initial letter(s).
 
 # Usage
 
@@ -174,13 +177,13 @@ The following basemap parameters determine where and how descriptive text and th
 * C2FO's  [fast-csv](https://www.npmjs.com/package/fast-csv) - [docs](https://c2fo.io/fast-csv/docs/introduction/getting-started) and contributors
 * Other nodejs modules - see code
 
-I built base maps using [QGIS](https://qgis.org/en/site/) and [Ordnance Survey open data](https://www.ordnancesurvey.co.uk/opendatadownload/products.html)
+I built base maps using [QGIS](https://qgis.org/en/site/), [Ordnance Survey open data](https://www.ordnancesurvey.co.uk/opendatadownload/products.html) and
+[Ordnance Survey Ireland open data](https://www.osi.ie/about/open-data/)
 
 I used data from the [British Lichen Society](https://www.britishlichensociety.org.uk/)
 
 # To do
 
-* Support [Irish](https://en.wikipedia.org/wiki/Irish_grid_reference_system) grid references
 * Possibly: cope with having Irish and GB grid references displayed on the same map
 * Possibly: cope with map inserts for out-of-main-area locations
 

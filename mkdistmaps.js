@@ -47,6 +47,33 @@ const UKletters2 = [
   { l: 'Y', e: 300, n: 0 },
   { l: 'Z', e: 400, n: 0 }
 ]
+const IEletters = [
+  { l: 'A', e: 0, n: 400 },
+  { l: 'B', e: 100, n: 400 },
+  { l: 'C', e: 200, n: 400 },
+  { l: 'D', e: 300, n: 400 },
+  { l: 'E', e: 400, n: 400 },
+  { l: 'F', e: 0, n: 300 },
+  { l: 'G', e: 100, n: 300 },
+  { l: 'H', e: 200, n: 300 },
+  { l: 'J', e: 300, n: 300 },
+  { l: 'K', e: 400, n: 300 },
+  { l: 'L', e: 0, n: 200 },
+  { l: 'M', e: 100, n: 200 },
+  { l: 'N', e: 200, n: 200 },
+  { l: 'O', e: 300, n: 200 },
+  { l: 'P', e: 400, n: 200 },
+  { l: 'Q', e: 0, n: 100 },
+  { l: 'R', e: 100, n: 100 },
+  { l: 'S', e: 200, n: 100 },
+  { l: 'T', e: 300, n: 100},
+  { l: 'U', e: 400, n: 100 },
+  { l: 'V', e: 0, n: 0 },
+  { l: 'W', e: 100, n: 0 },
+  { l: 'X', e: 200, n: 0 },
+  { l: 'Y', e: 300, n: 0 },
+  { l: 'Z', e: 400, n: 0 }
+]
 
 // Get version from last git commit
 const gitdescr = execSync('git describe --tags --long')
@@ -158,6 +185,8 @@ const renameHeaders = config.recordset.renameHeaders ? config.recordset.renameHe
 
 let totalrecords = 0
 let anyincsv = 0
+let usesGB = false
+let usesIE = false
 async function processFiles() {
   const files = glob.sync(config.recordset.csv)
   if (files.length === 0) {
@@ -199,6 +228,9 @@ processFiles()
 //                       NY50951510                                           Some 12 figure GRs appear as 10 figures
 //                       NY7432046814
 
+//                       J3438674590           334386               374590 
+//                                       17646.6931-370000       0-467252
+
 const speciesesGrids = {}
 const errors = []
 let lineno = 0
@@ -210,8 +242,8 @@ function processLine(file, row) {
   //console.log(row)
   lineno++
 
-  // Get GR and species name
-  const SpatialReference = row[config.recordset.GRCol].toUpperCase()
+  // Get GR (no spaces) and species name
+  const SpatialReference = row[config.recordset.GRCol].toUpperCase().replace(/ /g, '')
   //console.log('SpatialReference', SpatialReference)
   const TaxonName = row[config.recordset.TaxonCol]
   if (SpatialReference.length === 0 || TaxonName.length === 0 || TaxonName.substring(0,1)==='#') {
@@ -254,6 +286,8 @@ function processLine(file, row) {
   // From grid reference, work out Eastings and Northings and box name eg NY51 or NY5714
   let Eastings = 0
   let Northings = 0
+  let isGB = false
+  let isIE = false
 
   let box = SpatialReference
   const grfig = SCALE.gridreffigs / 2
@@ -261,52 +295,105 @@ function processLine(file, row) {
     Eastings += parseInt(box.substring(2, 7))
     Northings += parseInt(box.substring(7))
     box = box.substring(0, 2 + grfig) + box.substring(7, 7 + grfig)
+    isGB = true
   }
   else if (box.length === 10) {
     Eastings += parseInt(box.substring(2, 6)) * 10
     Northings += parseInt(box.substring(6)) * 10
     box = box.substring(0, 2 + grfig) + box.substring(6, 6 + grfig)
+    isGB = true
   }
   else if (box.length === 8) {
     Eastings += parseInt(box.substring(2, 5)) * 100
     Northings += parseInt(box.substring(5)) * 100
     box = box.substring(0, 2 + grfig) + box.substring(5, 5 + grfig)
+    isGB = true
   }
   else if (box.length === 6) {
     Eastings += parseInt(box.substring(2, 4)) * 1000
     Northings += parseInt(box.substring(4)) * 1000
     box = box.substring(0, 2 + grfig) + box.substring(4, 4 + grfig)
+    isGB = true
   }
   else if (box.length === 4) {
     Eastings += parseInt(box.substring(2, 3)) * 10000
     Northings += parseInt(box.substring(3)) * 10000
+    isGB = true
+  }
+  else if (box.length === 11) {
+    Eastings += parseInt(box.substring(1, 6))
+    Northings += parseInt(box.substring(6))
+    box = box.substring(0, 1 + grfig) + box.substring(6, 6 + grfig)
+    isIE = true
+  }
+  else if (box.length === 9) {
+    Eastings += parseInt(box.substring(1, 5)) * 10
+    Northings += parseInt(box.substring(5)) * 10
+    box = box.substring(0, 1 + grfig) + box.substring(5, 5 + grfig)
+    isIE = true
+  }
+  else if (box.length === 7) {
+    Eastings += parseInt(box.substring(1, 4)) * 100
+    Northings += parseInt(box.substring(4)) * 100
+    box = box.substring(0, 1 + grfig) + box.substring(4, 4 + grfig)
+    isIE = true
+  }
+  else if (box.length === 5) {
+    Eastings += parseInt(box.substring(1, 3)) * 1000
+    Northings += parseInt(box.substring(3)) * 1000
+    box = box.substring(0, 1 + grfig) + box.substring(3, 3 + grfig)
+    isIE = true
+  }
+  else if (box.length === 3) {
+    Eastings += parseInt(box.substring(1, 2)) * 10000
+    Northings += parseInt(box.substring(2)) * 10000
+    isIE = true
   }
   else {
-    errors.push(ObsKey + " Spatial Reference duff length: " + box.length)
+    errors.push(ObsKey + ' Spatial Reference duff length: ' + box.length + ': ' + SpatialReference)
+    return
+  }
+  if (isGB) usesGB = true
+  if (isIE) usesIE = true
+  if (usesGB && usesIE) {
+    errors.push(ObsKey + ' Cannot use GB and IE grid references: ' + SpatialReference)
     return
   }
 
   const l1 = box.substring(0, 1)
-  for (let i = 0; i < UKletters1.length; i++){
-    const boxbl = UKletters1[i]
-    if (boxbl.l == l1) {
-      //console.log('boxbl', boxbl)
-      Eastings += boxbl.e * 1000
-      Northings += boxbl.n * 1000
-      break
+  if (isGB) {
+    for (let i = 0; i < UKletters1.length; i++) {
+      const boxbl = UKletters1[i]
+      if (boxbl.l == l1) {
+        //console.log('boxbl', boxbl)
+        Eastings += boxbl.e * 1000
+        Northings += boxbl.n * 1000
+        break
+      }
     }
-  }
 
-  const l2 = box.substring(1, 2)
-  for (let i = 0; i < UKletters2.length; i++) {
-    const boxbl = UKletters2[i]
-    if (boxbl.l == l2) {
-      //console.log('boxbl', boxbl)
-      Eastings += boxbl.e * 1000
-      Northings += boxbl.n * 1000
-      break
+    const l2 = box.substring(1, 2)
+    for (let i = 0; i < UKletters2.length; i++) {
+      const boxbl = UKletters2[i]
+      if (boxbl.l == l2) {
+        //console.log('boxbl', boxbl)
+        Eastings += boxbl.e * 1000
+        Northings += boxbl.n * 1000
+        break
+      }
+    }
+  } else {
+    for (let i = 0; i < IEletters.length; i++) {
+      const boxbl = IEletters[i]
+      if (boxbl.l == l1) {
+        //console.log('boxbl', boxbl)
+        Eastings += boxbl.e * 1000
+        Northings += boxbl.n * 1000
+        break
+      }
     }
   }
+  //console.log(SpatialReference, box, Eastings, Northings, EastingsExplicit, NorthingsExplicit)
 
   if (ExplicitGiven) {
     if ((Math.abs(Eastings - EastingsExplicit) > 2) || (Math.abs(Northings - NorthingsExplicit) > 2)) {
@@ -395,6 +482,7 @@ async function importComplete(rowCount) {
   await loadFont
 
   // Go through all species
+  const hectadboxlen = usesIE?3:4
   let done = 0
   for (const [TaxonName, speciesGrids] of Object.entries(speciesesGrids)) {
     //console.log(TaxonName, speciesGrids)
@@ -432,7 +520,7 @@ async function importComplete(rowCount) {
       ctx.strokeStyle = ctx.fillStyle
 
       // Draw solid or round box (and optional hectad outline)
-      if (SCALE.gridreffigs === 4 && box.length === 4) {
+      if (SCALE.gridreffigs === 4 && box.length === hectadboxlen) {
         ctx.strokeRect(boxloc.x, boxloc.y, boxwidth2, boxwidth2)
       } else {
         if (boxdata.count === 1 && config.useMonadsNotHectads) {
