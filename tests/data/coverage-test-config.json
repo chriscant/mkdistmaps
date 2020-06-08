@@ -11,7 +11,7 @@
     "YearCol": "Year",
     "ObsKeyCol": "Obs Key"
   },
-  "font_filename": "arial.ttf",
+  "font_filename": "tests/fonts/SourceSansPro-Regular.ttf",
   "basemap": {
     "file": "tests/basemaps/QGIS-Irish.png",
     "north": 467252.6196,

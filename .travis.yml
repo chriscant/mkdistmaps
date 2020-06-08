@@ -8,6 +8,8 @@ before_install:
 - npm --version
 - npm install -g jest
 - npm install
+- mkdir tests/fonts
+- wget -P tests/fonts https://github.com/google/fonts/raw/master/ofl/sourcesanspro/SourceSansPro-Regular.ttf
 
 ################
 script:

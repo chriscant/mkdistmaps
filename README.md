@@ -183,9 +183,11 @@ The following basemap parameters determine where and how descriptive text and th
 
 I built base maps using [QGIS](https://qgis.org/en/site/), [Ordnance Survey open data](https://www.ordnancesurvey.co.uk/opendatadownload/products.html),
 [OpenDataNI](https://www.opendatani.gov.uk/dataset?q=osni) and
-[Ordnance Survey Ireland open data](https://www.osi.ie/about/open-data/)
+[Ordnance Survey Ireland open data](https://www.osi.ie/about/open-data/) - thanks.
 
-I used data from the [British Lichen Society](https://www.britishlichensociety.org.uk/)
+I used data from the [British Lichen Society](https://www.britishlichensociety.org.uk/) - thanks.
+
+The tests use the font "SourceSansPro-Regular.ttf" from https://github.com/google/fonts - thanks.
 
 # To do
 
