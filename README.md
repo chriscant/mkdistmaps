@@ -24,9 +24,9 @@ npm install
 
 ```
 
-* Now get your CSV of records, basemap image and a font file into the new `mkdistmaps` directory
+* Now get your CSV of records and a basemap image into the new `mkdistmaps` directory
 * Make a text file to configure the run eg [sample-config.json](sample-config.json) which you can rename to have a txt extension if that's easier eg `vc101-config.txt`
-* Edit your config file to specify your CSV file(s), a font, an output directory and other options
+* Edit your config file to specify your CSV file(s), an output directory and other options
 * Now run mkdistmaps at the command line, specifying your config file:
 
 ```
@@ -134,7 +134,7 @@ Note: if the CSV file has columns `Eastings` and `Northings` then these are cros
 
 ### font_filename
 
-* Specify the filename of a font eg a TTF file. If on Windows, you should be able to find eg Arial.ttf in your C:\Windows folder; copy it to your `mkdistmaps` directory.
+* Specify the filename of a font eg a TTF file. The tests directory contains an open source font "tests/fonts/SourceSansPro-Regular.ttf".
 
 ### font_colour
 
