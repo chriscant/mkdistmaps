@@ -1,4 +1,5 @@
 ﻿const mkdistmaps = require('../mkdistmaps')
+const testhelper = require('./testhelper');
 
 test('IRISH GRID REFS #1', async () => {
   const output = []
@@ -16,9 +17,14 @@ test('IRISH GRID REFS #1', async () => {
   const spyclog = jest.spyOn(console, 'log').mockImplementation(accumulogger)
   const spycerror = jest.spyOn(console, 'error').mockImplementation(accumulogger)
   const argv = ['node', '.', 'tests/data/irish-test-config.json']
-  const rv = await mkdistmaps.run(argv)
+  let rv = await mkdistmaps.run(argv)
   spyclog.mockRestore()
   spycerror.mockRestore()
   console.log('All console output\n', output.join("\n"))
+
+  if (rv === 1) {
+    rv = await testhelper.checkFilesEqual('tests/expected/Irish-Species.png','tests/output/Irish-Species.png')
+  }
+
   expect(rv).toBe(1)
 })

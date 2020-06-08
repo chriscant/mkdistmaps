@@ -198,6 +198,7 @@ The tests use the font "SourceSansPro-Regular.ttf" from https://github.com/googl
 * Option to produce genus maps ie based on first word of species' names.
 * Possibly: cope with having Irish and GB grid references displayed on the same map
 * Possibly: cope with map inserts for out-of-main-area locations
+* Improve tests, eg split into smaller units
 
 # License
 
