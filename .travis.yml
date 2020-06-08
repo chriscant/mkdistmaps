@@ -1,0 +1,14 @@
+﻿language: node_js
+node_js:
+- 12
+
+################
+before_install:
+- node --version
+- npm --version
+- npm install -g jest
+- npm install
+
+################
+script:
+- npm test
