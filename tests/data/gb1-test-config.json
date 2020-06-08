@@ -3,14 +3,15 @@
   "versionoverride": "mkdistmaps test",
   "outputFolder": "tests/output",
   "recordset": {
-    "csv": "tests/data/csv/Coverage.csv",
-    "title": "Coverage test data",
+    "csv": "tests/data/csv/Test-GB1.csv",
+    "title": "Test GB Data",
     "GRCol": "Grid ref",
     "TaxonCol": "Taxon name",
     "DateCol": "Date(s)",
     "YearCol": "Year",
     "ObsKeyCol": "Obs Key"
   },
+  "useMonadsNotHectads": true,
   "font_filename": "tests/fonts/SourceSansPro-Regular.ttf",
   "basemap": {
     "file": "tests/basemaps/QGIS-UK-VC.png",
@@ -19,9 +20,8 @@
     "east": 668000,
     "south": 0,
     "scaledown": 1,
-    "showhectadname": true,
+    "showhectadname": false,
     //  QGIS export image: 1:2392481, 300dpi
-    //"legend_hide": true,
     "title_x": 280,
     "title_y": 770,
     "title_y_inc": 18,
@@ -29,4 +29,4 @@
     "legend_x": 10,
     "legend_inc": 15
   }
-} // test coverage: comment on last line
+}

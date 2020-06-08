@@ -571,7 +571,7 @@ async function importComplete(rowCount) {
       }
 
       // Draw hectad name
-      if (config.showhectadname) {
+      if (config.basemap.showhectadname) {
         ctx.fillStyle = config.font_colour
         ctx.font = config.basemap.hectad_fontsize + " 'TheFont'"
         ctx.fillText(box, boxloc.x, boxloc.y + boxwidth)
