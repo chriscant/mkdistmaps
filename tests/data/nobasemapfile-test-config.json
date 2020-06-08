@@ -1,0 +1,10 @@
+﻿{
+  "limit": 1,
+  "versionoverride": "mkdistmaps test",
+  "outputFolder": "tests/output",
+  "recordset": {
+  },
+  "basemap": {
+    "file": "tests/basemaps/missing-file.png"
+  }
+}

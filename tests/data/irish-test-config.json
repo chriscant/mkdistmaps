@@ -1,0 +1,28 @@
+﻿{
+  "limit": 1,
+  "versionoverride": "mkdistmaps test",
+  "outputFolder": "tests/output",
+  "recordset": {
+    "csv": "tests/data/csv/Test-Irish.csv",
+    "title": "Test Irish Data",
+    "GRCol": "Grid ref",
+    "TaxonCol": "Taxon name",
+    "DateCol": "Date(s)",
+    "YearCol": "Year",
+    "ObsKeyCol": "Obs Key"
+  },
+  "font_filename": "arial.ttf",
+  "basemap": {
+    "file": "tests/basemaps/QGIS-Irish.png",
+    "north": 467252.6196,
+    "west": 17646.6931,
+    "east": 370000,
+    "south": 0,
+    "scaledown": 4,
+    "showhectadname": false,
+    //  QGIS export image: 1:2392481, 300dpi
+    //"legend_hide": true,
+    "legend_x": 250,
+    "legend_y": 500
+  }
+}

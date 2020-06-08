@@ -181,13 +181,15 @@ The following basemap parameters determine where and how descriptive text and th
 * C2FO's  [fast-csv](https://www.npmjs.com/package/fast-csv) - [docs](https://c2fo.io/fast-csv/docs/introduction/getting-started) and contributors
 * Other nodejs modules - see code
 
-I built base maps using [QGIS](https://qgis.org/en/site/), [Ordnance Survey open data](https://www.ordnancesurvey.co.uk/opendatadownload/products.html) and
+I built base maps using [QGIS](https://qgis.org/en/site/), [Ordnance Survey open data](https://www.ordnancesurvey.co.uk/opendatadownload/products.html),
+[OpenDataNI](https://www.opendatani.gov.uk/dataset?q=osni) and
 [Ordnance Survey Ireland open data](https://www.osi.ie/about/open-data/)
 
 I used data from the [British Lichen Society](https://www.britishlichensociety.org.uk/)
 
 # To do
 
+* Option to produce genus maps ie based on first word of species' names.
 * Possibly: cope with having Irish and GB grid references displayed on the same map
 * Possibly: cope with map inserts for out-of-main-area locations
 

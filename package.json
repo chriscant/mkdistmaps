@@ -1,13 +1,13 @@
 {
   "name": "mkdistmaps",
-  "version": "1.2.0",
+  "version": "1.5.0",
   "description": "Make Distribution Maps from CSV file(s)",
   "main": "mkdistmaps.js",
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1"
+    "test": "jest"
   },
   "author": "Chris Cant",
-  "license": "ISC",
+  "license": "MIT",
   "dependencies": {
     "fast-csv": "^4.2.0",
     "glob": "^7.1.6",

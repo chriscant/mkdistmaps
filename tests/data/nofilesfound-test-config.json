@@ -1,0 +1,11 @@
+﻿{
+  "limit": 1,
+  "versionoverride": "mkdistmaps test",
+  "outputFolder": "tests/output",
+  "recordset": {
+    "csv": "tests/data/csv/missing.csv"
+  },
+  "basemap": {
+    "file": "tests/basemaps/QGIS-Irish.png"
+  }
+}

@@ -4,10 +4,16 @@
 
 // For each new release, update in package.json and create a new tag in GitHub - used in version string
 
+let config = false
+let SCALE = false
+let usesGB = false
+let usesIE = false
+let anyincsv = 0
+
 const dt_start = new Date()
 
 const fs = require('fs')
-const glob = require("glob")
+const glob = require('glob')
 const path = require('path')
 const csv = require('fast-csv')
 const PImage = require('pureimage')
@@ -66,7 +72,7 @@ const IEletters = [
   { l: 'Q', e: 0, n: 100 },
   { l: 'R', e: 100, n: 100 },
   { l: 'S', e: 200, n: 100 },
-  { l: 'T', e: 300, n: 100},
+  { l: 'T', e: 300, n: 100 },
   { l: 'U', e: 400, n: 100 },
   { l: 'V', e: 0, n: 0 },
   { l: 'W', e: 100, n: 0 },
@@ -77,145 +83,175 @@ const IEletters = [
 
 // Get version from last git commit
 const gitdescr = execSync('git describe --tags --long')
-const version = "mkdistmaps " + gitdescr.toString('utf8', 0, gitdescr.length-1) + ' - run at ' + moment().format('Do MMMM YYYY, h:mm:ss a')
+let version = 'mkdistmaps ' + gitdescr.toString('utf8', 0, gitdescr.length - 1) + ' - run at ' + moment().format('Do MMMM YYYY, h:mm:ss a')
 
-// Display usage
-if (process.argv.length <= 2) {
-  console.log("usage: node index.js <config.json>")
-  return
-}
-console.log(version)
+///////////////////////////////////////////////////////////////////////////////////////
+// run: called when run from command line
 
-// Load config file and remove UTF-8 BOF and any comments starting with //
-let configtext = fs.readFileSync(path.resolve(__dirname, process.argv[2]), { encoding: 'utf8' })
-if (configtext.charCodeAt(0) === 65279) { // Remove UTF-8 start character
-  configtext = configtext.slice(1)
-}
-while (true) {
-  const dslashpos = configtext.indexOf('//')
-  if (dslashpos === -1) break
-  const endlinepos = configtext.indexOf("\n", dslashpos)
-  if (endlinepos === -1) {
-    configtext = configtext.substring(0, dslashpos)
-    break
-  }
-  configtext = configtext.substring(0, dslashpos) + configtext.substring(endlinepos)
-}
-const config = JSON.parse(configtext)
-console.log(config)
-
-// Make output folder if need be
-fs.mkdirSync(path.join(__dirname, config.outputFolder), { recursive: true })
-
-// Set scale factor for hectad or monad
-const hectadSCALE = {
-  factor: 10000,
-  factor2: 10000,
-  gridreffigs:2
-}
-const monadSCALE = {
-  factor: 1000,
-  factor2: 10000,
-  gridreffigs:4
-}
-if (!config.hasOwnProperty('useMonadsNotHectads')) {
-  console.log('Using default: map to hectad')
-  config.useMonadsNotHectads = false
-}
-const SCALE = config.useMonadsNotHectads ? monadSCALE : hectadSCALE
-
-// Set default datecolours if need be
-if (!config.hasOwnProperty('datecolours')) {
-  console.log("Using default datecolours")
-  config.datecolours = [
-    { "minyear": 0, "maxyear": 1959, "colour": "rgba(255,255,0, 1)", "legend": "pre-1960" },  // Yellow
-    { "minyear": 1960, "maxyear": 1999, "colour": "rgba(0,0,255, 1)", "legend": "1960-1999" }, // Blue
-    { "minyear": 2000, "maxyear": 2019, "colour": "rgba(255,0,0, 1)", "legend": "2000-2019" }, // Red
-    { "minyear": 2020, "maxyear": 2039, "colour": "rgba(0,255,0, 1)", "legend": "2020-2039" }  // Green
-  ]
-}
-
-// Set default DateFormats if need be
-if (!config.recordset.DateFormats) {
-  console.log("Using default DateFormats")
-  config.recordset.DateFormats = ["DD/MM/YYYY", "YYYY"]
-}
-
-if (!config.font_colour) {
-  console.log("Using default font_colour")
-  config.font_colour = '#000000'
-}
-
-if (!config.basemap) {
-  console.log("No basemap config given")
-  return
-}
-if (!config.basemap.file) {
-  console.log("No basemap file given")
-  return
-}
-config.basemap.filelc = config.basemap.file.toLowerCase()
-config.basemap.isPNG = config.basemap.filelc.indexOf('.png') !== -1
-config.basemap.isJPG = (config.basemap.filelc.indexOf('.jpg') !== -1) || (config.basemap.filelc.indexOf('.jpeg') !== -1)
-if (!config.basemap.isPNG && !config.basemap.isJPG) {
-  console.log("Basemap file must be PNG or JPG -", config.basemap.file)
-  return
-}
-if (!fs.existsSync(config.basemap.file)) {
-  console.log("Basemap file does not exist -", config.basemap.file)
-  return
-}
-
-
-if (!config.basemap.title_x) config.basemap.title_x = 10
-if (!config.basemap.title_y) config.basemap.title_y = 30
-if (!config.basemap.title_y_inc) config.basemap.title_y_inc = 25
-if (!config.basemap.title_fontsize) config.basemap.title_fontsize = '24pt'
-if (!config.basemap.legend_x) config.basemap.legend_x = 10
-if (!config.basemap.legend_x) config.basemap.legend_x = 10
-// config.basemap.legend_y later defaulted to half map height
-if (!config.basemap.legend_inc) config.basemap.legend_inc = 15
-if (!config.basemap.legend_fontsize) config.basemap.legend_fontsize = '12pt'
-if (!config.basemap.hectad_fontsize) config.basemap.hectad_fontsize = '12pt'
-
-/////////////////
-// Do everything!
-const headers = config.recordset.headers ? config.recordset.headers: true
-const renameHeaders = config.recordset.renameHeaders ? config.recordset.renameHeaders : false
-
-let totalrecords = 0
-let anyincsv = 0
-let usesGB = false
-let usesIE = false
-async function processFiles() {
-  const files = glob.sync(config.recordset.csv)
-  if (files.length === 0) {
-    console.error('NO FILE(S) FOUND FOR: ', config.recordset.csv)
-  }
-  let donecount = 0
-  const doFiles = new Promise((resolve, reject) => {
-    for (const file of Object.values(files)) {
-      //console.log(file)
-      anyincsv = 0
-      fs.createReadStream(path.resolve(__dirname, file))
-        .pipe(csv.parse({ headers: headers, renameHeaders: renameHeaders }))
-        .on('error', error => console.error(error))
-        .on('data', row => { processLine(file, row) })
-        .on('end', function (rowCount) {
-          console.error(file, 'Species:', Object.keys(speciesesGrids).length, anyincsv === 0 ? 'EMPTY' :'')
-          totalrecords += rowCount
-          if (++donecount === files.length) {
-            resolve()
-          }
-        })
+async function run(argv) {
+  let rv = 1
+  try {
+    // Display usage
+    if (argv.length <= 2) {
+      console.error('usage: node index.js <config.json>')
+      return 0
     }
-  })
-  await doFiles
-  console.log("COMPLETED READING DATA")
-  importComplete(totalrecords)
+    console.log(version)
+
+    // Load config file and remove UTF-8 BOF and any comments starting with //
+    let configtext = fs.readFileSync(path.resolve(__dirname, argv[2]), { encoding: 'utf8' })
+    if (configtext.charCodeAt(0) === 65279) { // Remove UTF-8 start character
+      configtext = configtext.slice(1)
+    }
+    while (true) {
+      const dslashpos = configtext.indexOf('//')
+      if (dslashpos === -1) break
+      const endlinepos = configtext.indexOf("\n", dslashpos)
+      if (endlinepos === -1) {
+        configtext = configtext.substring(0, dslashpos)
+        break
+      }
+      configtext = configtext.substring(0, dslashpos) + configtext.substring(endlinepos)
+    }
+    //console.log(configtext)
+    try {
+      config = JSON.parse(configtext)
+    } catch (e) {
+      console.error('config file not in JSON format')
+      return 0
+    }
+    console.log(config)
+
+    if (config.hasOwnProperty('versionoverride')) {
+      version = config.versionoverride
+    }
+    
+    // Make output folder if need be
+    fs.mkdirSync(path.join(__dirname, config.outputFolder), { recursive: true })
+
+    // Set scale factor for hectad or monad
+    const hectadSCALE = {
+      factor: 10000,
+      factor2: 10000,
+      gridreffigs: 2
+    }
+    const monadSCALE = {
+      factor: 1000,
+      factor2: 10000,
+      gridreffigs: 4
+    }
+    if (!config.hasOwnProperty('useMonadsNotHectads')) {
+      console.log('Using default: map to hectad')
+      config.useMonadsNotHectads = false
+    }
+    SCALE = config.useMonadsNotHectads ? monadSCALE : hectadSCALE
+
+    // Set default datecolours if need be
+    if (!config.hasOwnProperty('datecolours')) {
+      console.log('Using default datecolours')
+      config.datecolours = [
+        { 'minyear': 0, 'maxyear': 1959, 'colour': 'rgba(255,255,0, 1)', 'legend': 'pre-1960' },  // Yellow
+        { 'minyear': 1960, 'maxyear': 1999, 'colour': 'rgba(0,0,255, 1)', 'legend': '1960-1999' }, // Blue
+        { 'minyear': 2000, 'maxyear': 2019, 'colour': 'rgba(255,0,0, 1)', 'legend': '2000-2019' }, // Red
+        { 'minyear': 2020, 'maxyear': 2039, 'colour': 'rgba(0,255,0, 1)', 'legend': '2020-2039' }  // Green
+      ]
+    }
+
+    if (!config.recordset) {
+      console.error('No recordset config given')
+      return 0
+    }
+
+    // Set default DateFormats if need be
+    if (!config.recordset.DateFormats) {
+      console.log('Using default DateFormats')
+      config.recordset.DateFormats = ['DD/MM/YYYY', 'YYYY']
+    }
+
+    if (!config.font_colour) {
+      console.log('Using default font_colour')
+      config.font_colour = '#000000'
+    }
+
+    if (!config.basemap) {
+      console.error('No basemap config given')
+      return 0
+    }
+    if (!config.basemap.file) {
+      console.error('No basemap file given')
+      return 0
+    }
+    config.basemap.filelc = config.basemap.file.toLowerCase()
+    config.basemap.isPNG = config.basemap.filelc.indexOf('.png') !== -1
+    config.basemap.isJPG = (config.basemap.filelc.indexOf('.jpg') !== -1) || (config.basemap.filelc.indexOf('.jpeg') !== -1)
+    if (!config.basemap.isPNG && !config.basemap.isJPG) {
+      console.error('Basemap file must be PNG or JPG -', config.basemap.file)
+      return 0
+    }
+    if (!fs.existsSync(config.basemap.file)) {
+      console.error('Basemap file does not exist -', config.basemap.file)
+      return 0
+    }
+
+
+    if (!config.basemap.title_x) config.basemap.title_x = 10
+    if (!config.basemap.title_y) config.basemap.title_y = 30
+    if (!config.basemap.title_y_inc) config.basemap.title_y_inc = 25
+    if (!config.basemap.title_fontsize) config.basemap.title_fontsize = '24pt'
+    if (!config.basemap.legend_x) config.basemap.legend_x = 10
+    if (!config.basemap.legend_x) config.basemap.legend_x = 10
+    // config.basemap.legend_y later defaulted to half map height
+    if (!config.basemap.legend_inc) config.basemap.legend_inc = 15
+    if (!config.basemap.legend_fontsize) config.basemap.legend_fontsize = '12pt'
+    if (!config.basemap.hectad_fontsize) config.basemap.hectad_fontsize = '12pt'
+
+    /////////////////
+    // Do everything!
+    const headers = config.recordset.headers ? config.recordset.headers : true
+    const renameHeaders = config.recordset.renameHeaders ? config.recordset.renameHeaders : false
+
+    let totalrecords = 0
+    const processFiles = new Promise((resolveAll, rejectAll) => {
+      async function doAll() {
+        const files = glob.sync(config.recordset.csv)
+        if (files.length === 0) {
+          console.error('NO FILE(S) FOUND FOR: ', config.recordset.csv)
+          rv = 0
+        } else {
+          let donecount = 0
+          const doFiles = new Promise((resolveFiles, rejectFiles) => {
+            for (const file of Object.values(files)) {
+              //console.log(file)
+              anyincsv = 0
+              fs.createReadStream(path.resolve(__dirname, file))
+                .pipe(csv.parse({ headers: headers, renameHeaders: renameHeaders }))
+                .on('error', error => console.error(error))
+                .on('data', row => { processLine(file, row) })
+                .on('end', function (rowCount) {
+                  console.log(file, 'Species:', Object.keys(speciesesGrids).length, anyincsv === 0 ? 'EMPTY' : '')
+                  totalrecords += rowCount
+                  if (++donecount === files.length) {
+                    resolveFiles()
+                  }
+                })
+            }
+          })
+          await doFiles
+          console.log('COMPLETED READING DATA')
+          await importComplete(totalrecords)
+        }
+        resolveAll()
+      }
+      doAll()
+    })
+    await processFiles
+    if( rv) console.log('SUCCESS')
+    return 1
+  } catch (e) {
+    console.error('run EXCEPTION', e)
+    return 2
+  }
 }
-processFiles()
-// ASYNC: DO NOT CODE HERE
 
 ///////////////////////////////////////////////////////////////////////////////////////
 ///////////////////////////////////////////////////////////////////////////////////////
@@ -267,7 +303,7 @@ function processLine(file, row) {
   //console.log('NorthingsExplicit', NorthingsExplicit)
   //console.log('TaxonName', TaxonName, TaxonName.length)
 
-  if (!ObsKey) ObsKey = "Line#" + lineno
+  if (!ObsKey) ObsKey = 'Line#' + lineno
 
   // Decode Date or Year
   let YearFound = Year
@@ -279,7 +315,7 @@ function processLine(file, row) {
     }
   }
   if (!YearFound) {
-    errors.push(ObsKey + " Date invalid:" + ObsDate + " Year:" + Year)
+    errors.push(ObsKey + ' Date invalid:' + ObsDate + ' Year:' + Year)
     return
   }
 
@@ -397,7 +433,7 @@ function processLine(file, row) {
 
   if (ExplicitGiven) {
     if ((Math.abs(Eastings - EastingsExplicit) > 2) || (Math.abs(Northings - NorthingsExplicit) > 2)) {
-      errors.push(ObsKey + " Explicit grid ref discrepancy: " + SpatialReference + " ExpE:" + EastingsExplicit + " ExpN:" + NorthingsExplicit + " E:" + Eastings + " N:" + Northings)
+      errors.push(ObsKey + ' Explicit grid ref discrepancy: ' + SpatialReference + ' ExpE:' + EastingsExplicit + ' ExpN:' + NorthingsExplicit + ' E:' + Eastings + ' N:' + Northings)
       return
     }
   }
@@ -511,7 +547,7 @@ async function importComplete(rowCount) {
       const boxloc = boxes[box]
 
       // Determine box colour
-      ctx.fillStyle = "rgba(255,20, 147, 1)" // default to pink
+      ctx.fillStyle = 'rgba(255,20, 147, 1)' // default to pink
       for (const datecolour of Object.values(config.datecolours)) {
         if (boxdata.maxyear >= datecolour.minyear && boxdata.maxyear <= datecolour.maxyear) {
           ctx.fillStyle = datecolour.colour
@@ -544,7 +580,7 @@ async function importComplete(rowCount) {
     // Write number of records
     ctx.fillStyle = config.font_colour
     ctx.font = config.basemap.title_fontsize + " 'TheFont'"
-    ctx.fillText("Records: " + reccount, config.basemap.title_x, config.basemap.title_y + 2 * config.basemap.title_y_inc)
+    ctx.fillText('Records: ' + reccount, config.basemap.title_x, config.basemap.title_y + 2 * config.basemap.title_y_inc)
 
     // Write version and today's date-time
     ctx.fillStyle = '#404040'
@@ -566,9 +602,9 @@ async function importComplete(rowCount) {
     }
 
     // Output the final species map
-    const outpath = path.join(__dirname, config.outputFolder, TaxonName+".png")
+    const outpath = path.join(__dirname, config.outputFolder, TaxonName+'.png')
     await PImage.encodePNGToStream(img2, fs.createWriteStream(outpath))
-    console.log("done", TaxonName, reccount)
+    console.log('done', TaxonName, reccount)
     if (config.limit && ++done >= config.limit)
       break
   }
@@ -586,6 +622,13 @@ async function importComplete(rowCount) {
 
   const dt_end = new Date()
   const runtime_seconds = Math.floor((dt_end - dt_start) / (1000))
-  console.log('Runtime:', runtime_seconds, "seconds")
+  console.log('Runtime:', runtime_seconds, 'seconds')
 }
 ///////////////////////////////////////////////////////////////////////////////////////
+// If called from command line, then run now.
+// If testing, then don't.
+if (require.main === module) {
+  run(process.argv)
+}
+
+module.exports = { run, processLine, importComplete }

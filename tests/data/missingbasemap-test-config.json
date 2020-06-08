@@ -1,0 +1,7 @@
+﻿{
+  "limit": 1,
+  "versionoverride": "mkdistmaps test",
+  "recordset": {
+  },
+  "outputFolder": "tests/output"
+}
