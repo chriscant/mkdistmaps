@@ -1,5 +1,8 @@
 # mkdistmaps
 
+[![Build Status](https://api.travis-ci.com/chriscant/mkdistmaps.svg?branch=master)](https://travis-ci.com/github/chriscant/mkdistmaps)
+[![Coverage Status](https://coveralls.io/repos/github/chriscant/mkdistmaps/badge.svg?branch=master)](https://coveralls.io/github/chriscant/mkdistmaps?branch=master)
+
 Command line tool to make species distribution maps on top of a base layer image from species records with 
 grid references.
 

@@ -10,7 +10,8 @@ before_install:
 - npm install
 - mkdir tests/fonts
 - wget -P tests/fonts https://github.com/google/fonts/raw/master/ofl/sourcesanspro/SourceSansPro-Regular.ttf
+- npm install -g coveralls
 
 ################
 script:
-- npm test
+- npm testrel

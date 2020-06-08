@@ -4,7 +4,8 @@
   "description": "Make Distribution Maps from CSV file(s)",
   "main": "mkdistmaps.js",
   "scripts": {
-    "test": "jest"
+    "test": "jest",
+    "testrel": "jest && coveralls < coverage/lcov.info"
   },
   "author": "Chris Cant",
   "license": "MIT",
