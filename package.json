@@ -10,10 +10,10 @@
   "author": "Chris Cant",
   "license": "MIT",
   "dependencies": {
-    "fast-csv": "^4.2.0",
-    "filecompare": "^1.0.4",
-    "glob": "^7.1.6",
-    "moment": "^2.26.0",
-    "pureimage": "^0.2.1"
+    "fast-csv": "4.2.0",
+    "filecompare": "1.0.4",
+    "glob": "7.1.6",
+    "moment": "2.26.0",
+    "pureimage": "0.2.1"
   }
 }
