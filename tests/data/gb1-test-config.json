@@ -12,6 +12,7 @@
     "ObsKeyCol": "Obs Key"
   },
   "useMonadsNotHectads": true,
+  "makeGenusMaps": true,
   "font_filename": "tests/fonts/SourceSansPro-Regular.ttf",
   "basemap": {
     "file": "tests/basemaps/QGIS-UK-VC.png",

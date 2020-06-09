@@ -132,6 +132,14 @@ Note: if the CSV file has columns `Eastings` and `Northings` then these are cros
 
 * Optionally specify `true` to map records to monads. Default is `false` for hectads.
 
+### makeGenusMaps
+
+* Optionally specify `true` to make maps for each genus ie the first word of all species names. Default is `false`.
+
+The genus maps will have "-all" added after the first word (which should result in the genus map displaying first in a directory listing).
+If there is one record each of "Bacidia" and "Bacidia rubella" then three maps will be produced:
+"Bacidia", "Bacidia rubella" and "Bacidia -all" with the last one showing 2 records.
+
 ### font_filename
 
 * Specify the filename of a font eg a TTF file. The tests directory contains an open source font "tests/fonts/SourceSansPro-Regular.ttf".
@@ -195,7 +203,6 @@ The tests use the font "SourceSansPro-Regular.ttf" from https://github.com/googl
 # To do
 
 * Support tetrad format grid references
-* Option to produce genus maps ie based on first word of species' names.
 * Possibly: cope with having Irish and GB grid references displayed on the same map
 * Possibly: cope with map inserts for out-of-main-area locations
 * Improve tests, eg split into smaller units

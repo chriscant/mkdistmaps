@@ -5,7 +5,7 @@
     <Name>mkdistmaps</Name>
     <RootNamespace>mkdistmaps</RootNamespace>
     <SaveNodeJsSettingsInProjectFile>True</SaveNodeJsSettingsInProjectFile>
-    <ScriptArguments>irish-config.json</ScriptArguments>
+    <ScriptArguments>gb-config.json</ScriptArguments>
   </PropertyGroup>
   <Import Project="$(MSBuildExtensionsPath)\$(MSBuildToolsVersion)\Microsoft.Common.props" Condition="Exists('$(MSBuildExtensionsPath)\$(MSBuildToolsVersion)\Microsoft.Common.props')" />
   <PropertyGroup>

@@ -11,24 +11,25 @@
     "ObsKeyCol": "Obs Key"
   },
   "useMonadsNotHectads": true,
+  "makeGenusMaps": false,
   "font_filename": "tests/fonts/SourceSansPro-Regular.ttf",
   "font_colour": "#000000", // Black
   "basemap": {
-    "file": "basemaps/CumbriaIncRoads2016x2683blank.png",
-    "north": 589703.6682,
-    "west": 293169.8607,
-    "east": 390500,
-    "south": 460155.7305,
-    "scaledown": 4,
+    "file": "basemaps/QGIS-UK-VC.png",
+    "north": 982230,
+    "west": 0,
+    "east": 668000,
+    "south": 0,
+    "scaledown": 1,
     "showhectadname": false,
-    //  QGIS export image: 1:570000, 300dpi
-    "title_x": 10,
-    "title_y": 30,
-    "title_y_inc": 25,
-    "title_fontsize": "24pt",
+    //  QGIS export image: 1:4560000, 96dpi
+    "title_x": 280,
+    "title_y": 770,
+    "title_y_inc": 18,
+    "title_fontsize": "16pt",
     "legend_hide": false,
     "legend_x": 10,
-    "legend_y": 500,
+    "xlegend_y": 500,
     "legend_inc": 15,
     "legend_fontsize": "12pt",
     "hectad_fontsize": "12pt"

@@ -146,6 +146,11 @@ async function run(argv) {
     }
     SCALE = config.useMonadsNotHectads ? monadSCALE : hectadSCALE
 
+    // Default makeGenusMaps to false
+    if (!config.hasOwnProperty('makeGenusMaps')) {
+      config.makeGenusMaps = false
+    }
+
     // Set default datecolours if need be
     if (!config.hasOwnProperty('datecolours')) {
       console.log('Using default datecolours')
@@ -256,6 +261,7 @@ async function run(argv) {
 ///////////////////////////////////////////////////////////////////////////////////////
 ///////////////////////////////////////////////////////////////////////////////////////
 // processLine: Process a line of CSV data ie a single record
+// updateSpeciesesGrids: Update the data for a species or genus
 
 // 'Spatial Reference': 'NY30',     Eastings: '330001', Northings: '500000',
 // 'Spatial Reference': 'NY3703',   Eastings: '337001', Northings: '503000',
@@ -268,11 +274,36 @@ async function run(argv) {
 //                                       17646.6931-370000       0-467252
 
 const speciesesGrids = {}
+let speciesCount = 0
+let taxonCount = 0
 const errors = []
 let lineno = 0
 let records = 0
 let empties = 0
 const boxes = {}
+
+function updateSpeciesesGrids(TaxonName, box, Year, isTaxon) {
+  if (isTaxon) TaxonName += ' -all'
+  let speciesGrids = speciesesGrids[TaxonName]
+  if (!speciesGrids) {
+    speciesGrids = {}
+    speciesGrids[box] = { count: 0, minyear: 3000, maxyear: 0 }
+    speciesesGrids[TaxonName] = speciesGrids
+    if (isTaxon) taxonCount++
+    else speciesCount++
+  }
+  if (!speciesGrids[box]) {
+    speciesGrids[box] = { count: 0, minyear: 3000, maxyear: 0 }
+  }
+  speciesGrids[box].count++
+  if (Year > speciesGrids[box].maxyear) {
+    speciesGrids[box].maxyear = Year
+  }
+  if (Year < speciesGrids[box].minyear) {
+    speciesGrids[box].minyear = Year
+  }
+}
+
 
 function processLine(file, row) {
   //console.log(row)
@@ -281,7 +312,7 @@ function processLine(file, row) {
   // Get GR (no spaces) and species name
   const SpatialReference = row[config.recordset.GRCol].toUpperCase().replace(/ /g, '')
   //console.log('SpatialReference', SpatialReference)
-  const TaxonName = row[config.recordset.TaxonCol]
+  const TaxonName = row[config.recordset.TaxonCol].trim()
   if (SpatialReference.length === 0 || TaxonName.length === 0 || TaxonName.substring(0,1)==='#') {
     empties++
     return
@@ -450,21 +481,11 @@ function processLine(file, row) {
   }
 
   // Add/Update record for species ie count, min and max year for each box
-  let speciesGrids = speciesesGrids[TaxonName]
-  if (!speciesGrids) {
-    speciesGrids = {}
-    speciesGrids[box] = { count: 0, minyear: 3000, maxyear: 0 }
-    speciesesGrids[TaxonName] = speciesGrids
-  }
-  if (!speciesGrids[box]) {
-    speciesGrids[box] = { count: 0, minyear: 3000, maxyear: 0 }
-  }
-  speciesGrids[box].count++
-  if (Year > speciesGrids[box].maxyear) {
-    speciesGrids[box].maxyear = Year
-  }
-  if (Year < speciesGrids[box].minyear) {
-    speciesGrids[box].minyear = Year
+  updateSpeciesesGrids(TaxonName,box,Year, false)
+
+  if (config.makeGenusMaps) {
+    const words = TaxonName.split(' ')
+    updateSpeciesesGrids(words[0], box, Year, true)
   }
 }
 
@@ -615,7 +636,14 @@ async function importComplete(rowCount) {
   for (let i = 0; i < errors.length; i++) {
     console.error('#' + i, errors[i])
   }
-  console.log('Species:', Object.keys(speciesesGrids).length)
+  if ((taxonCount + speciesCount) !== Object.keys(speciesesGrids).length) {
+    console.error('Taxon/Species/Grids mismatch:', taxonCount, speciesCount, Object.keys(speciesesGrids).length)
+  }
+  console.log('Species:', speciesCount)
+  if (config.makeGenusMaps) {
+    console.log('Taxons:', taxonCount)
+  }
+
   console.log('Records:', records)
   console.log('Empty rows:', empties)
   console.log('Boxes:', Object.keys(boxes).length)
