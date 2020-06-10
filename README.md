@@ -196,6 +196,8 @@ I built base maps using [QGIS](https://qgis.org/en/site/), [Ordnance Survey open
 [OpenDataNI](https://www.opendatani.gov.uk/dataset?q=osni) and
 [Ordnance Survey Ireland open data](https://www.osi.ie/about/open-data/) - thanks.
 
+Vice-county data from https://github.com/BiologicalRecordsCentre/vice-counties and https://github.com/SK53/Irish-Vice-Counties - thanks.
+
 I used data from the [British Lichen Society](https://www.britishlichensociety.org.uk/) - thanks.
 
 The tests use the font "SourceSansPro-Regular.ttf" from https://github.com/google/fonts - thanks.
