@@ -8,7 +8,6 @@ let config = false
 let SCALE = false
 let usesGB = false
 let usesIE = false
-let anyincsv = 0
 
 const dt_start = new Date()
 
@@ -227,13 +226,16 @@ async function run(argv) {
           const doFiles = new Promise((resolveFiles, rejectFiles) => {
             for (const file of Object.values(files)) {
               //console.log(file)
-              anyincsv = 0
+              const fileSpecieses = []
               fs.createReadStream(path.resolve(__dirname, file))
                 .pipe(csv.parse({ headers: headers, renameHeaders: renameHeaders }))
                 .on('error', error => console.error(error))
-                .on('data', row => { processLine(file, row) })
+                .on('data', row => { processLine(file, row, fileSpecieses) })
                 .on('end', function (rowCount) {
-                  console.log(file, 'Species:', Object.keys(speciesesGrids).length, anyincsv === 0 ? 'EMPTY' : '')
+                  if (Object.keys(fileSpecieses).length === 0) {
+                    errors.push(file + ' no species found')
+                  }
+                  console.log(file, 'species:', Object.keys(fileSpecieses).length)
                   totalrecords += rowCount
                   if (++donecount === files.length) {
                     resolveFiles()
@@ -282,7 +284,7 @@ let records = 0
 let empties = 0
 const boxes = {}
 
-function updateSpeciesesGrids(TaxonName, box, Year, isTaxon) {
+function updateSpeciesesGrids(TaxonName, box, Year, isTaxon, fileSpecieses) {
   if (isTaxon) TaxonName += ' -all'
   let speciesGrids = speciesesGrids[TaxonName]
   if (!speciesGrids) {
@@ -302,10 +304,16 @@ function updateSpeciesesGrids(TaxonName, box, Year, isTaxon) {
   if (Year < speciesGrids[box].minyear) {
     speciesGrids[box].minyear = Year
   }
+
+  // Now remember per-file counts
+  if (!fileSpecieses[TaxonName]) {
+    fileSpecieses[TaxonName] = 0
+  }
+  fileSpecieses[TaxonName]++
 }
 
 
-function processLine(file, row) {
+function processLine(file, row, fileSpecieses) {
   //console.log(row)
   lineno++
 
@@ -319,7 +327,6 @@ function processLine(file, row) {
   }
 
   records++
-  anyincsv++
 
   // Get other data fields
   const EastingsExplicit = parseInt(row['Eastings'])
@@ -481,11 +488,11 @@ function processLine(file, row) {
   }
 
   // Add/Update record for species ie count, min and max year for each box
-  updateSpeciesesGrids(TaxonName,box,Year, false)
+  updateSpeciesesGrids(TaxonName, box, Year, false, fileSpecieses)
 
   if (config.makeGenusMaps) {
     const words = TaxonName.split(' ')
-    updateSpeciesesGrids(words[0], box, Year, true)
+    updateSpeciesesGrids(words[0], box, Year, true, fileSpecieses)
   }
 }
 
@@ -626,8 +633,10 @@ async function importComplete(rowCount) {
     const outpath = path.join(__dirname, config.outputFolder, TaxonName+'.png')
     await PImage.encodePNGToStream(img2, fs.createWriteStream(outpath))
     console.log('done', TaxonName, reccount)
-    if (config.limit && ++done >= config.limit)
+    if (config.limit && ++done >= config.limit) {
+      errors.push('Map generation stopped after reaching limit of ' + config.limit)
       break
+    }
   }
 
   // Report record count, errors, species and boxes
