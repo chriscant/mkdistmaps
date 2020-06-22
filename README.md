@@ -140,6 +140,10 @@ The genus maps will have "-all" added after the first word (which should result 
 If there is one record each of "Bacidia" and "Bacidia rubella" then three maps will be produced:
 "Bacidia", "Bacidia rubella" and "Bacidia -all" with the last one showing 2 records.
 
+### makeAllMap
+
+* Optionally specify `true` to make a map for each species found called "All species". Default is `false`.
+
 ### font_filename
 
 * Specify the filename of a font eg a TTF file. The tests directory contains an open source font "tests/fonts/SourceSansPro-Regular.ttf".
@@ -204,6 +208,7 @@ The tests use the font "SourceSansPro-Regular.ttf" from https://github.com/googl
 
 # To do
 
+* Option to colour by record-count not most-recent-date
 * Support tetrad format grid references
 * Possibly: cope with having Irish and GB grid references displayed on the same map
 * Possibly: cope with map inserts for out-of-main-area locations

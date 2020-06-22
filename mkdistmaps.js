@@ -19,6 +19,8 @@ const PImage = require('pureimage')
 const execSync = require('child_process').execSync
 const moment = require('moment')
 
+const makeAllMapName = 'All species'
+
 const UKletters1 = [
   { l: 'S', e: 0, n: 0 },
   { l: 'N', e: 0, n: 500 },
@@ -148,6 +150,10 @@ async function run(argv) {
     // Default makeGenusMaps to false
     if (!config.hasOwnProperty('makeGenusMaps')) {
       config.makeGenusMaps = false
+    }
+    // Default makeAllMap to false
+    if (!config.hasOwnProperty('makeAllMap')) {
+      config.makeAllMap = false
     }
 
     // Set default datecolours if need be
@@ -489,6 +495,10 @@ function processLine(file, row, fileSpecieses) {
 
   // Add/Update record for species ie count, min and max year for each box
   updateSpeciesesGrids(TaxonName, box, Year, false, fileSpecieses)
+
+  if (config.makeAllMap) {
+    updateSpeciesesGrids(makeAllMapName, box, Year, false, fileSpecieses)
+  }
 
   if (config.makeGenusMaps) {
     const words = TaxonName.split(' ')
