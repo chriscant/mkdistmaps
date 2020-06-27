@@ -174,10 +174,10 @@ async function run(argv) {
     if (!config.hasOwnProperty('countcolours')) {
       console.log('Using default countcolours')
       config.countcolours = [
-        { 'min': 1, 'max': '1%', 'colour': 'rgba(0,255,0, 1)', 'legend': '' },  // Green
-        { 'min': '1%', 'max': '10%', 'colour': 'rgba(0,0,255, 1)', 'legend': '' }, // Blue
-        { 'min': '10%', 'max': '50%', 'colour': 'rgba(0,0,0, 1)', 'legend': '' }, // Black
-        { 'min': '50%', 'max': '100%', 'colour': 'rgba(255,0,0, 1)', 'legend': '' }  // Red
+        { 'min': 1, 'max': '1%', 'colour': 'rgba(0,255,0, 1)', 'legend': '' },      // Green
+        { 'min': '1%', 'max': '10%', 'colour': 'rgba(0,0,255, 1)', 'legend': '' },  // Blue
+        { 'min': '10%', 'max': '50%', 'colour': 'rgba(0,0,0, 1)', 'legend': '' },   // Black
+        { 'min': '50%', 'max': '100%', 'colour': 'rgba(255,0,0, 1)', 'legend': '' } // Red
       ]
     }
 
@@ -678,6 +678,10 @@ async function importComplete(rowCount) {
     if (!config.basemap.legend_hide) {
       ctx.font = config.basemap.legend_fontsize + " 'TheFont'"
       let legend_y = config.basemap.legend_y
+      ctx.fillStyle = config.font_colour
+      ctx.fillText(config.maptype, config.basemap.legend_x + 2 * config.basemap.legend_inc, legend_y)
+      //legend_y += config.basemap.legend_inc
+      
       const legenditems = (config.maptype === 'count') ? config.countcolours : config.datecolours
       for (const legenditem of Object.values(legenditems)) {
         ctx.fillStyle = legenditem.colour
