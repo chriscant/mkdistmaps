@@ -572,9 +572,12 @@ async function importComplete(rowCount) {
     // Write summary text
     ctx.fillStyle = config.font_colour
     ctx.font = config.basemap.title_fontsize + " 'TheFont'"
-    ctx.fillText(TaxonName, config.basemap.title_x, config.basemap.title_y)
+    if (TaxonName === makeAllMapName) {
+      ctx.fillText('All ' + speciesCount + ' species', config.basemap.title_x, config.basemap.title_y)
+    } else {
+      ctx.fillText(TaxonName, config.basemap.title_x, config.basemap.title_y)
+    }
 
-    ctx.font = config.basemap.title_fontsize + " 'TheFont'"
     ctx.fillText(config.recordset.title, config.basemap.title_x, config.basemap.title_y + config.basemap.title_y_inc)
 
     // Go through all boxes found for this species
