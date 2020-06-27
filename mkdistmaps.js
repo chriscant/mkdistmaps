@@ -174,10 +174,10 @@ async function run(argv) {
     if (!config.hasOwnProperty('countcolours')) {
       console.log('Using default countcolours')
       config.countcolours = [
-        { 'min': 0, 'max': 4, 'colour': 'rgba(0,255,0, 1)', 'legend': '1-4' },  // Green
-        { 'min': 5, 'max': 24, 'colour': 'rgba(0,0,255, 1)', 'legend': '5-24' }, // Blue
-        { 'min': 25, 'max': 99, 'colour': 'rgba(255,0,0, 1)', 'legend': '25-99' }, // Red
-        { 'min': 100, 'max': 0, 'colour': 'rgba(0,0,0, 1)', 'legend': '100+' }  // Black
+        { 'min': 1, 'max': '1%', 'colour': 'rgba(0,255,0, 1)', 'legend': '' },  // Green
+        { 'min': '1%', 'max': '10%', 'colour': 'rgba(0,0,255, 1)', 'legend': '' }, // Blue
+        { 'min': '10%', 'max': '50%', 'colour': 'rgba(0,0,0, 1)', 'legend': '' }, // Black
+        { 'min': '50%', 'max': '100%', 'colour': 'rgba(255,0,0, 1)', 'legend': '' }  // Red
       ]
     }
 
