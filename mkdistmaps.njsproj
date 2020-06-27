@@ -5,7 +5,7 @@
     <Name>mkdistmaps</Name>
     <RootNamespace>mkdistmaps</RootNamespace>
     <SaveNodeJsSettingsInProjectFile>True</SaveNodeJsSettingsInProjectFile>
-    <ScriptArguments>cccw-config.json</ScriptArguments>
+    <ScriptArguments>cumbria-config.json</ScriptArguments>
   </PropertyGroup>
   <Import Project="$(MSBuildExtensionsPath)\$(MSBuildToolsVersion)\Microsoft.Common.props" Condition="Exists('$(MSBuildExtensionsPath)\$(MSBuildToolsVersion)\Microsoft.Common.props')" />
   <PropertyGroup>

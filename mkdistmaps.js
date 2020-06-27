@@ -151,6 +151,10 @@ async function run(argv) {
     if (!config.hasOwnProperty('makeGenusMaps')) {
       config.makeGenusMaps = false
     }
+    // Default maptype to 'date'
+    if (!config.hasOwnProperty('maptype')) {
+      config.maptype = 'date'
+    }
     // Default makeAllMap to false
     if (!config.hasOwnProperty('makeAllMap')) {
       config.makeAllMap = false
@@ -164,6 +168,16 @@ async function run(argv) {
         { 'minyear': 1960, 'maxyear': 1999, 'colour': 'rgba(0,0,255, 1)', 'legend': '1960-1999' }, // Blue
         { 'minyear': 2000, 'maxyear': 2019, 'colour': 'rgba(255,0,0, 1)', 'legend': '2000-2019' }, // Red
         { 'minyear': 2020, 'maxyear': 2039, 'colour': 'rgba(0,255,0, 1)', 'legend': '2020-2039' }  // Green
+      ]
+    }
+    // Set default countcolours if need be
+    if (!config.hasOwnProperty('countcolours')) {
+      console.log('Using default countcolours')
+      config.countcolours = [
+        { 'min': 0, 'max': 4, 'colour': 'rgba(0,255,0, 1)', 'legend': '1-4' },  // Green
+        { 'min': 5, 'max': 24, 'colour': 'rgba(0,0,255, 1)', 'legend': '5-24' }, // Blue
+        { 'min': 25, 'max': 99, 'colour': 'rgba(255,0,0, 1)', 'legend': '25-99' }, // Red
+        { 'min': 100, 'max': 0, 'colour': 'rgba(0,0,0, 1)', 'legend': '100+' }  // Black
       ]
     }
 
@@ -294,7 +308,7 @@ function updateSpeciesesGrids(TaxonName, box, Year, isTaxon, fileSpecieses) {
   if (isTaxon) TaxonName += ' -all'
   let speciesGrids = speciesesGrids[TaxonName]
   if (!speciesGrids) {
-    speciesGrids = {}
+    speciesGrids = { max: 0 }
     speciesGrids[box] = { count: 0, minyear: 3000, maxyear: 0 }
     speciesesGrids[TaxonName] = speciesGrids
     if (isTaxon) taxonCount++
@@ -304,6 +318,10 @@ function updateSpeciesesGrids(TaxonName, box, Year, isTaxon, fileSpecieses) {
     speciesGrids[box] = { count: 0, minyear: 3000, maxyear: 0 }
   }
   speciesGrids[box].count++
+  if (speciesGrids[box].count > speciesGrids.max) {
+    speciesGrids.max = speciesGrids[box].count
+  }
+
   if (Year > speciesGrids[box].maxyear) {
     speciesGrids[box].maxyear = Year
   }
@@ -580,18 +598,47 @@ async function importComplete(rowCount) {
 
     ctx.fillText(config.recordset.title, config.basemap.title_x, config.basemap.title_y + config.basemap.title_y_inc)
 
+    if (config.maptype === 'count') {
+      let next = 1
+      for (const countcolour of Object.values(config.countcolours)) {
+        countcolour.imin = countcolour.min
+        if (typeof countcolour.min === 'string') {
+          countcolour.imin = Math.floor(parseFloat(countcolour.min) * speciesGrids.max / 100)
+        }
+        countcolour.imax = countcolour.max
+        if (typeof countcolour.max === 'string') {
+          countcolour.imax = Math.floor(parseFloat(countcolour.max) * speciesGrids.max / 100)
+        }
+        if (countcolour.imin <= next) countcolour.imin = next
+        if (countcolour.imax <= next) countcolour.imax = next++
+        countcolour.legend = countcolour.imin + '-' + countcolour.imax
+        if (countcolour.imax > speciesGrids.max) countcolour.imax = speciesGrids.max
+        if (countcolour.imin > speciesGrids.max) countcolour.legend = ''
+      }
+    }
+
     // Go through all boxes found for this species
     let reccount = 0
     for (const [box, boxdata] of Object.entries(speciesGrids)) {
+      if (box==='max') continue
 
       reccount += boxdata.count
       const boxloc = boxes[box]
 
       // Determine box colour
       ctx.fillStyle = 'rgba(255,20, 147, 1)' // default to pink
-      for (const datecolour of Object.values(config.datecolours)) {
-        if (boxdata.maxyear >= datecolour.minyear && boxdata.maxyear <= datecolour.maxyear) {
-          ctx.fillStyle = datecolour.colour
+      if (config.maptype === 'count') {
+        for (const countcolour of Object.values(config.countcolours)) {
+          if (((countcolour.imin === countcolour.imax) && (boxdata.count === countcolour.imin)) ||
+              (boxdata.count >= countcolour.imin && ((countcolour.imax === 0) || (boxdata.count <= countcolour.imax)))) {
+            ctx.fillStyle = countcolour.colour
+          }
+        }
+      } else {
+        for (const datecolour of Object.values(config.datecolours)) {
+          if (boxdata.maxyear >= datecolour.minyear && boxdata.maxyear <= datecolour.maxyear) {
+            ctx.fillStyle = datecolour.colour
+          }
         }
       }
       ctx.strokeStyle = ctx.fillStyle
@@ -631,14 +678,15 @@ async function importComplete(rowCount) {
     if (!config.basemap.legend_hide) {
       ctx.font = config.basemap.legend_fontsize + " 'TheFont'"
       let legend_y = config.basemap.legend_y
-      for (const datecolour of Object.values(config.datecolours)) {
-        ctx.fillStyle = datecolour.colour
+      const legenditems = (config.maptype === 'count') ? config.countcolours : config.datecolours
+      for (const legenditem of Object.values(legenditems)) {
+        ctx.fillStyle = legenditem.colour
         ctx.fillRect(config.basemap.legend_x, legend_y, config.basemap.legend_inc, config.basemap.legend_inc)
         ctx.strokeStyle = config.font_colour
         ctx.strokeRect(config.basemap.legend_x, legend_y, config.basemap.legend_inc, config.basemap.legend_inc)
         ctx.fillStyle = config.font_colour
         legend_y += config.basemap.legend_inc
-        ctx.fillText(datecolour.legend, config.basemap.legend_x + 2 * config.basemap.legend_inc, legend_y)
+        ctx.fillText(legenditem.legend, config.basemap.legend_x + 2 * config.basemap.legend_inc, legend_y)
       }
     }
 
