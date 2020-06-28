@@ -1,0 +1,35 @@
+﻿{
+  "limit": 1,
+  "makeAllMap": true,
+  "maptype": "count",
+  "versionoverride": "mkdistmaps test",
+  "outputFolder": "tests/output2",
+  "recordset": {
+    "csv": "tests/data/csv/Test-GB1.csv",
+    "title": "Test GB Data",
+    "GRCol": "Grid ref",
+    "TaxonCol": "Taxon name",
+    "DateCol": "Date(s)",
+    "YearCol": "Year",
+    "ObsKeyCol": "Obs Key"
+  },
+  "useMonadsNotHectads": true,
+  "makeGenusMaps": true,
+  "font_filename": "tests/fonts/SourceSansPro-Regular.ttf",
+  "basemap": {
+    "file": "tests/basemaps/QGIS-UK-VC.png",
+    "north": 982230,
+    "west": 0,
+    "east": 668000,
+    "south": 0,
+    "scaledown": 1,
+    "showhectadname": false,
+    //  QGIS export image: 1:2392481, 300dpi
+    "title_x": 280,
+    "title_y": 770,
+    "title_y_inc": 18,
+    "title_fontsize": "16pt",
+    "legend_x": 10,
+    "legend_inc": 15
+  }
+}
