@@ -1,5 +1,9 @@
 ﻿{
   "limit": 0,
+  "useMonadsNotHectads": true,
+  "makeAllMap": true,
+  "makeGenusMaps": true,
+  "maptype": "date",
   "outputFolder": "monads",
   "recordset": {
     "csv": "myrecords.csv",
@@ -10,8 +14,6 @@
     //"YearCol": "Year",
     "ObsKeyCol": "Obs Key"
   },
-  "useMonadsNotHectads": true,
-  "makeGenusMaps": false,
   "font_filename": "tests/fonts/SourceSansPro-Regular.ttf",
   "font_colour": "#000000", // Black
   "basemap": {
@@ -58,6 +60,32 @@
       "maxyear": 2039,
       "colour": "rgba(0,255,0, 1)", // Green
       "legend": "2020-2039"
+    }
+  ],
+  "countcolours": [
+    {
+      "min": 1,
+      "max": "1%",
+      "colour": "rgba(0,255,0, 1)", // Green
+      "legend": "0-1%"
+    },
+    {
+      "min": "1%",
+      "max": "10%",
+      "colour": "rgba(2,71,254, 1)", // Blue
+      "legend": "1%-10%"
+    },
+    {
+      "min": "10%",
+      "max": "50%",
+      "colour": "rgba(0,0,0, 1)", // Black
+      "legend": "10%-50%"
+    },
+    {
+      "min": "50%",
+      "max": "100%",
+      "colour": "rgba(255,0,0, 1)", // Red
+      "legend": "50%-100%"
     }
   ]
 }

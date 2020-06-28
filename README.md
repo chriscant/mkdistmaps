@@ -11,8 +11,8 @@ or [Irish](https://en.wikipedia.org/wiki/Irish_grid_reference_system) grid refer
 GB grid references start with two letters; Irish grid references start with one letter.
 The code handles 2, 4, 6, 8 or 10 numbers after the initial letter(s).
 
-By default, the generated maps are coloured according to the most recent record in each monad or hectad.
-You can opt to colour by the number of records in each square and have an overview map coloured by how many species are in each square.
+By default, the generated maps are coloured grouped according to the most recent record in each monad or hectad.
+You can opt to group by the number of records in each square and have an overview map showing how many species are in each square.
 
 # Usage
 
@@ -42,7 +42,7 @@ node . vc101-config.txt
 
 The code reads all the records in the specified CSV file(s) and then creates one PNG map for each found species in the output folder.
 A monad or hectad is coloured in if there are records for that species in that square.
-The fill colour is determined by the date of the most recent record for that square.
+The fill colour is determined by **maptype** eg the date of the most recent record for that square.
 
 If you opt to make monad maps, then:
 * the monad is shown as a circle if there is only one record for the monad
@@ -69,6 +69,12 @@ This map shows some records of *Peltigera horizontalis* across GB, displayed at 
 **Example Irish hectad map:**
 
 ![Example Irish hectad map](https://raw.githubusercontent.com/chriscant/mkdistmaps/master/docs/Irish-Species.png)
+
+**Example record and species count maps:**
+
+![Map showing count of species in each monad](https://raw.githubusercontent.com/chriscant/mkdistmaps/master/docs/Cumbria-All-species.png)
+![Map showing count of records in each monad](https://raw.githubusercontent.com/chriscant/mkdistmaps/master/docs/Cumbria-All-records.png)
+
 
 **Runtime output**
 
@@ -151,7 +157,7 @@ A map called "All species" is also made if **maptype** is `count`
 ### maptype
 
 * Optionally specify `count` to colour squares according to the record-count in each square, using the **countcolours** ranges.
-If **makeAllMap** is `true` then that maps are generated called "All records" and "All species".
+If **makeAllMap** is `true` then maps are generated called "All records" and "All species".
 
 The default is `date` which uses the date or years fields and the **datecolours** ranges.
 
