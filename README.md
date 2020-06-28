@@ -11,6 +11,9 @@ or [Irish](https://en.wikipedia.org/wiki/Irish_grid_reference_system) grid refer
 GB grid references start with two letters; Irish grid references start with one letter.
 The code handles 2, 4, 6, 8 or 10 numbers after the initial letter(s).
 
+By default, the generated maps are coloured according to the most recent record in each monad or hectad.
+You can opt to colour by the number of records in each square and have an overview map coloured by how many species are in each square.
+
 # Usage
 
 Ensure you have [git](https://git-scm.com/downloads) and [nodejs](https://nodejs.org/en/download/) installed.
@@ -117,7 +120,7 @@ The sample config file [sample-config.json](sample-config.json) shows some of th
 * **YearCol** - name of the CSV column containing the year
 * **DateFormats** - optional date formats tried. The default is `[ "DD/MM/YYYY", "YYYY" ]` - [see here for format details](https://momentjs.com/docs/#/parsing/string-formats/)
 * **headers** - optional array of strings containing the CSV column names
-* **renameHeaders** - optional specify true to replace the CSV header line with that in **headers**. The default is `false`
+* **renameHeaders** - optional specify `true` to replace the CSV header line with that in **headers**. The default is `false`
 
 If your CSV file doesn't contains a header line, then supply the column names in **headers**.
 
@@ -142,7 +145,15 @@ If there is one record each of "Bacidia" and "Bacidia rubella" then three maps w
 
 ### makeAllMap
 
-* Optionally specify `true` to make a map for each species found called "All species". Default is `false`.
+* Optionally specify `true` to make a map for each species found called "All records". Default is `false`.
+A map called "All species" is also made if **maptype** is `count`
+
+### maptype
+
+* Optionally specify `count` to colour squares according to the record-count in each square, using the **countcolours** ranges.
+If **makeAllMap** is `true` then that maps are generated called "All records" and "All species".
+
+The default is `date` which uses the date or years fields and the **datecolours** ranges.
 
 ### font_filename
 
@@ -150,7 +161,7 @@ If there is one record each of "Bacidia" and "Bacidia rubella" then three maps w
 
 ### font_colour
 
-* Specify the colour of the written text eg as "#000000" or "rgba(0,255,0, 1)"
+* Specify the colour of the written text eg as `#000000` or `rgba(0,255,0, 1)`
 
 ### basemap
 
@@ -190,6 +201,21 @@ The following basemap parameters determine where and how descriptive text and th
 ]
 ```
 
+### countcolours
+
+* Optionally, specify the count range colours, using absolute values or percentages. The default is:
+
+```
+[
+  { "min": 1, "max": "1%", "colour": "rgba(0,255,0, 1)", "legend': "" },      // Green
+  { "min": "1%", "max": "10%", "colour": "rgba(0,0,255, 1)", "legend': "" },  // Blue
+  { "min": "10%", "max": "50%", "colour": "rgba(0,0,0, 1)", "legend': "" },   // Black
+  { "min": "50%", "max": "100%", "colour": "rgba(255,0,0, 1)", "legend': "" } // Red
+]
+```
+The `legend` is built for each map using the actual values, eg "1-1", "2-3", etc.
+If using percentages, the code ensures that at least one count is in each range, and the legend stops once the maximum is reached.
+
 ## Used with thanks
 
 * Josh Marinacci's [pureimage](https://www.npmjs.com/package/pureimage) - [docs](http://joshmarinacci.github.io/node-pureimage/) and contributors
@@ -208,7 +234,6 @@ The tests use the font "SourceSansPro-Regular.ttf" from https://github.com/googl
 
 # To do
 
-* Option to colour by record-count not most-recent-date
 * Support tetrad format grid references
 * Possibly: cope with having Irish and GB grid references displayed on the same map
 * Possibly: cope with map inserts for out-of-main-area locations

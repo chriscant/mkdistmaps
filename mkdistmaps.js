@@ -19,7 +19,8 @@ const PImage = require('pureimage')
 const execSync = require('child_process').execSync
 const moment = require('moment')
 
-const makeAllMapName = 'All species'
+const makeAllMapName = 'All records'
+const makeAllSpeciesMapName = 'All species'
 
 const UKletters1 = [
   { l: 'S', e: 0, n: 0 },
@@ -159,6 +160,9 @@ async function run(argv) {
     if (!config.hasOwnProperty('makeAllMap')) {
       config.makeAllMap = false
     }
+
+    // If maptype is count and makeAllMap then make "All species" map
+    config.makeAllSpeciesMap = config.maptype === 'count' && config.makeAllMap
 
     // Set default datecolours if need be
     if (!config.hasOwnProperty('datecolours')) {
@@ -304,29 +308,29 @@ let records = 0
 let empties = 0
 const boxes = {}
 
-function updateSpeciesesGrids(TaxonName, box, Year, isTaxon, fileSpecieses) {
+function updateSpeciesesGrids(TaxonName, box, Year, isTaxon, fileSpecieses, makeAllSpeciesMapTaxon) {
   if (isTaxon) TaxonName += ' -all'
   let speciesGrids = speciesesGrids[TaxonName]
   if (!speciesGrids) {
-    speciesGrids = { max: 0 }
-    speciesGrids[box] = { count: 0, minyear: 3000, maxyear: 0 }
+    speciesGrids = { max: 0, boxes: {} }
+    speciesGrids.boxes[box] = { count: 0, minyear: 3000, maxyear: 0, species: [] }
     speciesesGrids[TaxonName] = speciesGrids
     if (isTaxon) taxonCount++
     else speciesCount++
   }
-  if (!speciesGrids[box]) {
-    speciesGrids[box] = { count: 0, minyear: 3000, maxyear: 0 }
+  if (!speciesGrids.boxes[box]) {
+    speciesGrids.boxes[box] = { count: 0, minyear: 3000, maxyear: 0, species: [] }
   }
-  speciesGrids[box].count++
-  if (speciesGrids[box].count > speciesGrids.max) {
-    speciesGrids.max = speciesGrids[box].count
+  speciesGrids.boxes[box].count++
+  if (speciesGrids.boxes[box].count > speciesGrids.max) {
+    speciesGrids.max = speciesGrids.boxes[box].count
   }
 
-  if (Year > speciesGrids[box].maxyear) {
-    speciesGrids[box].maxyear = Year
+  if (Year > speciesGrids.boxes[box].maxyear) {
+    speciesGrids.boxes[box].maxyear = Year
   }
-  if (Year < speciesGrids[box].minyear) {
-    speciesGrids[box].minyear = Year
+  if (Year < speciesGrids.boxes[box].minyear) {
+    speciesGrids.boxes[box].minyear = Year
   }
 
   // Now remember per-file counts
@@ -334,6 +338,14 @@ function updateSpeciesesGrids(TaxonName, box, Year, isTaxon, fileSpecieses) {
     fileSpecieses[TaxonName] = 0
   }
   fileSpecieses[TaxonName]++
+
+  // Remember what species found in "All species" map boxes
+  if (makeAllSpeciesMapTaxon) {
+    if (!speciesGrids.boxes[box].species.includes(makeAllSpeciesMapTaxon)) {
+      speciesGrids.boxes[box].species.push(makeAllSpeciesMapTaxon)
+      speciesGrids.boxes[box].count = speciesGrids.boxes[box].species.length
+    }
+  }
 }
 
 
@@ -512,15 +524,19 @@ function processLine(file, row, fileSpecieses) {
   }
 
   // Add/Update record for species ie count, min and max year for each box
-  updateSpeciesesGrids(TaxonName, box, Year, false, fileSpecieses)
+  updateSpeciesesGrids(TaxonName, box, Year, false, fileSpecieses, false)
 
   if (config.makeAllMap) {
-    updateSpeciesesGrids(makeAllMapName, box, Year, false, fileSpecieses)
+    updateSpeciesesGrids(makeAllMapName, box, Year, false, fileSpecieses, false)
+  }
+
+  if (config.makeAllSpeciesMap) {
+    updateSpeciesesGrids(makeAllSpeciesMapName, box, Year, false, fileSpecieses, TaxonName)
   }
 
   if (config.makeGenusMaps) {
     const words = TaxonName.split(' ')
-    updateSpeciesesGrids(words[0], box, Year, true, fileSpecieses)
+    updateSpeciesesGrids(words[0], box, Year, true, fileSpecieses, false)
   }
 }
 
@@ -576,8 +592,10 @@ async function importComplete(rowCount) {
   // Go through all species
   const hectadboxlen = usesIE?3:4
   let done = 0
-  for (const [TaxonName, speciesGrids] of Object.entries(speciesesGrids)) {
-    //console.log(TaxonName, speciesGrids)
+  for (const [MapName, speciesGrids] of Object.entries(speciesesGrids)) {
+    //console.log(MapName, speciesGrids)
+    const isAllRecordsMap = MapName === makeAllMapName
+    const isAllSpeciesMap = MapName === makeAllSpeciesMapName
 
     // Create output canvas from base map
     const img2 = PImage.make(width, height)
@@ -590,10 +608,12 @@ async function importComplete(rowCount) {
     // Write summary text
     ctx.fillStyle = config.font_colour
     ctx.font = config.basemap.title_fontsize + " 'TheFont'"
-    if (TaxonName === makeAllMapName) {
-      ctx.fillText('All ' + speciesCount + ' species', config.basemap.title_x, config.basemap.title_y)
+    if (isAllSpeciesMap) {
+      ctx.fillText('Count of species in each square', config.basemap.title_x, config.basemap.title_y)
+    } else if (isAllRecordsMap) {
+      ctx.fillText('Count of records in each square', config.basemap.title_x, config.basemap.title_y)
     } else {
-      ctx.fillText(TaxonName, config.basemap.title_x, config.basemap.title_y)
+      ctx.fillText(MapName, config.basemap.title_x, config.basemap.title_y)
     }
 
     ctx.fillText(config.recordset.title, config.basemap.title_x, config.basemap.title_y + config.basemap.title_y_inc)
@@ -611,7 +631,7 @@ async function importComplete(rowCount) {
         }
         if (countcolour.imin <= next) countcolour.imin = next
         if (countcolour.imax <= next) countcolour.imax = next++
-        countcolour.legend = countcolour.imin + '-' + countcolour.imax
+        countcolour.legend = countcolour.imin.toLocaleString('en') + '-' + countcolour.imax.toLocaleString('en')
         if (countcolour.imax > speciesGrids.max) countcolour.imax = speciesGrids.max
         if (countcolour.imin > speciesGrids.max) countcolour.legend = ''
       }
@@ -619,9 +639,7 @@ async function importComplete(rowCount) {
 
     // Go through all boxes found for this species
     let reccount = 0
-    for (const [box, boxdata] of Object.entries(speciesGrids)) {
-      if (box==='max') continue
-
+    for (const [box, boxdata] of Object.entries(speciesGrids.boxes)) {
       reccount += boxdata.count
       const boxloc = boxes[box]
 
@@ -666,9 +684,15 @@ async function importComplete(rowCount) {
       }
     }
     // Write number of records
+
     ctx.fillStyle = config.font_colour
     ctx.font = config.basemap.title_fontsize + " 'TheFont'"
-    ctx.fillText('Records: ' + reccount, config.basemap.title_x, config.basemap.title_y + 2 * config.basemap.title_y_inc)
+    if (isAllSpeciesMap) {
+      ctx.fillText('Species: ' + speciesCount.toLocaleString('en'), config.basemap.title_x, config.basemap.title_y + 2 * config.basemap.title_y_inc)
+    //} else if (isAllRecordsMap) {
+    } else {
+      ctx.fillText('Records: ' + reccount.toLocaleString('en'), config.basemap.title_x, config.basemap.title_y + 2 * config.basemap.title_y_inc)
+    }
 
     // Write version and today's date-time
     ctx.fillStyle = '#404040'
@@ -695,9 +719,9 @@ async function importComplete(rowCount) {
     }
 
     // Output the final species map
-    const outpath = path.join(__dirname, config.outputFolder, TaxonName+'.png')
+    const outpath = path.join(__dirname, config.outputFolder, MapName+'.png')
     await PImage.encodePNGToStream(img2, fs.createWriteStream(outpath))
-    console.log('done', TaxonName, reccount)
+    console.log('done', MapName, reccount)
     if (config.limit && ++done >= config.limit) {
       errors.push('Map generation stopped after reaching limit of ' + config.limit)
       break
@@ -713,12 +737,12 @@ async function importComplete(rowCount) {
   if ((taxonCount + speciesCount) !== Object.keys(speciesesGrids).length) {
     console.error('Taxon/Species/Grids mismatch:', taxonCount, speciesCount, Object.keys(speciesesGrids).length)
   }
-  console.log('Species:', speciesCount)
+  console.log('Species:', speciesCount.toLocaleString('en'))
   if (config.makeGenusMaps) {
-    console.log('Taxons:', taxonCount)
+    console.log('Taxons:', taxonCount.toLocaleString('en'))
   }
 
-  console.log('Records:', records)
+  console.log('Records:', records.toLocaleString('en'))
   console.log('Empty rows:', empties)
   console.log('Boxes:', Object.keys(boxes).length)
 
