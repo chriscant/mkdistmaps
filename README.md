@@ -115,6 +115,11 @@ The sample config file [sample-config.json](sample-config.json) shows some of th
 
 * Specify the output folder, which is created if need be
 
+### saveSpacesAs
+
+* By default, the generated map filenames will contain spaces (if the species names have spaces). 
+If you want these changed, specify an alternative eg `_` to use an underscore instead.
+
 ### recordset
 
 * **csv** - path to csv, optionally including wildcard asterisks

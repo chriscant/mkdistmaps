@@ -161,6 +161,11 @@ async function run(argv) {
       config.makeAllMap = false
     }
 
+    // Default saveSpacesAs to false
+    if (!config.hasOwnProperty('saveSpacesAs')) {
+      config.saveSpacesAs = false
+    }
+
     // If maptype is count and makeAllMap then make "All species" map
     config.makeAllSpeciesMap = config.maptype === 'count' && config.makeAllMap
 
@@ -611,7 +616,11 @@ async function importComplete(rowCount) {
     if (isAllSpeciesMap) {
       ctx.fillText('Count of species in each square', config.basemap.title_x, config.basemap.title_y)
     } else if (isAllRecordsMap) {
-      ctx.fillText('Count of records in each square', config.basemap.title_x, config.basemap.title_y)
+      if (config.maptype === 'count') {
+        ctx.fillText('Count of records in each square', config.basemap.title_x, config.basemap.title_y)
+      } else {
+        ctx.fillText(MapName, config.basemap.title_x, config.basemap.title_y)
+      }
     } else {
       ctx.fillText(MapName, config.basemap.title_x, config.basemap.title_y)
     }
@@ -719,9 +728,13 @@ async function importComplete(rowCount) {
     }
 
     // Output the final species map
-    const outpath = path.join(__dirname, config.outputFolder, MapName+'.png')
+    let saveFilename = MapName
+    if (config.saveSpacesAs) {
+      saveFilename = saveFilename.replace(/ /g, config.saveSpacesAs)
+    }
+    const outpath = path.join(__dirname, config.outputFolder, saveFilename+'.png')
     await PImage.encodePNGToStream(img2, fs.createWriteStream(outpath))
-    console.log('done', MapName, reccount)
+    console.log('done', saveFilename, reccount)
     if (config.limit && ++done >= config.limit) {
       errors.push('Map generation stopped after reaching limit of ' + config.limit)
       break
