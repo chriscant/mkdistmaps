@@ -473,7 +473,7 @@ function processLine(file, row, fileSpecieses) {
     errors.push(ObsKey + ' Spatial Reference duff length: ' + box.length + ': ' + SpatialReference)
     return
   }
-  if ((usesGB && isIE) && (usesIE && isGB)) {
+  if ((usesGB && isIE) || (usesIE && isGB)) {
     errors.push(ObsKey + ' Cannot use GB and IE grid references: ' + SpatialReference)
     return
   }
