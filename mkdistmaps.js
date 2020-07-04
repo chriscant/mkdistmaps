@@ -201,6 +201,11 @@ async function run(argv) {
       config.recordset.DateFormats = ['DD/MM/YYYY', 'YYYY']
     }
 
+    // Set default CSV encoding if need be
+    if (!config.recordset.encoding) {
+      config.recordset.encoding = 'utf8'
+    }
+
     if (!config.font_colour) {
       console.log('Using default font_colour')
       config.font_colour = '#000000'
@@ -256,7 +261,7 @@ async function run(argv) {
             for (const file of Object.values(files)) {
               //console.log(file)
               const fileSpecieses = []
-              fs.createReadStream(path.resolve(__dirname, file))
+              fs.createReadStream(path.resolve(__dirname, file), { encoding: config.recordset.encoding })
                 .pipe(csv.parse({ headers: headers, renameHeaders: renameHeaders }))
                 .on('error', error => console.error(error))
                 .on('data', row => { processLine(file, row, fileSpecieses) })

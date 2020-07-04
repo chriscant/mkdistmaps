@@ -30,6 +30,7 @@ npm install
 * Now get your CSV of records and a basemap image into the new `mkdistmaps` directory
 * Make a text file to configure the run eg [sample-config.json](sample-config.json) which you can rename to have a txt extension if that's easier eg `vc101-config.txt`
 * Edit your config file to specify your CSV file(s), an output directory and other options
+* Set the CSV file encoding if need be
 * Now run mkdistmaps at the command line, specifying your config file:
 
 ```
@@ -123,6 +124,7 @@ If you want these changed, specify an alternative eg `_` to use an underscore in
 ### recordset
 
 * **csv** - path to csv, optionally including wildcard asterisks
+* **encoding** - set CSV file encoding eg to `latin1`. The default is `utf8`.
 * **title** - text that is added to every generated map
 * **GRCol** - name of the CSV column that contains the grid reference
 * **TaxonCol** - name of the CSV column that contains the species name

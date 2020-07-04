@@ -7,6 +7,7 @@
   "outputFolder": "monads",
   "recordset": {
     "csv": "myrecords.csv",
+    "encoding": "utf8",
     "title": "My nature records",
     "GRCol": "Spatial Reference",
     "TaxonCol": "Taxon Name",

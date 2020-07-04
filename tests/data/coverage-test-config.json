@@ -5,6 +5,7 @@
   "saveSpacesAs": "_",
   "recordset": {
     "csv": "tests/data/csv/Coverage.csv",
+    "encoding": "latin1",
     "title": "Coverage test data",
     "GRCol": "Grid ref",
     "TaxonCol": "Taxon name",
