@@ -2,6 +2,7 @@
   "limit": 1,
   "versionoverride": "mkdistmaps test",
   "outputFolder": "tests/output",
+  "saveSpacesAs": "_",
   "recordset": {
     "csv": "tests/data/csv/Coverage.csv",
     "title": "Coverage test data",
