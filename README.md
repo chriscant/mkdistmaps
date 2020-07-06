@@ -14,6 +14,9 @@ The code handles 2, 4, 6, 8 or 10 numbers after the initial letter(s).
 By default, the generated maps are coloured grouped according to the most recent record in each monad or hectad.
 You can opt to group by the number of records in each square and have an overview map showing how many species are in each square.
 
+You can see example generated maps for lichens in Cumbria at the 
+[Cumbria Lichens and Bryophytes](https://cumbrialichensbryophytes.org.uk/lichen-species-maps/) website.
+
 # Usage
 
 Ensure you have [git](https://git-scm.com/downloads) and [nodejs](https://nodejs.org/en/download/) installed.
