@@ -311,21 +311,21 @@ async function run(argv) {
 
 const speciesesGrids = {}
 let speciesCount = 0
-let taxonCount = 0
+let genusCount = 0
 const errors = []
 let lineno = 0
 let records = 0
 let empties = 0
 const boxes = {}
 
-function updateSpeciesesGrids(TaxonName, box, Year, isTaxon, fileSpecieses, makeAllSpeciesMapTaxon) {
-  if (isTaxon) TaxonName += ' -all'
+function updateSpeciesesGrids(TaxonName, box, Year, isGenus, fileSpecieses, makeAllSpeciesMapTaxon) {
+  if (isGenus) TaxonName += ' -all'
   let speciesGrids = speciesesGrids[TaxonName]
   if (!speciesGrids) {
     speciesGrids = { max: 0, boxes: {} }
     speciesGrids.boxes[box] = { count: 0, minyear: 3000, maxyear: 0, species: [] }
     speciesesGrids[TaxonName] = speciesGrids
-    if (isTaxon) taxonCount++
+    if (isGenus) genusCount++
     else speciesCount++
   }
   if (!speciesGrids.boxes[box]) {
@@ -752,12 +752,12 @@ async function importComplete(rowCount) {
   for (let i = 0; i < errors.length; i++) {
     console.error('#' + i, errors[i])
   }
-  if ((taxonCount + speciesCount) !== Object.keys(speciesesGrids).length) {
-    console.error('Taxon/Species/Grids mismatch:', taxonCount, speciesCount, Object.keys(speciesesGrids).length)
+  if ((genusCount + speciesCount) !== Object.keys(speciesesGrids).length) {
+    console.error('Taxon/Species/Grids mismatch:', genusCount, speciesCount, Object.keys(speciesesGrids).length)
   }
   console.log('Species:', speciesCount.toLocaleString('en'))
   if (config.makeGenusMaps) {
-    console.log('Taxons:', taxonCount.toLocaleString('en'))
+    console.log('Genera:', genusCount.toLocaleString('en'))
   }
 
   console.log('Records:', records.toLocaleString('en'))

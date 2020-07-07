@@ -86,14 +86,16 @@ The code generates basic output as it processes the data, finishing like this:
 
 ```
 ...
-Parsed 56980 rows
+Parsed 58248 rows
 Errors 1
 #0 LC0003050000XIWC Date invalid:undefined Year:NaN
-Species: 1165
-Records: 56980
+Errors 0
+Species: 1,125
+Genera: 296
+Records: 58,248
 Empty rows: 0
-Boxes: 949
-Runtime: 189 seconds
+Boxes: 998
+Runtime: 191 seconds
 ```
 ## Updates
 
@@ -254,6 +256,7 @@ The tests use the font "SourceSansPro-Regular.ttf" from https://github.com/googl
 * Possibly: cope with having Irish and GB grid references displayed on the same map
 * Possibly: cope with map inserts for out-of-main-area locations
 * Improve tests, eg split into smaller units
+* If ReferenceError thrown in test, error not shown but test times out
 
 # License
 
