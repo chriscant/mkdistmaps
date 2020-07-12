@@ -18,6 +18,9 @@ const csv = require('fast-csv')
 const PImage = require('pureimage')
 const execSync = require('child_process').execSync
 const moment = require('moment')
+const rgbHex = require('rgb-hex')
+
+const geotools2m = require('./geotools2m') // http://www.nearby.org.uk/tests/GeoTools2.html
 
 const makeAllMapName = 'All records'
 const makeAllSpeciesMapName = 'All species'
@@ -159,6 +162,10 @@ async function run(argv) {
     // Default makeAllMap to false
     if (!config.hasOwnProperty('makeAllMap')) {
       config.makeAllMap = false
+    }
+    // Default geojsonprecision to false
+    if (!config.hasOwnProperty('geojsonprecision')) {
+      config.geojsonprecision = false
     }
 
     // Default saveSpacesAs to false
@@ -554,6 +561,39 @@ function processLine(file, row, fileSpecieses) {
 // importComplete:  Having read all records, generate distribution maps for all found species
 
 async function importComplete(rowCount) {
+  console.log('config.maptype', config.maptype)
+  if (config.maptype === 'geojson') {
+    await make_geojson(rowCount)
+  } else {
+    await make_images(rowCount)
+  }
+
+  // Report record count, errors, species and boxes
+  console.log(`Parsed ${rowCount} rows`)
+  console.log(`Errors ${errors.length}`)
+  for (let i = 0; i < errors.length; i++) {
+    console.error('#' + i, errors[i])
+  }
+  if ((genusCount + speciesCount) !== Object.keys(speciesesGrids).length) {
+    console.error('Taxon/Species/Grids mismatch:', genusCount, speciesCount, Object.keys(speciesesGrids).length)
+  }
+  console.log('Species:', speciesCount.toLocaleString('en'))
+  if (config.makeGenusMaps) {
+    console.log('Genera:', genusCount.toLocaleString('en'))
+  }
+
+  console.log('Records:', records.toLocaleString('en'))
+  console.log('Empty rows:', empties)
+  console.log('Boxes:', Object.keys(boxes).length)
+
+  const dt_end = new Date()
+  const runtime_seconds = Math.floor((dt_end - dt_start) / (1000))
+  console.log('Runtime:', runtime_seconds, 'seconds')
+}
+
+///////////////////////////////////////////////////////////////////////////////////////
+
+async function make_images(rowCount) {
   // Load base map and work out main box dimensions (assumed to be square)
   const img = config.basemap.isPNG
     ? await PImage.decodePNGFromStream(fs.createReadStream(config.basemap.file))
@@ -745,28 +785,97 @@ async function importComplete(rowCount) {
       break
     }
   }
+}
 
-  // Report record count, errors, species and boxes
-  console.log(`Parsed ${rowCount} rows`)
-  console.log(`Errors ${errors.length}`)
-  for (let i = 0; i < errors.length; i++) {
-    console.error('#' + i, errors[i])
-  }
-  if ((genusCount + speciesCount) !== Object.keys(speciesesGrids).length) {
-    console.error('Taxon/Species/Grids mismatch:', genusCount, speciesCount, Object.keys(speciesesGrids).length)
-  }
-  console.log('Species:', speciesCount.toLocaleString('en'))
-  if (config.makeGenusMaps) {
-    console.log('Genera:', genusCount.toLocaleString('en'))
+///////////////////////////////////////////////////////////////////////////////////////
+// https://leafletjs.com/examples/geojson/
+
+async function make_geojson(rowCount) {
+  // Go through all species
+  const hectadboxlen = usesIE ? 3 : 4
+  let done = 0
+  for (const [MapName, speciesGrids] of Object.entries(speciesesGrids)) {
+    console.log(MapName)
+
+    const geojson = {}
+    geojson.type = 'FeatureCollection'
+    // https://wiki.openstreetmap.org/wiki/Geojson_CSS
+    //geojson.style = { stroke: 'pink' }
+    geojson.style = {
+      "color": "#000000",
+      "weight": 3,
+      "opacity": 0.55
+    }
+    geojson.features = []
+
+    let reccount = 0
+    for (const [box, boxdata] of Object.entries(speciesGrids.boxes)) {
+      reccount += boxdata.count
+      const boxloc = boxes[box]
+
+      let color = rgbHex('rgba(255,20, 147, 1)') // default to pink
+      for (const datecolour of Object.values(config.datecolours)) {
+        if (boxdata.maxyear >= datecolour.minyear && boxdata.maxyear <= datecolour.maxyear) {
+          color = rgbHex(datecolour.colour)
+        }
+      }
+
+      const osgb = new geotools2m.GT_OSGB()
+      osgb.parseGridRef(box)
+      const boxbl = osgb.getWGS84()
+      if (box.length === 4) { // hectad
+        osgb.northings += 10000
+        osgb.eastings += 10000
+      } else { // monad
+        osgb.northings += 1000
+        osgb.eastings += 1000
+      }
+      const boxtr = osgb.getWGS84()
+      console.log(box, boxbl, boxtr)
+
+      if (config.geojsonprecision) {
+        boxbl.latitude = boxbl.latitude.toPrecision(config.geojsonprecision)
+        boxbl.longitude = boxbl.longitude.toPrecision(config.geojsonprecision)
+        boxtr.latitude = boxtr.latitude.toPrecision(config.geojsonprecision)
+        boxtr.longitude = boxtr.longitude.toPrecision(config.geojsonprecision)
+      }
+
+      const feature = {}
+      feature.type = 'Feature'
+      feature.geometry = {}
+      feature.geometry.type = 'Polygon'
+      feature.geometry.coordinates = []
+      const coords = []
+      coords.push([boxbl.latitude, boxbl.longitude])
+      coords.push([boxtr.latitude, boxbl.longitude])
+      coords.push([boxtr.latitude, boxtr.longitude])
+      coords.push([boxbl.latitude, boxtr.longitude])
+      feature.geometry.coordinates.push(coords)
+
+      feature.properties = {
+        color: '#' + color.substring(0, 6)
+      }
+
+      geojson.features.push(feature)
+    }
+
+    let saveFilename = MapName
+    if (config.saveSpacesAs) {
+      saveFilename = saveFilename.replace(/ /g, config.saveSpacesAs)
+    }
+    const outpath = path.join(__dirname, config.outputFolder, saveFilename + '.geojson')
+    const stream = fs.createWriteStream(outpath)
+    stream.write(JSON.stringify(geojson))
+    stream.close()
+
+
+    //console.log('done', saveFilename, reccount)
+    if (config.limit && ++done >= config.limit) {
+      errors.push('Map generation stopped after reaching limit of ' + config.limit)
+      break
+    }
   }
 
-  console.log('Records:', records.toLocaleString('en'))
-  console.log('Empty rows:', empties)
-  console.log('Boxes:', Object.keys(boxes).length)
-
-  const dt_end = new Date()
-  const runtime_seconds = Math.floor((dt_end - dt_start) / (1000))
-  console.log('Runtime:', runtime_seconds, 'seconds')
 }
 ///////////////////////////////////////////////////////////////////////////////////////
 // If called from command line, then run now.
