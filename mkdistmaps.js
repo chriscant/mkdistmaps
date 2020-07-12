@@ -717,7 +717,7 @@ async function make_images(rowCount) {
 
       // Draw solid or round box (and optional hectad outline)
       if (SCALE.gridreffigs === 4 && box.length === hectadboxlen) {
-        ctx.strokeRect(boxloc.x, boxloc.y, boxwidth2, boxwidth2)
+        ctx.strokeRect(boxloc.x, boxloc.y - boxwidth2 + boxwidth2/10, boxwidth2, boxwidth2)
       } else {
         if (boxdata.count === 1 && config.useMonadsNotHectads) {
           ctx.beginPath()
