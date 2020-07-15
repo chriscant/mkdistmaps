@@ -25,7 +25,7 @@ async function checkFilesEqual(path1, path2) {
   })
   if (!await areFilesEqual) {
     console.log('FILES NOT EQUAL', path1, path2)
-    return -1
+    return 0
   }
   return 1
 }

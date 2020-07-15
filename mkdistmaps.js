@@ -864,10 +864,15 @@ async function make_geojson(rowCount) {
       saveFilename = saveFilename.replace(/ /g, config.saveSpacesAs)
     }
     const outpath = path.join(__dirname, config.outputFolder, saveFilename + '.geojson')
-    const stream = fs.createWriteStream(outpath)
-    stream.write(JSON.stringify(geojson))
-    stream.close()
-
+    const writeGeoJson = new Promise((resolve, reject) => {
+      const stream = fs.createWriteStream(outpath)
+      stream.once('open', function (fd) {
+        stream.write(JSON.stringify(geojson))
+        stream.end()
+        resolve()
+      })
+    })
+    await writeGeoJson
 
     //console.log('done', saveFilename, reccount)
     if (config.limit && ++done >= config.limit) {
