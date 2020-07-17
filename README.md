@@ -173,6 +173,10 @@ If **makeAllMap** is `true` then maps are generated called "All records" and "Al
 
 The default is `date` which uses the date or years fields and the **datecolours** ranges.
 
+### outputtype
+
+* Optionally specify `geojson` to make geojson files instead of maps.
+
 ### font_filename
 
 * Specify the filename of a font eg a TTF file. The tests directory contains an open source font "tests/fonts/SourceSansPro-Regular.ttf".

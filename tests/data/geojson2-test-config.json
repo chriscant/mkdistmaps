@@ -1,11 +1,11 @@
 ﻿{
   "limit": 1,
   "makeAllMap": true,
-  "maptype": "date",
+  "maptype": "count",
   "outputtype": "geojson",
   "geojsonprecision": 6,
   "versionoverride": "mkdistmaps test",
-  "outputFolder": "tests/output",
+  "outputFolder": "tests/output2",
   "recordset": {
     "csv": "tests/data/csv/Test-GB1.csv",
     "title": "Test GB Data",

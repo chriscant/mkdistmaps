@@ -155,6 +155,10 @@ async function run(argv) {
     if (!config.hasOwnProperty('makeGenusMaps')) {
       config.makeGenusMaps = false
     }
+    // Default outputtype to 'map'
+    if (!config.hasOwnProperty('outputtype')) {
+      config.outputtype = 'map'
+    }
     // Default maptype to 'date'
     if (!config.hasOwnProperty('maptype')) {
       config.maptype = 'date'
@@ -561,8 +565,7 @@ function processLine(file, row, fileSpecieses) {
 // importComplete:  Having read all records, generate distribution maps for all found species
 
 async function importComplete(rowCount) {
-  console.log('config.maptype', config.maptype)
-  if (config.maptype === 'geojson') {
+  if (config.outputtype === 'geojson') {
     await make_geojson(rowCount)
   } else {
     await make_images(rowCount)
@@ -589,6 +592,26 @@ async function importComplete(rowCount) {
   const dt_end = new Date()
   const runtime_seconds = Math.floor((dt_end - dt_start) / (1000))
   console.log('Runtime:', runtime_seconds, 'seconds')
+}
+
+///////////////////////////////////////////////////////////////////////////////////////
+function setCountColours(speciesGrids) {
+  let next = 1
+  for (const countcolour of Object.values(config.countcolours)) {
+    countcolour.imin = countcolour.min
+    if (typeof countcolour.min === 'string') {
+      countcolour.imin = Math.floor(parseFloat(countcolour.min) * speciesGrids.max / 100)
+    }
+    countcolour.imax = countcolour.max
+    if (typeof countcolour.max === 'string') {
+      countcolour.imax = Math.floor(parseFloat(countcolour.max) * speciesGrids.max / 100)
+    }
+    if (countcolour.imin <= next) countcolour.imin = next
+    if (countcolour.imax <= next) countcolour.imax = next++
+    countcolour.legend = countcolour.imin.toLocaleString('en') + '-' + countcolour.imax.toLocaleString('en')
+    if (countcolour.imax > speciesGrids.max) countcolour.imax = speciesGrids.max
+    if (countcolour.imin > speciesGrids.max) countcolour.legend = ''
+  }
 }
 
 ///////////////////////////////////////////////////////////////////////////////////////
@@ -673,22 +696,7 @@ async function make_images(rowCount) {
     ctx.fillText(config.recordset.title, config.basemap.title_x, config.basemap.title_y + config.basemap.title_y_inc)
 
     if (config.maptype === 'count') {
-      let next = 1
-      for (const countcolour of Object.values(config.countcolours)) {
-        countcolour.imin = countcolour.min
-        if (typeof countcolour.min === 'string') {
-          countcolour.imin = Math.floor(parseFloat(countcolour.min) * speciesGrids.max / 100)
-        }
-        countcolour.imax = countcolour.max
-        if (typeof countcolour.max === 'string') {
-          countcolour.imax = Math.floor(parseFloat(countcolour.max) * speciesGrids.max / 100)
-        }
-        if (countcolour.imin <= next) countcolour.imin = next
-        if (countcolour.imax <= next) countcolour.imax = next++
-        countcolour.legend = countcolour.imin.toLocaleString('en') + '-' + countcolour.imax.toLocaleString('en')
-        if (countcolour.imax > speciesGrids.max) countcolour.imax = speciesGrids.max
-        if (countcolour.imin > speciesGrids.max) countcolour.legend = ''
-      }
+      setCountColours(speciesGrids)
     }
 
     // Go through all boxes found for this species
@@ -797,6 +805,10 @@ async function make_geojson(rowCount) {
   for (const [MapName, speciesGrids] of Object.entries(speciesesGrids)) {
     console.log(MapName)
 
+    if (config.maptype === 'count') {
+      setCountColours(speciesGrids)
+    }
+
     const geojson = {}
     geojson.type = 'FeatureCollection'
     // https://wiki.openstreetmap.org/wiki/Geojson_CSS
@@ -809,35 +821,52 @@ async function make_geojson(rowCount) {
     geojson.features = []
 
     let reccount = 0
-    for (const [box, boxdata] of Object.entries(speciesGrids.boxes)) {
+    let boxcount = 0
+    for (let [box, boxdata] of Object.entries(speciesGrids.boxes)) {
       reccount += boxdata.count
       const boxloc = boxes[box]
 
       let color = rgbHex('rgba(255,20, 147, 1)') // default to pink
-      for (const datecolour of Object.values(config.datecolours)) {
-        if (boxdata.maxyear >= datecolour.minyear && boxdata.maxyear <= datecolour.maxyear) {
-          color = rgbHex(datecolour.colour)
+      if (config.maptype === 'count') {
+        for (const countcolour of Object.values(config.countcolours)) {
+          if (((countcolour.imin === countcolour.imax) && (boxdata.count === countcolour.imin)) ||
+            (boxdata.count >= countcolour.imin && ((countcolour.imax === 0) || (boxdata.count <= countcolour.imax)))) {
+            color = rgbHex(countcolour.colour)
+          }
+        }
+      } else {
+        for (const datecolour of Object.values(config.datecolours)) {
+          if (boxdata.maxyear >= datecolour.minyear && boxdata.maxyear <= datecolour.maxyear) {
+            color = rgbHex(datecolour.colour)
+          }
         }
       }
 
       const osgb = new geotools2m.GT_OSGB()
       osgb.parseGridRef(box)
       const boxbl = osgb.getWGS84()
+      //console.log(box, osgb, boxbl)
+      let boxside = 1000 // monad
       if (box.length === 4) { // hectad
-        osgb.northings += 10000
-        osgb.eastings += 10000
-      } else { // monad
-        osgb.northings += 1000
-        osgb.eastings += 1000
+        boxside = 10000
       }
+      osgb.northings += boxside
+      const boxtl = osgb.getWGS84()
+      osgb.eastings += boxside
       const boxtr = osgb.getWGS84()
-      console.log(box, boxbl, boxtr)
+      osgb.northings -= boxside
+      const boxbr = osgb.getWGS84()
+      //console.log(box, osgb, boxtr)
 
       if (config.geojsonprecision) {
         boxbl.latitude = boxbl.latitude.toPrecision(config.geojsonprecision)
         boxbl.longitude = boxbl.longitude.toPrecision(config.geojsonprecision)
+        boxtl.latitude = boxtl.latitude.toPrecision(config.geojsonprecision)
+        boxtl.longitude = boxtl.longitude.toPrecision(config.geojsonprecision)
         boxtr.latitude = boxtr.latitude.toPrecision(config.geojsonprecision)
         boxtr.longitude = boxtr.longitude.toPrecision(config.geojsonprecision)
+        boxbr.latitude = boxbr.latitude.toPrecision(config.geojsonprecision)
+        boxbr.longitude = boxbr.longitude.toPrecision(config.geojsonprecision)
       }
 
       const feature = {}
@@ -847,16 +876,25 @@ async function make_geojson(rowCount) {
       feature.geometry.coordinates = []
       const coords = []
       coords.push([boxbl.latitude, boxbl.longitude])
-      coords.push([boxtr.latitude, boxbl.longitude])
+      coords.push([boxtl.latitude, boxtl.longitude])
       coords.push([boxtr.latitude, boxtr.longitude])
-      coords.push([boxbl.latitude, boxtr.longitude])
+      coords.push([boxbr.latitude, boxbr.longitude])
       feature.geometry.coordinates.push(coords)
 
       feature.properties = {
-        color: '#' + color.substring(0, 6)
+        color: '#' + color.substring(0, 6),
+        text: box+': '+boxdata.count + ' record'
+      }
+      if (boxdata.count > 1) feature.properties.text += 's'
+      feature.properties.text += ' '
+      if (boxdata.minyear !== boxdata.maxyear) {
+        feature.properties.text += boxdata.minyear + '-' + boxdata.maxyear
+      } else {
+        feature.properties.text += boxdata.minyear
       }
 
       geojson.features.push(feature)
+      //if (boxcount++>1)break
     }
 
     let saveFilename = MapName
@@ -874,7 +912,7 @@ async function make_geojson(rowCount) {
     })
     await writeGeoJson
 
-    //console.log('done', saveFilename, reccount)
+    console.log('done', saveFilename, reccount)
     if (config.limit && ++done >= config.limit) {
       errors.push('Map generation stopped after reaching limit of ' + config.limit)
       break
