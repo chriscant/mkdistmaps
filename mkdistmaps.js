@@ -751,7 +751,6 @@ async function make_images(rowCount) {
     ctx.font = config.basemap.title_fontsize + " 'TheFont'"
     if (isAllSpeciesMap) {
       ctx.fillText('Species: ' + speciesCount.toLocaleString('en'), config.basemap.title_x, config.basemap.title_y + 2 * config.basemap.title_y_inc)
-    //} else if (isAllRecordsMap) {
     } else {
       ctx.fillText('Records: ' + reccount.toLocaleString('en'), config.basemap.title_x, config.basemap.title_y + 2 * config.basemap.title_y_inc)
     }
@@ -804,6 +803,8 @@ async function make_geojson(rowCount) {
   let done = 0
   for (const [MapName, speciesGrids] of Object.entries(speciesesGrids)) {
     console.log(MapName)
+    const isAllRecordsMap = MapName === makeAllMapName
+    const isAllSpeciesMap = MapName === makeAllSpeciesMapName
 
     if (config.maptype === 'count') {
       setCountColours(speciesGrids)
@@ -814,88 +815,121 @@ async function make_geojson(rowCount) {
     // https://wiki.openstreetmap.org/wiki/Geojson_CSS
     //geojson.style = { stroke: 'pink' }
     geojson.style = {
-      "color": "#000000",
-      "weight": 3,
-      "opacity": 0.55
+      color: '#000000',
+      // fillColor: '#FFFFFF',
+      fillOpacity: 0.1,
+      weight: 1,
+      opacity: 1
     }
+
+    geojson.properties = {
+      name: MapName,
+      set: config.recordset.title,
+      maptype: config.maptype,
+      datecolours: config.datecolours,
+      generator: version,
+    }
+    if (isAllSpeciesMap) {
+      geojson.properties.name = 'Count of species in each square'
+    } else if (isAllRecordsMap) {
+      if (config.maptype === 'count') {
+        geojson.properties.name = 'Count of records in each square'
+      }
+    }
+
     geojson.features = []
 
     let reccount = 0
     let boxcount = 0
-    for (let [box, boxdata] of Object.entries(speciesGrids.boxes)) {
-      reccount += boxdata.count
-      const boxloc = boxes[box]
+    for (let doMonad = 0; doMonad < 2; doMonad++) { // Process hectads first so they appear behind monads
+      for (let [box, boxdata] of Object.entries(speciesGrids.boxes)) {
+        const isHectad = box.length === 4
+        if ((isHectad && doMonad) || (!isHectad && !doMonad)) {
+          continue
+        }
+        reccount += boxdata.count
+        const boxloc = boxes[box]
 
-      let color = rgbHex('rgba(255,20, 147, 1)') // default to pink
-      if (config.maptype === 'count') {
-        for (const countcolour of Object.values(config.countcolours)) {
-          if (((countcolour.imin === countcolour.imax) && (boxdata.count === countcolour.imin)) ||
-            (boxdata.count >= countcolour.imin && ((countcolour.imax === 0) || (boxdata.count <= countcolour.imax)))) {
-            color = rgbHex(countcolour.colour)
+        let color = rgbHex('rgba(255,20, 147, 1)') // default to pink
+        if (config.maptype === 'count') {
+          for (const countcolour of Object.values(config.countcolours)) {
+            if (((countcolour.imin === countcolour.imax) && (boxdata.count === countcolour.imin)) ||
+              (boxdata.count >= countcolour.imin && ((countcolour.imax === 0) || (boxdata.count <= countcolour.imax)))) {
+              color = rgbHex(countcolour.colour)
+            }
+          }
+        } else {
+          for (const datecolour of Object.values(config.datecolours)) {
+            if (boxdata.maxyear >= datecolour.minyear && boxdata.maxyear <= datecolour.maxyear) {
+              color = rgbHex(datecolour.colour)
+            }
           }
         }
-      } else {
-        for (const datecolour of Object.values(config.datecolours)) {
-          if (boxdata.maxyear >= datecolour.minyear && boxdata.maxyear <= datecolour.maxyear) {
-            color = rgbHex(datecolour.colour)
-          }
+
+        const osgb = new geotools2m.GT_OSGB()
+        osgb.parseGridRef(box)
+        const boxbl = osgb.getWGS84()
+        //console.log(box, osgb, boxbl)
+        let boxside = 1000 // monad
+        if (isHectad) { // hectad
+          boxside = 10000
         }
-      }
+        osgb.northings += boxside
+        const boxtl = osgb.getWGS84()
+        osgb.eastings += boxside
+        const boxtr = osgb.getWGS84()
+        osgb.northings -= boxside
+        const boxbr = osgb.getWGS84()
+        //console.log(box, osgb, boxtr)
 
-      const osgb = new geotools2m.GT_OSGB()
-      osgb.parseGridRef(box)
-      const boxbl = osgb.getWGS84()
-      //console.log(box, osgb, boxbl)
-      let boxside = 1000 // monad
-      if (box.length === 4) { // hectad
-        boxside = 10000
-      }
-      osgb.northings += boxside
-      const boxtl = osgb.getWGS84()
-      osgb.eastings += boxside
-      const boxtr = osgb.getWGS84()
-      osgb.northings -= boxside
-      const boxbr = osgb.getWGS84()
-      //console.log(box, osgb, boxtr)
+        if (config.geojsonprecision) {
+          boxbl.latitude = boxbl.latitude.toPrecision(config.geojsonprecision)
+          boxbl.longitude = boxbl.longitude.toPrecision(config.geojsonprecision)
+          boxtl.latitude = boxtl.latitude.toPrecision(config.geojsonprecision)
+          boxtl.longitude = boxtl.longitude.toPrecision(config.geojsonprecision)
+          boxtr.latitude = boxtr.latitude.toPrecision(config.geojsonprecision)
+          boxtr.longitude = boxtr.longitude.toPrecision(config.geojsonprecision)
+          boxbr.latitude = boxbr.latitude.toPrecision(config.geojsonprecision)
+          boxbr.longitude = boxbr.longitude.toPrecision(config.geojsonprecision)
+        }
 
-      if (config.geojsonprecision) {
-        boxbl.latitude = boxbl.latitude.toPrecision(config.geojsonprecision)
-        boxbl.longitude = boxbl.longitude.toPrecision(config.geojsonprecision)
-        boxtl.latitude = boxtl.latitude.toPrecision(config.geojsonprecision)
-        boxtl.longitude = boxtl.longitude.toPrecision(config.geojsonprecision)
-        boxtr.latitude = boxtr.latitude.toPrecision(config.geojsonprecision)
-        boxtr.longitude = boxtr.longitude.toPrecision(config.geojsonprecision)
-        boxbr.latitude = boxbr.latitude.toPrecision(config.geojsonprecision)
-        boxbr.longitude = boxbr.longitude.toPrecision(config.geojsonprecision)
-      }
+        const feature = {}
+        feature.type = 'Feature'
+        feature.geometry = {}
+        feature.geometry.type = 'Polygon'
+        feature.geometry.coordinates = []
+        const coords = []
+        coords.push([boxbl.latitude, boxbl.longitude])
+        coords.push([boxtl.latitude, boxtl.longitude])
+        coords.push([boxtr.latitude, boxtr.longitude])
+        coords.push([boxbr.latitude, boxbr.longitude])
+        feature.geometry.coordinates.push(coords)
 
-      const feature = {}
-      feature.type = 'Feature'
-      feature.geometry = {}
-      feature.geometry.type = 'Polygon'
-      feature.geometry.coordinates = []
-      const coords = []
-      coords.push([boxbl.latitude, boxbl.longitude])
-      coords.push([boxtl.latitude, boxtl.longitude])
-      coords.push([boxtr.latitude, boxtr.longitude])
-      coords.push([boxbr.latitude, boxbr.longitude])
-      feature.geometry.coordinates.push(coords)
+        feature.properties = {
+          color: '#' + color.substring(0, 6),
+          text: box + ': ' + boxdata.count
+        }
+        if (isAllSpeciesMap) {
+          feature.properties.text += ' species '
+        } else {
+          feature.properties.text += boxdata.count > 1 ? ' records ' : ' record '
+        }
+        if (boxdata.minyear !== boxdata.maxyear) {
+          feature.properties.text += boxdata.minyear + '-' + boxdata.maxyear
+        } else {
+          feature.properties.text += boxdata.minyear
+        }
 
-      feature.properties = {
-        color: '#' + color.substring(0, 6),
-        text: box+': '+boxdata.count + ' record'
+        geojson.features.push(feature)
+        //if (boxcount++>1)break
       }
-      if (boxdata.count > 1) feature.properties.text += 's'
-      feature.properties.text += ' '
-      if (boxdata.minyear !== boxdata.maxyear) {
-        feature.properties.text += boxdata.minyear + '-' + boxdata.maxyear
-      } else {
-        feature.properties.text += boxdata.minyear
-      }
-
-      geojson.features.push(feature)
-      //if (boxcount++>1)break
     }
+    if (isAllSpeciesMap) {
+      geojson.properties.subtitle = 'Species: ' + speciesCount.toLocaleString('en')
+    } else {
+      geojson.properties.subtitle = 'Records: ' + reccount.toLocaleString('en')
+    }
+    geojson.properties.countcolours = config.countcolours
 
     let saveFilename = MapName
     if (config.saveSpacesAs) {

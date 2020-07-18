@@ -1,7 +1,7 @@
 ﻿const mkdistmaps = require('../mkdistmaps')
 const testhelper = require('./testhelper');
 
-test('GEOJSON #1', async () => {
+test('GEOJSON DATE #1', async () => {
 
   const spyclog = jest.spyOn(console, 'log').mockImplementation(testhelper.accumulog)
   const spycerror = jest.spyOn(console, 'error').mockImplementation(testhelper.accumulog)

@@ -256,6 +256,8 @@ The tests use the font "SourceSansPro-Regular.ttf" from https://github.com/googl
 
 # To do
 
+* Support Irish grid references in geojson
+* Doc geojson extra format and geojsonprecision
 * Support tetrad format grid references
 * Possibly: cope with having Irish and GB grid references displayed on the same map
 * Possibly: cope with map inserts for out-of-main-area locations
