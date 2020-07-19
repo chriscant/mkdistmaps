@@ -843,7 +843,7 @@ async function make_geojson(rowCount) {
     let boxcount = 0
     for (let doMonad = 0; doMonad < 2; doMonad++) { // Process hectads first so they appear behind monads
       for (let [box, boxdata] of Object.entries(speciesGrids.boxes)) {
-        const isHectad = box.length === 4
+        const isHectad = box.length === 3 || box.length === 4
         if ((isHectad && doMonad) || (!isHectad && !doMonad)) {
           continue
         }
@@ -865,21 +865,23 @@ async function make_geojson(rowCount) {
             }
           }
         }
-
-        const osgb = new geotools2m.GT_OSGB()
-        osgb.parseGridRef(box)
-        const boxbl = osgb.getWGS84()
-        //console.log(box, osgb, boxbl)
+        let osgbie = new geotools2m.GT_OSGB()
+        if (box.length % 2 === 1) {
+          osgbie = new geotools2m.GT_Irish()
+        }
+        osgbie.parseGridRef(box)
+        const boxbl = osgbie.getWGS84()
+        //console.log(box, boxbl)
         let boxside = 1000 // monad
         if (isHectad) { // hectad
           boxside = 10000
         }
-        osgb.northings += boxside
-        const boxtl = osgb.getWGS84()
-        osgb.eastings += boxside
-        const boxtr = osgb.getWGS84()
-        osgb.northings -= boxside
-        const boxbr = osgb.getWGS84()
+        osgbie.northings += boxside
+        const boxtl = osgbie.getWGS84()
+        osgbie.eastings += boxside
+        const boxtr = osgbie.getWGS84()
+        osgbie.northings -= boxside
+        const boxbr = osgbie.getWGS84()
         //console.log(box, osgb, boxtr)
 
         if (config.geojsonprecision) {
