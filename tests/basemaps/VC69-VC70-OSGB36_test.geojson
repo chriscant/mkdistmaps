@@ -1,0 +1,30 @@
+{
+  "type": "FeatureCollection",
+  "name": "Vice-Counties-GB",
+  "crs": {
+    "type": "name",
+    "properties": { "name": "urn:ogc:def:crs:EPSG::27700" }
+  },
+  "features": [
+    {
+      "type": "Feature",
+      "properties": {
+        "VCNUMBER": 70,
+        "VCNAME": "Cumberland",
+        "EXTENTS": "MLWM"
+      },
+      "geometry": {
+        "type": "MultiPolygon",
+        "coordinates": [
+          [
+            [
+              [ 320825.02811229, 485115.62617599 ],
+              [ 320825.86910853, 485071.81871576 ],
+              [ 320850.39816529, 485049.57508294 ]
+            ]
+          ]
+        ]
+      }
+    }
+  ]
+}

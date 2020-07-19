@@ -1,0 +1,1 @@
+{"type":"FeatureCollection","name":"Vice-Counties-GB","features":[{"type":"Feature","properties":{"VCNUMBER":70,"VCNAME":"Cumberland","EXTENTS":"MLWM"},"geometry":{"type":"MultiPolygon","coordinates":[[[["54.25556","-3.216814"],["54.25517","-3.216789"],["54.25497","-3.216407"]]]]}}]}

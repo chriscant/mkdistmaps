@@ -950,6 +950,7 @@ GT_Math.Lat_Long_to_North =function (PHI, LAM, a, b, e0, n0, f0, PHI0, LAM0)
 }
 
 module.exports = {
+  GT_WGS84,
   GT_OSGB,
   GT_Irish
 }
