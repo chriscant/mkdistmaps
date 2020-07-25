@@ -97,12 +97,59 @@ Empty rows: 0
 Boxes: 998
 Runtime: 191 seconds
 ```
+
+# GeoJson output
+
+If you set the **outputtype** to be `geojson` then [geojson](https://en.wikipedia.org/wiki/GeoJSON) format files are generated
+using standard FeatureCollection, Feature and Polygon object types, with the coordinates output in WGS84 latitude and longitude. 
+Various other objects are also included to help make better maps,
+ie to give the map a name, show the legend and define popup text for each feature.
+
+A root level `style` property is defined as per [Geojson CSS](https://wiki.openstreetmap.org/wiki/Geojson_CSS):
+
+```
+"style": {
+  "color": "#000000",
+  "fillOpacity": 0.1,
+  "weight": 1,
+  "opacity": 1
+},
+```
+
+In addition, various root `properties` are set, eg:
+```
+"properties": 
+{
+  "name": "Count of species in each square",
+  "set": "VC69 & VC70 June 2020",
+  "maptype": "count",
+  "datecolours": [],
+  "generator": "mkdistmaps v1.13-3-g78cb606 - run at 25th July 2020, 2:58:11 pm",
+  "subtitle": "Species: 1,126",
+  "countcolours": []
+}
+```
+
+Finally, each defined polygon feature may have `properties` defined, where `species` is only provided on the "All species" count map.
+```
+"properties": {
+  "color": "#008000",
+  "text": "SD29: 2 species 1944-1946",
+  "species": "Arthrorhaphis citrinella|Micarea lignaria var. lignaria"
+}
+```
+
 ## Updates
 
 If the code at github has been updated, you can update your local copy using this command in the `mkdistmaps` directory:
 
 ```
 git pull
+```
+
+You may also need to run this to install any new dependencies:
+```
+npm update
 ```
 
 
@@ -176,6 +223,10 @@ The default is `date` which uses the date or years fields and the **datecolours*
 ### outputtype
 
 * Optionally specify `geojson` to make geojson files instead of maps.
+
+### geojsonprecision
+
+* Optionally specify the precision of coordinates in geojson files. The default of `false` gives full precision; in practice eg `6` will suffice.
 
 ### font_filename
 
@@ -256,7 +307,6 @@ The tests use the font "SourceSansPro-Regular.ttf" from https://github.com/googl
 
 # To do
 
-* Doc geojson extra format and geojsonprecision
 * Support tetrad format grid references
 * Possibly: cope with having Irish and GB grid references displayed on the same map
 * Possibly: cope with map inserts for out-of-main-area locations

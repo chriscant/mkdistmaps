@@ -913,6 +913,8 @@ async function make_geojson(rowCount) {
         }
         if (isAllSpeciesMap) {
           feature.properties.text += ' species '
+          boxdata.species.sort()
+          feature.properties.species = boxdata.species.join('|')
         } else {
           feature.properties.text += boxdata.count > 1 ? ' records ' : ' record '
         }
