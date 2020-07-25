@@ -3,8 +3,8 @@
 [![Build Status](https://api.travis-ci.com/chriscant/mkdistmaps.svg?branch=master)](https://travis-ci.com/github/chriscant/mkdistmaps)
 [![Coverage Status](https://coveralls.io/repos/github/chriscant/mkdistmaps/badge.svg?branch=master)](https://coveralls.io/github/chriscant/mkdistmaps?branch=master)
 
-Command line tool to make species distribution maps on top of a base layer image from species records with 
-grid references.
+Command line tool to make species distribution maps from species records with grid references.
+Generated maps are either PNGs on top of a base layer image or geojson files.
 
 Your data can (currently) contain either [GB](https://en.wikipedia.org/wiki/Ordnance_Survey_National_Grid)
 or [Irish](https://en.wikipedia.org/wiki/Irish_grid_reference_system) grid references, but not both.
@@ -14,7 +14,7 @@ The code handles 2, 4, 6, 8 or 10 numbers after the initial letter(s).
 By default, the generated maps are coloured grouped according to the most recent record in each monad or hectad.
 You can opt to group by the number of records in each square and have an overview map showing how many species are in each square.
 
-You can see example generated maps for lichens in Cumbria at the 
+You can see example generated geojson maps for lichens in Cumbria at the 
 [Cumbria Lichens and Bryophytes](https://cumbrialichensbryophytes.org.uk/lichen-species-maps/) website.
 
 # Usage
