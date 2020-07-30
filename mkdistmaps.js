@@ -323,21 +323,27 @@ async function run(argv) {
 const speciesesGrids = {}
 let speciesCount = 0
 let genusCount = 0
+let allCount = 0;
 const errors = []
 let lineno = 0
 let records = 0
 let empties = 0
 const boxes = {}
 
-function updateSpeciesesGrids(TaxonName, box, Year, isGenus, fileSpecieses, makeAllSpeciesMapTaxon) {
+function updateSpeciesesGrids(TaxonName, box, Year, isGenus, fileSpecieses, inTotal, makeAllSpeciesMapTaxon) {
   if (isGenus) TaxonName += ' -all'
   let speciesGrids = speciesesGrids[TaxonName]
   if (!speciesGrids) {
-    speciesGrids = { max: 0, boxes: {} }
+    speciesGrids = { max: 0, speciesmax: 0, boxes: {} }
     speciesGrids.boxes[box] = { count: 0, minyear: 3000, maxyear: 0, species: [] }
     speciesesGrids[TaxonName] = speciesGrids
-    if (isGenus) genusCount++
-    else speciesCount++
+    if (inTotal) {
+      if (isGenus) genusCount++
+      else speciesCount++
+    } else {
+      allCount++
+    }
+
   }
   if (!speciesGrids.boxes[box]) {
     speciesGrids.boxes[box] = { count: 0, minyear: 3000, maxyear: 0, species: [] }
@@ -364,7 +370,11 @@ function updateSpeciesesGrids(TaxonName, box, Year, isGenus, fileSpecieses, make
   if (makeAllSpeciesMapTaxon) {
     if (!speciesGrids.boxes[box].species.includes(makeAllSpeciesMapTaxon)) {
       speciesGrids.boxes[box].species.push(makeAllSpeciesMapTaxon)
-      speciesGrids.boxes[box].count = speciesGrids.boxes[box].species.length
+      const totalspecies = speciesGrids.boxes[box].species.length
+      speciesGrids.boxes[box].count = totalspecies
+      if (totalspecies > speciesGrids.speciesmax) {
+        speciesGrids.speciesmax = totalspecies
+      }
     }
   }
 }
@@ -545,19 +555,19 @@ function processLine(file, row, fileSpecieses) {
   }
 
   // Add/Update record for species ie count, min and max year for each box
-  updateSpeciesesGrids(TaxonName, box, Year, false, fileSpecieses, false)
+  updateSpeciesesGrids(TaxonName, box, Year, false, fileSpecieses, true, false)
 
   if (config.makeAllMap) {
-    updateSpeciesesGrids(makeAllMapName, box, Year, false, fileSpecieses, false)
+    updateSpeciesesGrids(makeAllMapName, box, Year, false, fileSpecieses, false, false)
   }
 
   if (config.makeAllSpeciesMap) {
-    updateSpeciesesGrids(makeAllSpeciesMapName, box, Year, false, fileSpecieses, TaxonName)
+    updateSpeciesesGrids(makeAllSpeciesMapName, box, Year, false, fileSpecieses, false, TaxonName)
   }
 
   if (config.makeGenusMaps) {
     const words = TaxonName.split(' ')
-    updateSpeciesesGrids(words[0], box, Year, true, fileSpecieses, false)
+    updateSpeciesesGrids(words[0], box, Year, true, fileSpecieses, true, false)
   }
 }
 
@@ -577,7 +587,7 @@ async function importComplete(rowCount) {
   for (let i = 0; i < errors.length; i++) {
     console.error('#' + i, errors[i])
   }
-  if ((genusCount + speciesCount) !== Object.keys(speciesesGrids).length) {
+  if ((genusCount + speciesCount + allCount) !== Object.keys(speciesesGrids).length) {
     console.error('Taxon/Species/Grids mismatch:', genusCount, speciesCount, Object.keys(speciesesGrids).length)
   }
   console.log('Species:', speciesCount.toLocaleString('en'))
@@ -595,22 +605,23 @@ async function importComplete(rowCount) {
 }
 
 ///////////////////////////////////////////////////////////////////////////////////////
-function setCountColours(speciesGrids) {
+function setCountColours(speciesGrids, isAllSpeciesMap) {
   let next = 1
+  const max = isAllSpeciesMap ? speciesGrids.speciesmax : speciesGrids.max
   for (const countcolour of Object.values(config.countcolours)) {
     countcolour.imin = countcolour.min
     if (typeof countcolour.min === 'string') {
-      countcolour.imin = Math.floor(parseFloat(countcolour.min) * speciesGrids.max / 100)
+      countcolour.imin = Math.floor(parseFloat(countcolour.min) * max / 100)
     }
     countcolour.imax = countcolour.max
     if (typeof countcolour.max === 'string') {
-      countcolour.imax = Math.floor(parseFloat(countcolour.max) * speciesGrids.max / 100)
+      countcolour.imax = Math.floor(parseFloat(countcolour.max) * max / 100)
     }
     if (countcolour.imin <= next) countcolour.imin = next
     if (countcolour.imax <= next) countcolour.imax = next++
     countcolour.legend = countcolour.imin.toLocaleString('en') + '-' + countcolour.imax.toLocaleString('en')
-    if (countcolour.imax > speciesGrids.max) countcolour.imax = speciesGrids.max
-    if (countcolour.imin > speciesGrids.max) countcolour.legend = ''
+    if (countcolour.imax > max) countcolour.imax = max
+    if (countcolour.imin > max) countcolour.legend = ''
   }
 }
 
@@ -696,7 +707,7 @@ async function make_images(rowCount) {
     ctx.fillText(config.recordset.title, config.basemap.title_x, config.basemap.title_y + config.basemap.title_y_inc)
 
     if (config.maptype === 'count') {
-      setCountColours(speciesGrids)
+      setCountColours(speciesGrids, isAllSpeciesMap)
     }
 
     // Go through all boxes found for this species
@@ -745,8 +756,8 @@ async function make_images(rowCount) {
         ctx.fillText(box, boxloc.x, boxloc.y + boxwidth)
       }
     }
-    // Write number of records
 
+    // Write number of records
     ctx.fillStyle = config.font_colour
     ctx.font = config.basemap.title_fontsize + " 'TheFont'"
     if (isAllSpeciesMap) {
@@ -807,7 +818,7 @@ async function make_geojson(rowCount) {
     const isAllSpeciesMap = MapName === makeAllSpeciesMapName
 
     if (config.maptype === 'count') {
-      setCountColours(speciesGrids)
+      setCountColours(speciesGrids, isAllSpeciesMap)
     }
 
     const geojson = {}
@@ -909,14 +920,14 @@ async function make_geojson(rowCount) {
 
         feature.properties = {
           color: '#' + color.substring(0, 6),
-          text: box + ': ' + boxdata.count
+          text: box + ': '
         }
         if (isAllSpeciesMap) {
-          feature.properties.text += ' species '
+          feature.properties.text += boxdata.species.length + ' species '
           boxdata.species.sort()
-          feature.properties.species = boxdata.species.join('|')
+          feature.properties.species = boxdata.species.join('| ')
         } else {
-          feature.properties.text += boxdata.count > 1 ? ' records ' : ' record '
+          feature.properties.text += boxdata.count + (boxdata.count > 1 ? ' records ' : ' record ')
         }
         if (boxdata.minyear !== boxdata.maxyear) {
           feature.properties.text += boxdata.minyear + '-' + boxdata.maxyear
