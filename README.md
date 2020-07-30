@@ -90,7 +90,7 @@ Parsed 58248 rows
 Errors 1
 #0 LC0003050000XIWC Date invalid:undefined Year:NaN
 Errors 0
-Species: 1,125
+Species: 1,124
 Genera: 296
 Records: 58,248
 Empty rows: 0
@@ -125,7 +125,7 @@ In addition, various root `properties` are set, eg:
   "maptype": "count",
   "datecolours": [],
   "generator": "mkdistmaps v1.13-3-g78cb606 - run at 25th July 2020, 2:58:11 pm",
-  "subtitle": "Species: 1,126",
+  "subtitle": "Species: 1,124",
   "countcolours": []
 }
 ```
