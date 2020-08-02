@@ -291,6 +291,9 @@ If using percentages, the code ensures that at least one count is in each range,
 
 ## Used with thanks
 
+* A crucial tool is the [GeoTools2 code](http://www.nearby.org.uk/tests/GeoTools2.html) that converts between GB/IE grid references and 
+WGS84 latitude and longitude. I converted this code into a module called [geotools2m.js](geotools2m).
+
 * Josh Marinacci's [pureimage](https://www.npmjs.com/package/pureimage) - [docs](http://joshmarinacci.github.io/node-pureimage/) and contributors
 * C2FO's  [fast-csv](https://www.npmjs.com/package/fast-csv) - [docs](https://c2fo.io/fast-csv/docs/introduction/getting-started) and contributors
 * Other nodejs modules - see code
@@ -307,6 +310,8 @@ The tests use the font "SourceSansPro-Regular.ttf" from https://github.com/googl
 
 # To do
 
+* Write sub-tool that will create huge test CSV files.
+* Possibly: write sub-tool to create small geojson files with contours.
 * Support tetrad format grid references
 * Possibly: cope with having Irish and GB grid references displayed on the same map
 * Possibly: cope with map inserts for out-of-main-area locations
