@@ -292,7 +292,7 @@ If using percentages, the code ensures that at least one count is in each range,
 ## Used with thanks
 
 * A crucial tool is the [GeoTools2 code](http://www.nearby.org.uk/tests/GeoTools2.html) that converts between GB/IE grid references and 
-WGS84 latitude and longitude. I converted this code into a module called [geotools2m.js](geotools2m).
+WGS84 latitude and longitude. I converted this code into a module called [geotools2m.js](geotools2m.js).
 
 * Josh Marinacci's [pureimage](https://www.npmjs.com/package/pureimage) - [docs](http://joshmarinacci.github.io/node-pureimage/) and contributors
 * C2FO's  [fast-csv](https://www.npmjs.com/package/fast-csv) - [docs](https://c2fo.io/fast-csv/docs/introduction/getting-started) and contributors
