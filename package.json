@@ -16,6 +16,8 @@
     "lodash": "4.17.19",
     "moment": "2.26.0",
     "pureimage": "0.2.1",
-    "rgb-hex": "3.0.0"
+    "rgb-hex": "3.0.0",
+    "seedrandom": "3.0.5",
+    "word-list": "3.1.0"
   }
 }

@@ -67,10 +67,12 @@ async function run(argv) {
     const outpath = path.resolve(__dirname, argv[3])
     const writeGeoJson = new Promise((resolve, reject) => {
       const stream = fs.createWriteStream(outpath)
-      stream.once('open', function (fd) {
+      stream.on('close', function (fd) {
+        resolve()
+      })
+      stream.on('open', function (fd) {
         stream.write(out_geojson_text)
         stream.end()
-        resolve()
       })
     })
     await writeGeoJson

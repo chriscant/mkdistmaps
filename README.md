@@ -308,9 +308,25 @@ I used data from the [British Lichen Society](https://www.britishlichensociety.o
 
 The tests use the font "SourceSansPro-Regular.ttf" from https://github.com/google/fonts - thanks.
 
+# transform tool
+
+[transform.js](transform.js) is a command line tool to transform the coordinates within a geojson file from OSGB36 to WGS84 
+- used to convert vice-county boundaries into a format that can be displayed
+
+`usage: node transform.js <in.geojson> <out.geojson> <precision>`
+
+# makerecords tool
+
+[makerecords.js](makerecords.js) is a command line tool which can be used to generate large test CSV data files.
+The generated records are randomly distributed across the chosen area, ie GB, IE or GB&IE.
+A linear species distribution is used so very few of somes species are likely to be generated, but many more of others.
+Specify a seed parameter string if you wish to generate a consistent list.
+The species are given names from the start of an (npm word list)[https://github.com/sindresorhus/word-list].
+
+`usage: node makerecords.js GB|IE|GBIE <desired-record-count> <species-count> <output-csv-file> <optional-random-seed>`
+
 # To do
 
-* Write sub-tool that will create huge test CSV files.
 * Possibly: write sub-tool to create small geojson files with contours.
 * Support tetrad format grid references
 * Possibly: cope with having Irish and GB grid references displayed on the same map

@@ -25,13 +25,13 @@ const geotools2m = require('./geotools2m') // http://www.nearby.org.uk/tests/Geo
 const makeAllMapName = 'All records'
 const makeAllSpeciesMapName = 'All species'
 
-const UKletters1 = [
+const GBletters1 = [
   { l: 'S', e: 0, n: 0 },
   { l: 'N', e: 0, n: 500 },
   { l: 'H', e: 0, n: 1000 },
   { l: 'T', e: 500, n: 0 }
 ]
-const UKletters2 = [
+const GBletters2 = [
   { l: 'A', e: 0, n: 400 },
   { l: 'B', e: 100, n: 400 },
   { l: 'C', e: 200, n: 400 },
@@ -503,8 +503,8 @@ function processLine(file, row, fileSpecieses) {
 
   const l1 = box.substring(0, 1)
   if (isGB) {
-    for (let i = 0; i < UKletters1.length; i++) {
-      const boxbl = UKletters1[i]
+    for (let i = 0; i < GBletters1.length; i++) {
+      const boxbl = GBletters1[i]
       if (boxbl.l == l1) {
         //console.log('boxbl', boxbl)
         Eastings += boxbl.e * 1000
@@ -514,8 +514,8 @@ function processLine(file, row, fileSpecieses) {
     }
 
     const l2 = box.substring(1, 2)
-    for (let i = 0; i < UKletters2.length; i++) {
-      const boxbl = UKletters2[i]
+    for (let i = 0; i < GBletters2.length; i++) {
+      const boxbl = GBletters2[i]
       if (boxbl.l == l2) {
         //console.log('boxbl', boxbl)
         Eastings += boxbl.e * 1000
@@ -953,10 +953,12 @@ async function make_geojson(rowCount) {
     const outpath = path.join(__dirname, config.outputFolder, saveFilename + '.geojson')
     const writeGeoJson = new Promise((resolve, reject) => {
       const stream = fs.createWriteStream(outpath)
-      stream.once('open', function (fd) {
+      stream.on('close', function (fd) {
+        resolve()
+      })
+      stream.on('open', function (fd) {
         stream.write(JSON.stringify(geojson))
         stream.end()
-        resolve()
       })
     })
     await writeGeoJson
