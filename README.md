@@ -321,7 +321,7 @@ The tests use the font "SourceSansPro-Regular.ttf" from https://github.com/googl
 The generated records are randomly distributed across the chosen area, ie GB, IE or GB&IE.
 A linear species distribution is used so very few of somes species are likely to be generated, but many more of others.
 Specify a seed parameter string if you wish to generate a consistent list.
-The species are given names from the start of an (npm word list)[https://github.com/sindresorhus/word-list].
+The species are given names from the start of an [npm word list](https://github.com/sindresorhus/word-list).
 
 `usage: node makerecords.js GB|IE|GBIE <desired-record-count> <species-count> <output-csv-file> <optional-random-seed>`
 
