@@ -1,6 +1,6 @@
 {
   "name": "mkdistmaps",
-  "version": "1.13.0",
+  "version": "1.17.0",
   "description": "Make Distribution Maps from CSV file(s)",
   "main": "mkdistmaps.js",
   "scripts": {
@@ -9,13 +9,17 @@
   },
   "author": "Chris Cant",
   "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/chriscant/mkdistmaps.git"
+  },
   "dependencies": {
-    "fast-csv": "4.2.0",
+    "fast-csv": "4.3.2",
     "filecompare": "1.0.4",
     "glob": "7.1.6",
-    "lodash": "4.17.19",
-    "moment": "2.26.0",
-    "pureimage": "0.2.1",
+    "lodash": "4.17.20",
+    "moment": "2.29.1",
+    "pureimage": "0.2.5",
     "rgb-hex": "3.0.0",
     "seedrandom": "3.0.5",
     "word-list": "3.1.0"
