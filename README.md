@@ -60,24 +60,24 @@ Both these monad-level maps use the same data (all records of *Aspicilia calcare
 The first shows the data on a map of Cumbria.
 The second shows the data on a map of most of Great Britain.
 
-![Example monad map](https://raw.githubusercontent.com/chriscant/mkdistmaps/master/docs/Aspicilia-calcarea-VC69-VC70.png)
+![Example monad map](https://raw.githubusercontent.com/chriscant/mkdistmaps/main/docs/Aspicilia-calcarea-VC69-VC70.png)
 
-![Example monad map](https://raw.githubusercontent.com/chriscant/mkdistmaps/master/docs/Aspicilia-calcarea-GB.png)
+![Example monad map](https://raw.githubusercontent.com/chriscant/mkdistmaps/main/docs/Aspicilia-calcarea-GB.png)
 
 **Example hectad map:**
 
 This map shows some records of *Peltigera horizontalis* across GB, displayed at hectad resolution.
 
-![Example hectad map](https://raw.githubusercontent.com/chriscant/mkdistmaps/master/docs/Peltigera-horizontalis.png)
+![Example hectad map](https://raw.githubusercontent.com/chriscant/mkdistmaps/main/docs/Peltigera-horizontalis.png)
 
 **Example Irish hectad map:**
 
-![Example Irish hectad map](https://raw.githubusercontent.com/chriscant/mkdistmaps/master/docs/Irish-Species.png)
+![Example Irish hectad map](https://raw.githubusercontent.com/chriscant/mkdistmaps/main/docs/Irish-Species.png)
 
 **Example record and species count maps:**
 
-![Map showing count of species in each monad](https://raw.githubusercontent.com/chriscant/mkdistmaps/master/docs/Cumbria-All-species.png)
-![Map showing count of records in each monad](https://raw.githubusercontent.com/chriscant/mkdistmaps/master/docs/Cumbria-All-records.png)
+![Map showing count of species in each monad](https://raw.githubusercontent.com/chriscant/mkdistmaps/main/docs/Cumbria-All-species.png)
+![Map showing count of records in each monad](https://raw.githubusercontent.com/chriscant/mkdistmaps/main/docs/Cumbria-All-records.png)
 
 
 **Runtime output**
