@@ -85,6 +85,38 @@ const IEletters = [
   { l: 'Y', e: 300, n: 0 },
   { l: 'Z', e: 400, n: 0 }
 ]
+const tetradletters = [
+  { l: 'A', e: 0, n: 0 },
+  { l: 'B', e: 0, n: 200 },
+  { l: 'C', e: 0, n: 400 },
+  { l: 'D', e: 0, n: 600 },
+  { l: 'E', e: 0, n: 800 },
+  { l: 'F', e: 200, n: 0 },
+  { l: 'G', e: 200, n: 200 },
+  { l: 'H', e: 200, n: 400 },
+  { l: 'I', e: 200, n: 600 },
+  { l: 'J', e: 200, n: 800 },
+  { l: 'K', e: 400, n: 0 },
+  { l: 'L', e: 400, n: 200 },
+  { l: 'M', e: 400, n: 400 },
+  { l: 'N', e: 400, n: 600 },
+  { l: 'P', e: 400, n: 800 },
+  { l: 'Q', e: 600, n: 0 },
+  { l: 'R', e: 600, n: 200 },
+  { l: 'S', e: 600, n: 400 },
+  { l: 'T', e: 600, n: 600 },
+  { l: 'U', e: 600, n: 800 },
+  { l: 'V', e: 800, n: 0 },
+  { l: 'W', e: 800, n: 200 },
+  { l: 'X', e: 800, n: 400 },
+  { l: 'Y', e: 800, n: 600 },
+  { l: 'Z', e: 800, n: 800 }
+]
+const BOXSIZES = {
+  MONAD: 1,
+  TETRAD: 2,
+  HECTAD: 10,
+}
 
 // Get version from last git commit
 const gitdescr = execSync('git describe --tags --long')
@@ -145,11 +177,22 @@ async function run(argv) {
       factor2: 10000,
       gridreffigs: 4
     }
-    if (!config.hasOwnProperty('useMonadsNotHectads')) {
+    if (config.hasOwnProperty('boxSize')) {
+      const boxsize = config.boxSize.toLowerCase()
+      if (boxsize === 'monad') config.boxSize = BOXSIZES.MONAD
+      else if (boxsize === 'tetrad') config.boxSize = BOXSIZES.TETRAD
+      else if (boxsize === 'hectad') config.boxSize = BOXSIZES.HECTAD
+      else {
+        console.error('unrecognised config.boxSize', config.boxSize)
+        return 0
+      }
+      config.useMonadsNotHectads = true
+    } else if (!config.hasOwnProperty('useMonadsNotHectads')) {
       console.log('Using default: map to hectad')
       config.useMonadsNotHectads = false
+      config.boxSize = BOXSIZES.HECTAD
     }
-    SCALE = config.useMonadsNotHectads ? monadSCALE : hectadSCALE
+    SCALE = config.boxSize === BOXSIZES.HECTAD ? hectadSCALE : monadSCALE
 
     // Default makeGenusMaps to false
     if (!config.hasOwnProperty('makeGenusMaps')) {
@@ -307,6 +350,21 @@ async function run(argv) {
 
 ///////////////////////////////////////////////////////////////////////////////////////
 ///////////////////////////////////////////////////////////////////////////////////////
+
+const charcode0 = '0'.charCodeAt(0)
+const charcode9 = '9'.charCodeAt(0)
+
+function notNumeric(box, from, to) {
+  const str = box.substring(from, to)
+  for (let i = 0; i < str.length; i++) {
+    const ich = str.charCodeAt(i)
+    if (ich < charcode0 || ich > charcode9) {
+      errors.push('Spatial Reference duff characters: ' + box)
+      return true
+    }
+  }
+  return false
+}
 // processLine: Process a line of CSV data ie a single record
 // updateSpeciesesGrids: Update the data for a species or genus
 
@@ -424,6 +482,7 @@ function processLine(file, row, fileSpecieses) {
     return
   }
 
+  let dieyoung = false
   // From grid reference, work out Eastings and Northings and box name eg NY51 or NY5714
   let Eastings = 0
   let Northings = 0
@@ -433,59 +492,104 @@ function processLine(file, row, fileSpecieses) {
   let box = SpatialReference
   const grfig = SCALE.gridreffigs / 2
   if (box.length === 12) {
+    if( notNumeric(box,2)) return
     Eastings += parseInt(box.substring(2, 7))
     Northings += parseInt(box.substring(7))
     box = box.substring(0, 2 + grfig) + box.substring(7, 7 + grfig)
     isGB = true
   }
   else if (box.length === 10) {
+    if (notNumeric(box, 2)) return
     Eastings += parseInt(box.substring(2, 6)) * 10
     Northings += parseInt(box.substring(6)) * 10
     box = box.substring(0, 2 + grfig) + box.substring(6, 6 + grfig)
     isGB = true
   }
   else if (box.length === 8) {
+    if (notNumeric(box, 2)) return
     Eastings += parseInt(box.substring(2, 5)) * 100
     Northings += parseInt(box.substring(5)) * 100
     box = box.substring(0, 2 + grfig) + box.substring(5, 5 + grfig)
     isGB = true
   }
   else if (box.length === 6) {
-    Eastings += parseInt(box.substring(2, 4)) * 1000
-    Northings += parseInt(box.substring(4)) * 1000
-    box = box.substring(0, 2 + grfig) + box.substring(4, 4 + grfig)
+    const lasttwochars = box.substring(4, 6)
+    const quadrantnw = lasttwochars==='NW'
+    const quadrantsw = lasttwochars === 'SW'
+    const quadrantse = lasttwochars === 'SE'
+    const quadrantne = lasttwochars === 'NE'
+    if (quadrantnw || quadrantsw || quadrantse || quadrantne) {
+      if (notNumeric(box, 2, 4)) return
+      Eastings += parseInt(box.substring(2, 3)) * 10000
+      Northings += parseInt(box.substring(3)) * 10000
+      if (quadrantne || quadrantse) Eastings += 5000
+      if (quadrantne || quadrantnw) Northings += 5000
+      box = box.substring(0, 4)
+    } else {
+      if (notNumeric(box, 2)) return
+      Eastings += parseInt(box.substring(2, 4)) * 1000
+      Northings += parseInt(box.substring(4)) * 1000
+      box = box.substring(0, 2 + grfig) + box.substring(4, 4 + grfig)
+    }
     isGB = true
   }
   else if (box.length === 4) {
+    if (notNumeric(box, 2)) return
     Eastings += parseInt(box.substring(2, 3)) * 10000
     Northings += parseInt(box.substring(3)) * 10000
     isGB = true
   }
   else if (box.length === 11) {
+    if (notNumeric(box, 1)) return
     Eastings += parseInt(box.substring(1, 6))
     Northings += parseInt(box.substring(6))
     box = box.substring(0, 1 + grfig) + box.substring(6, 6 + grfig)
     isIE = true
   }
   else if (box.length === 9) {
+    if (notNumeric(box, 1)) return
     Eastings += parseInt(box.substring(1, 5)) * 10
     Northings += parseInt(box.substring(5)) * 10
     box = box.substring(0, 1 + grfig) + box.substring(5, 5 + grfig)
     isIE = true
   }
   else if (box.length === 7) {
+    if (notNumeric(box, 1)) return
     Eastings += parseInt(box.substring(1, 4)) * 100
     Northings += parseInt(box.substring(4)) * 100
     box = box.substring(0, 1 + grfig) + box.substring(4, 4 + grfig)
     isIE = true
   }
   else if (box.length === 5) {
-    Eastings += parseInt(box.substring(1, 3)) * 1000
-    Northings += parseInt(box.substring(3)) * 1000
-    box = box.substring(0, 1 + grfig) + box.substring(3, 3 + grfig)
-    isIE = true
+    const tetradchar = box.substring(4).toUpperCase()
+    if (tetradchar.match(/[A-Z]/)) {
+      if (tetradchar === 'O') { errors.push(ObsKey + ' duff tetrad letter: ' + tetradchar + ': ' + SpatialReference); return }
+      if (notNumeric(box, 2, 4)) return
+      Eastings += parseInt(box.substring(2, 3)) * 10000
+      Northings += parseInt(box.substring(3)) * 10000
+      let found = false
+      for (let i = 0; i < tetradletters.length; i++) {
+        const boxbl = tetradletters[i]
+        if (boxbl.l === tetradchar) {
+          Eastings += boxbl.e * 10
+          Northings += boxbl.n * 10
+          found = true
+          break
+        }
+      }
+      if (!found) { errors.push(ObsKey + ' duff tetrad letter: ' + tetradchar + ': ' + SpatialReference); return }
+      dieyoung = true
+      isGB = true
+    } else {
+      if (notNumeric(box, 1)) return
+      Eastings += parseInt(box.substring(1, 3)) * 1000
+      Northings += parseInt(box.substring(3)) * 1000
+      box = box.substring(0, 1 + grfig) + box.substring(3, 3 + grfig)
+      isIE = true
+    }
   }
   else if (box.length === 3) {
+    if (notNumeric(box, 1)) return
     Eastings += parseInt(box.substring(1, 2)) * 10000
     Northings += parseInt(box.substring(2)) * 10000
     isIE = true
@@ -505,7 +609,7 @@ function processLine(file, row, fileSpecieses) {
   if (isGB) {
     for (let i = 0; i < GBletters1.length; i++) {
       const boxbl = GBletters1[i]
-      if (boxbl.l == l1) {
+      if (boxbl.l === l1) {
         //console.log('boxbl', boxbl)
         Eastings += boxbl.e * 1000
         Northings += boxbl.n * 1000
@@ -516,7 +620,7 @@ function processLine(file, row, fileSpecieses) {
     const l2 = box.substring(1, 2)
     for (let i = 0; i < GBletters2.length; i++) {
       const boxbl = GBletters2[i]
-      if (boxbl.l == l2) {
+      if (boxbl.l === l2) {
         //console.log('boxbl', boxbl)
         Eastings += boxbl.e * 1000
         Northings += boxbl.n * 1000
@@ -526,7 +630,7 @@ function processLine(file, row, fileSpecieses) {
   } else {
     for (let i = 0; i < IEletters.length; i++) {
       const boxbl = IEletters[i]
-      if (boxbl.l == l1) {
+      if (boxbl.l === l1) {
         //console.log('boxbl', boxbl)
         Eastings += boxbl.e * 1000
         Northings += boxbl.n * 1000
@@ -534,7 +638,22 @@ function processLine(file, row, fileSpecieses) {
       }
     }
   }
-  //console.log(SpatialReference, box, Eastings, Northings, EastingsExplicit, NorthingsExplicit)
+  if (config.boxSize === BOXSIZES.TETRAD) {
+    const ebit = (Eastings % 10000)/1000
+    const nbit = (Northings % 10000)/1000
+    //console.log('box ebit nbit', box, ebit, nbit)
+    let tetradletter = Math.floor(nbit/2)
+    if (ebit < 2) tetradletter += 0
+    else if (ebit < 4) tetradletter += 5
+    else if (ebit < 6) tetradletter += 10
+    else if (ebit < 8) tetradletter += 15
+    else tetradletter += 20
+    //console.log('tetradletter#', tetradletter)
+    tetradletter = tetradletters[tetradletter].l
+    //console.log('tetradletter', tetradletter)
+  }
+  if (dieyoung)
+    console.log(SpatialReference, box, Eastings, Northings, EastingsExplicit, NorthingsExplicit)
 
   if (ExplicitGiven) {
     if ((Math.abs(Eastings - EastingsExplicit) > 2) || (Math.abs(Northings - NorthingsExplicit) > 2)) {
