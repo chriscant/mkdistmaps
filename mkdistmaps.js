@@ -365,6 +365,55 @@ function notNumeric(box, from, to) {
   }
   return false
 }
+
+// A10, A10V, A1234, NY10, NY10X, NY1234
+function getGRtype(box) {
+  const rv = { isHectad: false, isTetrad: false, isIE: false, boxfull: box }
+  const len = box.length
+  const lastchar = box.charCodeAt(len-1)
+  const lastcharisdigit = lastchar >= charcode0 && lastchar <= charcode9
+  if (!lastcharisdigit) {
+    const tetradchar = box.substring(len-1)
+    let found = false
+    for (let i = 0; i < tetradletters.length; i++) {
+      const boxbl = tetradletters[i]
+      if (boxbl.l === tetradchar) {
+        rv.boxfull = box.substring(0, len - 2) + (boxbl.e / 100) + box.substring(len - 2, len - 1) + (boxbl.n / 100)
+        console.log('TETRAD', boxbl, rv.boxfull)
+        found = true
+        break
+      }
+    }
+    if (!found) throw new Error("Tetrad letter not found", tetradchar)
+  }
+  
+  console.log(box, lastchar, lastcharisdigit)
+  switch (box.length) {
+    case 3:
+      rv.isIE = true
+      rv.isHectad = true
+      break
+    case 4:
+      if (lastcharisdigit) {
+        rv.isHectad = true
+      } else {
+        rv.isIE = true
+        rv.isTetrad = true
+      }
+      break
+    case 5:
+      if (!lastcharisdigit) {
+        rv.isTetrad = true
+      }
+      else rv.isIE = true
+      break
+    case 6: 
+      break
+    default:
+      throw new Error('isGRie duff gr', gr)
+  }
+  return rv
+}
 // processLine: Process a line of CSV data ie a single record
 // updateSpeciesesGrids: Update the data for a species or genus
 
@@ -482,7 +531,6 @@ function processLine(file, row, fileSpecieses) {
     return
   }
 
-  let dieyoung = false
   // From grid reference, work out Eastings and Northings and box name eg NY51 or NY5714
   let Eastings = 0
   let Northings = 0
@@ -578,7 +626,6 @@ function processLine(file, row, fileSpecieses) {
         }
       }
       if (!found) { errors.push(ObsKey + ' duff tetrad letter: ' + tetradchar + ': ' + SpatialReference); return }
-      dieyoung = true
       isGB = true
     } else {
       if (notNumeric(box, 1)) return
@@ -639,21 +686,26 @@ function processLine(file, row, fileSpecieses) {
     }
   }
   if (config.boxSize === BOXSIZES.TETRAD) {
-    const ebit = (Eastings % 10000)/1000
-    const nbit = (Northings % 10000)/1000
-    //console.log('box ebit nbit', box, ebit, nbit)
-    let tetradletter = Math.floor(nbit/2)
-    if (ebit < 2) tetradletter += 0
-    else if (ebit < 4) tetradletter += 5
-    else if (ebit < 6) tetradletter += 10
-    else if (ebit < 8) tetradletter += 15
-    else tetradletter += 20
-    //console.log('tetradletter#', tetradletter)
-    tetradletter = tetradletters[tetradletter].l
-    //console.log('tetradletter', tetradletter)
+    const isMonad = (isGB && box.length === 6) || (isIE && box.length === 5)
+    const isTetrad = (isGB && box.length === 5) || (isIE && box.length === 4)
+    if (isMonad) { // ie monad NY3329 or A1234
+      const ebit = (Eastings % 10000) / 1000
+      const nbit = (Northings % 10000) / 1000
+      let tetradletter = Math.floor(nbit / 2)
+      if (ebit < 2) tetradletter += 0
+      else if (ebit < 4) tetradletter += 5
+      else if (ebit < 6) tetradletter += 10
+      else if (ebit < 8) tetradletter += 15
+      else tetradletter += 20
+      tetradletter = tetradletters[tetradletter].l
+      if (isGB) {
+        box = box.substring(0, 3) + box.substring(4, 5) + tetradletter
+      } else {
+        box = box.substring(0, 2) + box.substring(3, 4) + tetradletter
+      }
+    }
   }
-  if (dieyoung)
-    console.log(SpatialReference, box, Eastings, Northings, EastingsExplicit, NorthingsExplicit)
+  //console.log(SpatialReference, box, Eastings, Northings, EastingsExplicit, NorthingsExplicit)
 
   if (ExplicitGiven) {
     if ((Math.abs(Eastings - EastingsExplicit) > 2) || (Math.abs(Northings - NorthingsExplicit) > 2)) {
@@ -669,7 +721,7 @@ function processLine(file, row, fileSpecieses) {
   if (!boxes[box]) {
     boxes[box] = {
       e: Math.floor(Eastings / SCALE.factor),
-      n: Math.floor(Northings / SCALE.factor)
+      n: Math.floor(Northings / SCALE.factor),
     }
   }
 
@@ -971,15 +1023,16 @@ async function make_geojson(rowCount) {
 
     let reccount = 0
     let boxcount = 0
-    for (let doMonad = 0; doMonad < 2; doMonad++) { // Process hectads first so they appear behind monads
+    for (let notHectad = 0; notHectad < 2; notHectad++) { // Process hectads first so they appear behind monads/tetrads
       for (let [box, boxdata] of Object.entries(speciesGrids.boxes)) {
-        const isHectad = box.length === 3 || box.length === 4
-        if ((isHectad && doMonad) || (!isHectad && !doMonad)) {
+        const { isHectad, isTetrad, isIE, boxfull } = getGRtype(box)
+        console.log('isHectad, isTetrad, isIE, boxfull', isHectad, isTetrad, isIE, boxfull)
+        if ((isHectad && notHectad) || (!isHectad && !notHectad)) {
           continue
         }
         reccount += boxdata.count
         const boxloc = boxes[box]
-
+        
         let color = rgbHex('rgba(255,20, 147, 1)') // default to pink
         if (config.maptype === 'count') {
           for (const countcolour of Object.values(config.countcolours)) {
@@ -995,17 +1048,16 @@ async function make_geojson(rowCount) {
             }
           }
         }
+        
         let osgbie = new geotools2m.GT_OSGB()
-        if (box.length % 2 === 1) {
-          osgbie = new geotools2m.GT_Irish()
-        }
-        osgbie.parseGridRef(box)
+        if (isIE) osgbie = new geotools2m.GT_Irish()
+        osgbie.parseGridRef(boxfull)
         const boxbl = osgbie.getWGS84()
         //console.log(box, boxbl)
         let boxside = 1000 // monad
-        if (isHectad) { // hectad
-          boxside = 10000
-        }
+        if (isTetrad) boxside = 2000 // tetrad
+        else if (isHectad) boxside = 10000 // hectad
+
         osgbie.northings += boxside
         const boxtl = osgbie.getWGS84()
         osgbie.eastings += boxside
