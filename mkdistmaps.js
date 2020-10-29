@@ -19,6 +19,7 @@ const PImage = require('pureimage')
 const execSync = require('child_process').execSync
 const moment = require('moment')
 const rgbHex = require('rgb-hex')
+const _ = require('lodash/core')
 
 const geotools2m = require('./geotools2m') // http://www.nearby.org.uk/tests/GeoTools2.html
 
@@ -290,7 +291,6 @@ async function run(argv) {
       return 0
     }
 
-
     if (!config.basemap.title_x) config.basemap.title_x = 10
     if (!config.basemap.title_y) config.basemap.title_y = 30
     if (!config.basemap.title_y_inc) config.basemap.title_y_inc = 25
@@ -359,6 +359,8 @@ async function run(argv) {
 const charcode0 = '0'.charCodeAt(0)
 const charcode9 = '9'.charCodeAt(0)
 
+// notNumeric: return true if any characters in string in given range are not numeric
+
 function notNumeric(box, from, to) {
   const str = box.substring(from, to)
   for (let i = 0; i < str.length; i++) {
@@ -371,6 +373,7 @@ function notNumeric(box, from, to) {
   return false
 }
 
+// getGRtype: return various attributes of the given 'box' grid reference
 // A10, A10V, A1234, NY10, NY10X, NY1234
 function getGRtype(box) {
   const rv = { isHectad: false, isTetrad: false, isIE: false, boxfull: box }
@@ -378,17 +381,10 @@ function getGRtype(box) {
   const lastchar = box.charCodeAt(len-1)
   const lastcharisdigit = lastchar >= charcode0 && lastchar <= charcode9
   if (!lastcharisdigit) {
-    const tetradchar = box.substring(len-1)
-    let found = false
-    for (let i = 0; i < tetradletters.length; i++) {
-      const boxbl = tetradletters[i]
-      if (boxbl.l === tetradchar) {
-        rv.boxfull = box.substring(0, len - 2) + (boxbl.e / 100) + box.substring(len - 2, len - 1) + (boxbl.n / 100)
-        found = true
-        break
-      }
-    }
-    if (!found) throw new Error("Tetrad letter not found", tetradchar)
+    const tetradchar = box.substring(len - 1)
+    const boxbl = _.find(tetradletters, boxbl => { return boxbl.l === tetradchar })
+    if (!boxbl) throw new Error("Tetrad letter not found", tetradchar)
+    rv.boxfull = box.substring(0, len - 2) + (boxbl.e / 100) + box.substring(len - 2, len - 1) + (boxbl.n / 100)
   }
   
   switch (box.length) {
@@ -417,7 +413,7 @@ function getGRtype(box) {
   }
   return rv
 }
-// processLine: Process a line of CSV data ie a single record
+
 // updateSpeciesesGrids: Update the data for a species or genus
 
 // 'Spatial Reference': 'NY30',     Eastings: '330001', Northings: '500000',
@@ -430,15 +426,15 @@ function getGRtype(box) {
 //                       J3438674590           334386               374590 
 //                                       17646.6931-370000       0-467252
 
-const speciesesGrids = {}
+const speciesesGrids = {} // gets a prop for each map generated with value object having per-map boxes etc
 let speciesCount = 0
 let genusCount = 0
-let allCount = 0;
+let allCount = 0
 const errors = []
 let lineno = 0
 let records = 0
 let empties = 0
-const boxes = {}
+const boxes = {}          // gets a prop for each square, eg A10, NY51, and SD23L or NC1234
 
 function updateSpeciesesGrids(TaxonName, box, Year, isGenus, fileSpecieses, inTotal, makeAllSpeciesMapTaxon) {
   if (isGenus) TaxonName += ' -all'
@@ -490,13 +486,14 @@ function updateSpeciesesGrids(TaxonName, box, Year, isGenus, fileSpecieses, inTo
 }
 
 
+// processLine: Process a line of CSV data ie a single record
+
 function processLine(file, row, fileSpecieses) {
   //console.log(row)
   lineno++
 
   // Get GR (no spaces) and species name
   const SpatialReference = row[config.recordset.GRCol].toUpperCase().replace(/ /g, '')
-  //console.log('SpatialReference', SpatialReference)
   const TaxonName = row[config.recordset.TaxonCol].trim()
   if (SpatialReference.length === 0 || TaxonName.length === 0 || TaxonName.substring(0,1)==='#') {
     empties++
@@ -573,8 +570,8 @@ function processLine(file, row, fileSpecieses) {
       if (notNumeric(box, 2, 4)) return
       Eastings += parseInt(box.substring(2, 3)) * 10000
       Northings += parseInt(box.substring(3)) * 10000
-      // NO as point count at hectad level: if (quadrantne || quadrantse) Eastings += 5000
-      // NO as point count at hectad level: if (quadrantne || quadrantnw) Northings += 5000
+      // NO as point stored at hectad level: if (quadrantne || quadrantse) Eastings += 5000
+      // NO as point stored at hectad level: if (quadrantne || quadrantnw) Northings += 5000
       box = box.substring(0, 4)
     } else {
       if (notNumeric(box, 2)) return
@@ -619,21 +616,14 @@ function processLine(file, row, fileSpecieses) {
       if (notNumeric(box, 2, 4)) return
       Eastings += parseInt(box.substring(2, 3)) * 10000
       Northings += parseInt(box.substring(3)) * 10000
-      let found = false
-      for (let i = 0; i < tetradletters.length; i++) {
-        const boxbl = tetradletters[i]
-        if (boxbl.l === tetradchar) {
-          Eastings += boxbl.e * 10
-          Northings += boxbl.n * 10
-          found = true
-          break
-        }
-      }
-      if (!found) { errors.push(ObsKey + ' duff tetrad letter: ' + tetradchar + ': ' + SpatialReference); return }
+      const boxbl = _.find(tetradletters, boxbl => { return boxbl.l === tetradchar })
+      if (!boxbl) { errors.push(ObsKey + ' duff tetrad letter: ' + tetradchar + ': ' + SpatialReference); return }
+      Eastings += boxbl.e * 10
+      Northings += boxbl.n * 10
       isGB = true
-      if (config.boxSize !== BOXSIZES.TETRAD) { // If not shwoing tetrads then convert to show at hectad level
+      if (config.boxSize !== BOXSIZES.TETRAD) { // If not showing tetrads then convert to show at hectad level
         box = box.substring(0, 4)
-        Eastings = Math.floor(Eastings/10000)*10000
+        Eastings = Math.floor(Eastings / 10000) * 10000
         Northings = Math.floor(Northings / 10000) * 10000
       }
     } else {
@@ -694,7 +684,7 @@ function processLine(file, row, fileSpecieses) {
       }
     }
   }
-  if (config.boxSize === BOXSIZES.TETRAD) {
+  if (config.boxSize === BOXSIZES.TETRAD) { // If a monad, convert to tetrad form if need be
     const isMonad = (isGB && box.length === 6) || (isIE && box.length === 5)
     const isTetrad = (isGB && box.length === 5) || (isIE && box.length === 4)
     if (isMonad) { // ie monad NY3329 or A1234
@@ -722,9 +712,6 @@ function processLine(file, row, fileSpecieses) {
       return
     }
   }
-  //console.log('box', box)
-  //console.log('Eastings', Eastings)
-  //console.log('Northings', Northings)
 
   // Save box name and location
   if (!boxes[box]) {
@@ -863,7 +850,6 @@ async function make_images(rowCount) {
   await loadFont
 
   // Go through all species
-  const hectadboxlen = usesIE?3:4
   let done = 0
   for (const [MapName, speciesGrids] of Object.entries(speciesesGrids)) {
     //console.log(MapName, speciesGrids)
@@ -1005,7 +991,6 @@ async function make_images(rowCount) {
 
 async function make_geojson(rowCount) {
   // Go through all species
-  const hectadboxlen = usesIE ? 3 : 4
   let done = 0
   for (const [MapName, speciesGrids] of Object.entries(speciesesGrids)) {
     console.log(MapName)
@@ -1076,7 +1061,6 @@ async function make_geojson(rowCount) {
         if (isIE) osgbie = new geotools2m.GT_Irish()
         osgbie.parseGridRef(boxfull)
         const boxbl = osgbie.getWGS84()
-        //console.log(box, boxbl)
         let boxside = 1000 // monad
         if (isTetrad) boxside = 2000 // tetrad
         else if (isHectad) boxside = 10000 // hectad
@@ -1087,7 +1071,6 @@ async function make_geojson(rowCount) {
         const boxtr = osgbie.getWGS84()
         osgbie.northings -= boxside
         const boxbr = osgbie.getWGS84()
-        //console.log(box, osgb, boxtr)
 
         if (config.geojsonprecision) {
           boxbl.latitude = boxbl.latitude.toPrecision(config.geojsonprecision)

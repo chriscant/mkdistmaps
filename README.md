@@ -18,7 +18,7 @@ You can opt to group by the number of records in each square and have an overvie
 You can see example generated geojson maps for lichens in Cumbria at the 
 [Cumbria Lichens and Bryophytes](https://cumbrialichensbryophytes.org.uk/lichen-species-maps/) website.
 
-# Usage
+# Usage: Creating a distribution map PNG image
 
 Ensure you have [git](https://git-scm.com/downloads) and [nodejs](https://nodejs.org/en/download/) installed.
 You will also need your records in CSV format and a base map image.
@@ -60,7 +60,7 @@ The mkdistmaps version string and the runtime date and time are added in grey at
 
 **Example monad maps:**
 
-Both these monad-level maps use the same data (all records of *Aspicilia calcarea* in VC69 and VC70, Cumbria, as of January 2020).
+Both these monad-level maps use the same data (all records of *Aspicilia calcarea* in VC69 and VC70, Cumbria, as of June 2020).
 The first shows the data on a map of Cumbria.
 The second shows the data on a map of most of Great Britain.
 
@@ -102,7 +102,7 @@ Boxes: 998
 Runtime: 191 seconds
 ```
 
-# GeoJson output
+# Usage: GeoJson output
 
 If you set the **outputtype** to be `geojson` then [geojson](https://en.wikipedia.org/wiki/GeoJSON) format files are generated
 using standard FeatureCollection, Feature and Polygon object types, with the coordinates output in WGS84 latitude and longitude. 
@@ -158,7 +158,7 @@ npm install
 
 
 
-## Configuration
+## Usage: configuration
 
 Specify what you want done in a configuration file.
 The config file must be in [JavaScript Object Notation (JSON) format](https://www.w3schools.com/js/js_json.asp).
@@ -323,7 +323,7 @@ The tests use the font "SourceSansPro-Regular.ttf" from https://github.com/googl
 
 [makerecords.js](makerecords.js) is a command line tool which can be used to generate large test CSV data files.
 The generated records are randomly distributed across the chosen area, ie GB, IE or GB&IE.
-A linear species distribution is used so very few of somes species are likely to be generated, but many more of others.
+A linear species distribution is used so very few of some species are likely to be generated, but many more of others.
 Specify a seed parameter string if you wish to generate a consistent list.
 The species are given names from the start of an [npm word list](https://github.com/sindresorhus/word-list).
 
