@@ -118,6 +118,21 @@ const BOXSIZES = {
   HECTAD: 10,
 }
 
+const hectadSize = 10000
+
+const hectadSCALE = {
+  smallBoxSize: 10000,
+  gridreffigs: 2
+}
+const tetradSCALE = {
+  smallBoxSize: 2000,
+  gridreffigs: 4
+}
+const monadSCALE = {
+  smallBoxSize: 1000,
+  gridreffigs: 4
+}
+
 // Get version from last git commit
 const gitdescr = execSync('git describe --tags --long')
 let version = 'mkdistmaps ' + gitdescr.toString('utf8', 0, gitdescr.length - 1) + ' - run at ' + moment().format('Do MMMM YYYY, h:mm:ss a')
@@ -167,16 +182,6 @@ async function run(argv) {
     fs.mkdirSync(path.join(__dirname, config.outputFolder), { recursive: true })
 
     // Set scale factor for hectad or monad
-    const hectadSCALE = {
-      factor: 10000,
-      factor2: 10000,
-      gridreffigs: 2
-    }
-    const monadSCALE = {
-      factor: 1000,
-      factor2: 10000,
-      gridreffigs: 4
-    }
     if (config.hasOwnProperty('boxSize')) {
       const boxsize = config.boxSize.toLowerCase()
       if (boxsize === 'monad') config.boxSize = BOXSIZES.MONAD
@@ -186,13 +191,13 @@ async function run(argv) {
         console.error('unrecognised config.boxSize', config.boxSize)
         return 0
       }
-      config.useMonadsNotHectads = true
-    } else if (!config.hasOwnProperty('useMonadsNotHectads')) {
+    } else if (config.hasOwnProperty('useMonadsNotHectads')) {
+      config.boxSize = config.useMonadsNotHectads ? config.boxSize = BOXSIZES.MONAD : config.boxSize = BOXSIZES.HECTAD
+    } else {
       console.log('Using default: map to hectad')
-      config.useMonadsNotHectads = false
       config.boxSize = BOXSIZES.HECTAD
     }
-    SCALE = config.boxSize === BOXSIZES.HECTAD ? hectadSCALE : monadSCALE
+    SCALE = (config.boxSize === BOXSIZES.HECTAD) ? hectadSCALE : ((config.boxSize === BOXSIZES.TETRAD) ? tetradSCALE : monadSCALE)
 
     // Default makeGenusMaps to false
     if (!config.hasOwnProperty('makeGenusMaps')) {
@@ -379,7 +384,6 @@ function getGRtype(box) {
       const boxbl = tetradletters[i]
       if (boxbl.l === tetradchar) {
         rv.boxfull = box.substring(0, len - 2) + (boxbl.e / 100) + box.substring(len - 2, len - 1) + (boxbl.n / 100)
-        console.log('TETRAD', boxbl, rv.boxfull)
         found = true
         break
       }
@@ -387,7 +391,6 @@ function getGRtype(box) {
     if (!found) throw new Error("Tetrad letter not found", tetradchar)
   }
   
-  console.log(box, lastchar, lastcharisdigit)
   switch (box.length) {
     case 3:
       rv.isIE = true
@@ -582,6 +585,7 @@ function processLine(file, row, fileSpecieses) {
     isGB = true
   }
   else if (box.length === 4) {
+    // TODO: process Irish tetrad letter
     if (notNumeric(box, 2)) return
     Eastings += parseInt(box.substring(2, 3)) * 10000
     Northings += parseInt(box.substring(3)) * 10000
@@ -627,6 +631,11 @@ function processLine(file, row, fileSpecieses) {
       }
       if (!found) { errors.push(ObsKey + ' duff tetrad letter: ' + tetradchar + ': ' + SpatialReference); return }
       isGB = true
+      if (config.boxSize !== BOXSIZES.TETRAD) { // If not shwoing tetrads then convert to show at hectad level
+        box = box.substring(0, 4)
+        Eastings = Math.floor(Eastings/10000)*10000
+        Northings = Math.floor(Northings / 10000) * 10000
+      }
     } else {
       if (notNumeric(box, 1)) return
       Eastings += parseInt(box.substring(1, 3)) * 1000
@@ -719,10 +728,20 @@ function processLine(file, row, fileSpecieses) {
 
   // Save box name and location
   if (!boxes[box]) {
-    boxes[box] = {
-      e: Math.floor(Eastings / SCALE.factor),
-      n: Math.floor(Northings / SCALE.factor),
+    const boxloc = {
+      e: Math.floor(Eastings / 1000),
+      n: Math.floor(Northings / 1000),
     }
+    if (config.boxSize === BOXSIZES.HECTAD) {
+      boxloc.e = Math.floor(boxloc.e / 10) * 10
+      boxloc.n = Math.floor(boxloc.n / 10) * 10
+    }
+    if (config.boxSize === BOXSIZES.TETRAD) {
+      boxloc.e = Math.floor(boxloc.e / 2) * 2
+      boxloc.n = Math.floor(boxloc.n / 2) * 2
+    }
+    if (box === 'NY05') console.log(SpatialReference, box, boxloc)
+    boxes[box] = boxloc
   }
 
   // Add/Update record for species ie count, min and max year for each box
@@ -808,31 +827,34 @@ async function make_images(rowCount) {
   const mapeastings = config.basemap.east - config.basemap.west     // eg 390500-293169
   const mapnorthings = config.basemap.north - config.basemap.south  // eg 589703-460155
   console.log(mapeastings, mapnorthings)
-  const boxswidth = mapeastings / SCALE.factor
-  console.log('boxswidth', boxswidth)
-  let boxwidth = width / boxswidth  // boxheight should be the same if map in proportion
-  console.log('boxwidth', boxwidth)
-  const boxswidth2 = mapeastings / SCALE.factor2
-  console.log('boxswidth2', boxswidth2)
-  const boxwidth2 = width / boxswidth2  // boxheight should be the same if map in proportion
-  console.log('boxwidth2', boxwidth2)
+  const boxswidthSmall = mapeastings / SCALE.smallBoxSize
+  console.log('boxswidthSmall', boxswidthSmall)
+  let boxwidthSmall = width / boxswidthSmall  // boxheight should be the same if map in proportion
+  console.log('boxwidthSmall', boxwidthSmall)
+  const boxswidthHectad = mapeastings / hectadSize
+  console.log('boxswidthHectad', boxswidthHectad)
+  const boxwidthHectad = width / boxswidthHectad  // boxheight should be the same if map in proportion
+  console.log('boxwidthHectad', boxwidthHectad)
 
   if (!config.basemap.legend_y) config.basemap.legend_y = Math.trunc(height/2)
 
   // Now set image x and y for each box
   for (const [box, boxloc] of Object.entries(boxes)) {
-    const n = (boxloc.n * SCALE.factor) - config.basemap.south
-    const hn = n / SCALE.factor
-    const hnp = hn * boxwidth
-    boxloc.y = height - hnp - boxwidth
-    const e = (boxloc.e * SCALE.factor) - config.basemap.west
-    const he = e / SCALE.factor
-    const hep = he * boxwidth
-    boxloc.x = hep // - boxwidth
+    //if (box === 'NY24S' || box == 'NY2645') console.log('box, boxloc', box, boxloc)
+    if (box === 'NY05') console.log('box, boxloc', box, boxloc)
+    const n = (boxloc.n * 1000) - config.basemap.south
+    const hn = n / 1000
+    const hnp = hn * boxwidthHectad / 10
+    //boxloc.y = height - hnp - (boxwidthHectad / 10)
+    boxloc.y = height - hnp
+    const e = (boxloc.e * 1000) - config.basemap.west
+    const he = e / 1000
+    const hep = he * boxwidthHectad / 10
+    boxloc.x = hep // - boxwidthSmall
   }
-  if (boxwidth < 2) boxwidth = 2
-  const boxwidthhalf = boxwidth / 2
-  console.log('boxwidthhalf', boxwidthhalf)
+  if (boxwidthSmall < 2) boxwidthSmall = 2
+  const boxwidthSmallhalf = boxwidthSmall / 2
+  console.log('boxwidthSmallhalf', boxwidthSmallhalf)
 
   // Load the font
   const loadFont = new Promise((resolve, reject) => {
@@ -886,6 +908,7 @@ async function make_images(rowCount) {
     for (const [box, boxdata] of Object.entries(speciesGrids.boxes)) {
       reccount += boxdata.count
       const boxloc = boxes[box]
+      const { isHectad, isTetrad, isIE, boxfull } = getGRtype(box)
 
       // Determine box colour
       ctx.fillStyle = 'rgba(255,20, 147, 1)' // default to pink
@@ -906,17 +929,22 @@ async function make_images(rowCount) {
       ctx.strokeStyle = ctx.fillStyle
 
       // Draw solid or round box (and optional hectad outline)
-      if (SCALE.gridreffigs === 4 && box.length === hectadboxlen) {
-        ctx.strokeRect(boxloc.x, boxloc.y - boxwidth2 + boxwidth2/10, boxwidth2, boxwidth2)
+      // Remember: y goes wrong way so subtract that first
+      if (isHectad) {
+        //console.log('ISHECTAD', box, boxloc, boxloc.x, boxloc.y - boxwidthHectad + boxwidthHectad / 10, boxwidthHectad, boxwidthHectad)
+        if (config.boxSize === BOXSIZES.HECTAD) {
+          ctx.fillRect(boxloc.x, boxloc.y - boxwidthHectad, boxwidthHectad, boxwidthHectad)
+        } else {
+          ctx.strokeRect(boxloc.x, boxloc.y - boxwidthHectad, boxwidthHectad, boxwidthHectad)
+        }
       } else {
-        if (boxdata.count === 1 && config.useMonadsNotHectads) {
+        if ((boxdata.count === 1) && (config.boxSize !== BOXSIZES.HECTAD)) {
           ctx.beginPath()
-          ctx.arc(boxloc.x + boxwidthhalf, boxloc.y + boxwidthhalf, boxwidthhalf, 0, 2 * Math.PI, false) // Math.PI
+          ctx.arc(boxloc.x + boxwidthSmallhalf, boxloc.y - boxwidthSmallhalf, boxwidthSmallhalf, 0, 2 * Math.PI, false) // Math.PI
           ctx.closePath()
           ctx.fill()
-
         } else {
-          ctx.fillRect(boxloc.x, boxloc.y, boxwidth, boxwidth)
+          ctx.fillRect(boxloc.x, boxloc.y-boxwidthSmall, boxwidthSmall, boxwidthSmall)
         }
       }
 
@@ -924,7 +952,7 @@ async function make_images(rowCount) {
       if (config.basemap.showhectadname) {
         ctx.fillStyle = config.font_colour
         ctx.font = config.basemap.hectad_fontsize + " 'TheFont'"
-        ctx.fillText(box, boxloc.x, boxloc.y + boxwidth)
+        ctx.fillText(box, boxloc.x, boxloc.y + boxwidthSmall)
       }
     }
 
@@ -1026,7 +1054,6 @@ async function make_geojson(rowCount) {
     for (let notHectad = 0; notHectad < 2; notHectad++) { // Process hectads first so they appear behind monads/tetrads
       for (let [box, boxdata] of Object.entries(speciesGrids.boxes)) {
         const { isHectad, isTetrad, isIE, boxfull } = getGRtype(box)
-        console.log('isHectad, isTetrad, isIE, boxfull', isHectad, isTetrad, isIE, boxfull)
         if ((isHectad && notHectad) || (!isHectad && !notHectad)) {
           continue
         }
