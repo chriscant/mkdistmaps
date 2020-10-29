@@ -573,8 +573,8 @@ function processLine(file, row, fileSpecieses) {
       if (notNumeric(box, 2, 4)) return
       Eastings += parseInt(box.substring(2, 3)) * 10000
       Northings += parseInt(box.substring(3)) * 10000
-      if (quadrantne || quadrantse) Eastings += 5000
-      if (quadrantne || quadrantnw) Northings += 5000
+      // NO as point count at hectad level: if (quadrantne || quadrantse) Eastings += 5000
+      // NO as point count at hectad level: if (quadrantne || quadrantnw) Northings += 5000
       box = box.substring(0, 4)
     } else {
       if (notNumeric(box, 2)) return
@@ -740,7 +740,6 @@ function processLine(file, row, fileSpecieses) {
       boxloc.e = Math.floor(boxloc.e / 2) * 2
       boxloc.n = Math.floor(boxloc.n / 2) * 2
     }
-    if (box === 'NY05') console.log(SpatialReference, box, boxloc)
     boxes[box] = boxloc
   }
 
@@ -840,17 +839,14 @@ async function make_images(rowCount) {
 
   // Now set image x and y for each box
   for (const [box, boxloc] of Object.entries(boxes)) {
-    //if (box === 'NY24S' || box == 'NY2645') console.log('box, boxloc', box, boxloc)
-    if (box === 'NY05') console.log('box, boxloc', box, boxloc)
     const n = (boxloc.n * 1000) - config.basemap.south
     const hn = n / 1000
     const hnp = hn * boxwidthHectad / 10
-    //boxloc.y = height - hnp - (boxwidthHectad / 10)
     boxloc.y = height - hnp
     const e = (boxloc.e * 1000) - config.basemap.west
     const he = e / 1000
     const hep = he * boxwidthHectad / 10
-    boxloc.x = hep // - boxwidthSmall
+    boxloc.x = hep
   }
   if (boxwidthSmall < 2) boxwidthSmall = 2
   const boxwidthSmallhalf = boxwidthSmall / 2

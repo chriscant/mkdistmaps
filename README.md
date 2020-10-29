@@ -10,6 +10,7 @@ Your data can (currently) contain either [GB](https://en.wikipedia.org/wiki/Ordn
 or [Irish](https://en.wikipedia.org/wiki/Irish_grid_reference_system) grid references, but not both.
 GB grid references start with two letters; Irish grid references start with one letter.
 The code handles 2, 4, 6, 8 or 10 numbers after the initial letter(s).
+And it also recognises tetrad grid references such as `NY12Z` and quadrants such as `SD11NW`.
 
 By default, the generated maps are coloured grouped according to the most recent record in each monad or hectad.
 You can opt to group by the number of records in each square and have an overview map showing how many species are in each square.
@@ -45,7 +46,7 @@ node . vc101-config.txt
 ```
 
 The code reads all the records in the specified CSV file(s) and then creates one PNG map for each found species in the output folder.
-A monad or hectad is coloured in if there are records for that species in that square.
+A monad, tetrad or hectad is coloured in if there are records for that species in that square.
 The fill colour is determined by **maptype** eg the date of the most recent record for that square.
 
 If you opt to make monad maps, then:
@@ -53,6 +54,9 @@ If you opt to make monad maps, then:
 * any records that are only at hectad level are shown as outline squares, rather than filled squares
 
 The mkdistmaps version string and the runtime date and time are added in grey at the top left of each generated map.
+
+Set **boxSize** to `hectad` to only draw hectads, `tetrad` to draw hectads and tetrads and `monad` to draw hectads and monads.
+If on `monad` then tetrad grid references are assigned to the lower left monad. Quadrant grid references are always put surrounding hectad.
 
 **Example monad maps:**
 
@@ -196,9 +200,9 @@ column names given in **headers** and set **renameHeaders** to `true`.  Here is 
 
 Note: if the CSV file has columns `Eastings` and `Northings` then these are cross-checked against the grid reference.
 
-### useMonadsNotHectads
+### boxSize
 
-* Optionally specify `true` to map records to monads. Default is `false` for hectads.
+* Set to `hectad`, `tetrad` or `monad`. Default is `hectad`.
 
 ### makeGenusMaps
 
@@ -327,8 +331,8 @@ The species are given names from the start of an [npm word list](https://github.
 
 # To do
 
+* process Irish tetrad letter
 * Possibly: write sub-tool to create small geojson files with contours.
-* Support tetrad format grid references
 * Possibly: cope with having Irish and GB grid references displayed on the same map
 * Possibly: cope with map inserts for out-of-main-area locations
 * Improve tests, eg split into smaller units
