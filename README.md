@@ -12,7 +12,7 @@ GB grid references start with two letters; Irish grid references start with one 
 The code handles 2, 4, 6, 8 or 10 numbers after the initial letter(s).
 And it also recognises tetrad grid references such as `NY12Z` and quadrants such as `SD11NW`.
 
-By default, the generated maps are coloured grouped according to the most recent record in each monad or hectad.
+By default, the generated maps are coloured grouped according to the most recent record in each monad/tetrad or hectad.
 You can opt to group by the number of records in each square and have an overview map showing how many species are in each square.
 
 You can see example generated geojson maps for lichens in Cumbria at the 
@@ -49,14 +49,14 @@ The code reads all the records in the specified CSV file(s) and then creates one
 A monad, tetrad or hectad is coloured in if there are records for that species in that square.
 The fill colour is determined by **maptype** eg the date of the most recent record for that square.
 
-If you opt to make monad maps, then:
-* the monad is shown as a circle if there is only one record for the monad
+Set **boxSize** to `hectad` to only draw hectads, `tetrad` to draw hectads and tetrads and `monad` to draw hectads and monads.
+If on `monad` then tetrad grid references are assigned to the lower left monad. Quadrant grid references are always put surrounding hectad.
+
+If you opt to make monad or tetrad maps, then:
+* the monad is shown as a circle if there is only one record for the monad or tetrad
 * any records that are only at hectad level are shown as outline squares, rather than filled squares
 
 The mkdistmaps version string and the runtime date and time are added in grey at the top left of each generated map.
-
-Set **boxSize** to `hectad` to only draw hectads, `tetrad` to draw hectads and tetrads and `monad` to draw hectads and monads.
-If on `monad` then tetrad grid references are assigned to the lower left monad. Quadrant grid references are always put surrounding hectad.
 
 **Example monad maps:**
 

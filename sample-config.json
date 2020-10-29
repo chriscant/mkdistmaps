@@ -1,6 +1,6 @@
 ﻿{
   "limit": 0,
-  "useMonadsNotHectads": true,
+  "boxSize": "monad",
   "makeAllMap": true,
   "makeGenusMaps": true,
   "maptype": "date",
