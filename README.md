@@ -53,7 +53,7 @@ Set **boxSize** to `hectad` to only draw hectads, `tetrad` to draw hectads and t
 If on `monad` then tetrad grid references are assigned to the lower left monad. Quadrant grid references are always put surrounding hectad.
 
 If you opt to make monad or tetrad maps, then:
-* the monad/tetard is shown as a circle if there is only one record for the monad/tetrad
+* the monad/tetrad is shown as a circle if there is only one record for the monad or tetrad
 * any records that are only at hectad level are shown as outline squares, rather than filled squares
 
 The mkdistmaps version string and the runtime date and time are added in grey at the top left of each generated map.
@@ -153,7 +153,7 @@ git pull
 
 You may also need to run this to install any new dependencies:
 ```
-npm update
+npm install
 ```
 
 
