@@ -582,11 +582,28 @@ function processLine(file, row, fileSpecieses) {
     isGB = true
   }
   else if (box.length === 4) {
-    // TODO: process Irish tetrad letter
-    if (notNumeric(box, 2)) return
-    Eastings += parseInt(box.substring(2, 3)) * 10000
-    Northings += parseInt(box.substring(3)) * 10000
-    isGB = true
+    const tetradchar = box.substring(3).toUpperCase()
+    if (tetradchar.match(/[A-Z]/)) {
+      if (tetradchar === 'O') { errors.push(ObsKey + ' duff tetrad letter: ' + tetradchar + ': ' + SpatialReference); return }
+      if (notNumeric(box, 1, 3)) return
+      Eastings += parseInt(box.substring(1, 2)) * 10000
+      Northings += parseInt(box.substring(2)) * 10000
+      const boxbl = _.find(tetradletters, boxbl => { return boxbl.l === tetradchar })
+      if (!boxbl) { errors.push(ObsKey + ' duff tetrad letter: ' + tetradchar + ': ' + SpatialReference); return }
+      Eastings += boxbl.e * 10
+      Northings += boxbl.n * 10
+      isIE = true
+      if (config.boxSize !== BOXSIZES.TETRAD) { // If not showing tetrads then convert to show at hectad level
+        box = box.substring(0, 3)
+        Eastings = Math.floor(Eastings / 10000) * 10000
+        Northings = Math.floor(Northings / 10000) * 10000
+      }
+    } else {
+      if (notNumeric(box, 2)) return
+      Eastings += parseInt(box.substring(2, 3)) * 10000
+      Northings += parseInt(box.substring(3)) * 10000
+      isGB = true
+    }
   }
   else if (box.length === 11) {
     if (notNumeric(box, 1)) return
@@ -912,6 +929,7 @@ async function make_images(rowCount) {
 
       // Draw solid or round box (and optional hectad outline)
       // Remember: y goes wrong way so subtract that first
+      console.log(box, boxloc)
       if (isHectad) {
         //console.log('ISHECTAD', box, boxloc, boxloc.x, boxloc.y - boxwidthHectad + boxwidthHectad / 10, boxwidthHectad, boxwidthHectad)
         if (config.boxSize === BOXSIZES.HECTAD) {

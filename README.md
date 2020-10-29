@@ -331,7 +331,6 @@ The species are given names from the start of an [npm word list](https://github.
 
 # To do
 
-* process Irish tetrad letter
 * Possibly: write sub-tool to create small geojson files with contours.
 * Possibly: cope with having Irish and GB grid references displayed on the same map
 * Possibly: cope with map inserts for out-of-main-area locations
