@@ -9,8 +9,8 @@ Generated maps are either PNGs on top of a base layer image or geojson files.
 Your data can (currently) contain either [GB](https://en.wikipedia.org/wiki/Ordnance_Survey_National_Grid)
 or [Irish](https://en.wikipedia.org/wiki/Irish_grid_reference_system) grid references, but not both.
 GB grid references start with two letters; Irish grid references start with one letter.
-The code handles 2, 4, 6, 8 or 10 numbers after the initial letter(s).
-And it also recognises tetrad grid references such as `NY12Z` and quadrants such as `SD11NW`.
+The code handles 2, 4, 6, 8 or 10 numbers after the initial letter(s), 
+and also recognises tetrad grid references such as `NY12Z` and quadrants such as `SD11NW`.
 
 By default, the generated maps are coloured grouped according to the most recent record in each monad/tetrad or hectad.
 You can opt to group by the number of records in each square and have an overview map showing how many species are in each square.

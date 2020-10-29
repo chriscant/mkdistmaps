@@ -25,7 +25,7 @@
     "south": 0,
     "scaledown": 1,
     "showhectadname": false,
-    //  QGIS export image: 1:4560000, 96dpi
+    // QGIS export image: 1:4560000, 96dpi
     "title_x": 280,
     "title_y": 770,
     "title_y_inc": 18,
