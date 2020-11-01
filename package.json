@@ -5,7 +5,8 @@
   "main": "mkdistmaps.js",
   "scripts": {
     "test": "jest",
-    "testrel": "jest && coveralls < coverage/lcov.info"
+    "testrel": "jest && coveralls < coverage/lcov.info",
+    "standard": "standard mkdistmaps.js transform.js makerecords.js"
   },
   "author": "Chris Cant",
   "license": "MIT",

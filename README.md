@@ -2,6 +2,7 @@
 
 [![Build Status](https://api.travis-ci.com/chriscant/mkdistmaps.svg?branch=main)](https://travis-ci.com/github/chriscant/mkdistmaps)
 [![Coverage Status](https://coveralls.io/repos/github/chriscant/mkdistmaps/badge.svg?branch=main)](https://coveralls.io/github/chriscant/mkdistmaps?branch=main)
+[![JavaScript Style Guide](https://img.shields.io/badge/code_style-standard-brightgreen.svg)](https://standardjs.com)
 
 Command line tool to make species distribution maps from species records with grid references.
 Generated maps are either PNGs on top of a base layer image or geojson files.

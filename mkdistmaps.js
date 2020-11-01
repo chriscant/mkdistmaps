@@ -9,7 +9,7 @@ let SCALE = false
 let usesGB = false
 let usesIE = false
 
-const dt_start = new Date()
+const dtStart = new Date()
 
 const fs = require('fs')
 const glob = require('glob')
@@ -116,7 +116,7 @@ const tetradletters = [
 const BOXSIZES = {
   MONAD: 1,
   TETRAD: 2,
-  HECTAD: 10,
+  HECTAD: 10
 }
 
 const hectadSize = 10000
@@ -138,10 +138,10 @@ const monadSCALE = {
 const gitdescr = execSync('git describe --tags --long')
 let version = 'mkdistmaps ' + gitdescr.toString('utf8', 0, gitdescr.length - 1) + ' - run at ' + moment().format('Do MMMM YYYY, h:mm:ss a')
 
-///////////////////////////////////////////////////////////////////////////////////////
+/// ////////////////////////////////////////////////////////////////////////////////////
 // run: called when run from command line
 
-async function run(argv) {
+async function run (argv) {
   let rv = 1
   try {
     // Display usage
@@ -159,14 +159,14 @@ async function run(argv) {
     while (true) {
       const dslashpos = configtext.indexOf('//')
       if (dslashpos === -1) break
-      const endlinepos = configtext.indexOf("\n", dslashpos)
+      const endlinepos = configtext.indexOf('\n', dslashpos)
       if (endlinepos === -1) {
         configtext = configtext.substring(0, dslashpos)
         break
       }
       configtext = configtext.substring(0, dslashpos) + configtext.substring(endlinepos)
     }
-    //console.log(configtext)
+    // console.log(configtext)
     try {
       config = JSON.parse(configtext)
     } catch (e) {
@@ -175,15 +175,15 @@ async function run(argv) {
     }
     console.log(config)
 
-    if (config.hasOwnProperty('versionoverride')) {
+    if ('versionoverride' in config) {
       version = config.versionoverride
     }
-    
+
     // Make output folder if need be
     fs.mkdirSync(path.join(__dirname, config.outputFolder), { recursive: true })
 
     // Set scale factor for hectad or monad
-    if (config.hasOwnProperty('boxSize')) {
+    if ('boxSize' in config) {
       const boxsize = config.boxSize.toLowerCase()
       if (boxsize === 'monad') config.boxSize = BOXSIZES.MONAD
       else if (boxsize === 'tetrad') config.boxSize = BOXSIZES.TETRAD
@@ -192,7 +192,7 @@ async function run(argv) {
         console.error('unrecognised config.boxSize', config.boxSize)
         return 0
       }
-    } else if (config.hasOwnProperty('useMonadsNotHectads')) {
+    } else if ('useMonadsNotHectads' in config) {
       config.boxSize = config.useMonadsNotHectads ? config.boxSize = BOXSIZES.MONAD : config.boxSize = BOXSIZES.HECTAD
     } else {
       console.log('Using default: map to hectad')
@@ -201,28 +201,28 @@ async function run(argv) {
     SCALE = (config.boxSize === BOXSIZES.HECTAD) ? hectadSCALE : ((config.boxSize === BOXSIZES.TETRAD) ? tetradSCALE : monadSCALE)
 
     // Default makeGenusMaps to false
-    if (!config.hasOwnProperty('makeGenusMaps')) {
+    if (!('makeGenusMaps' in config)) {
       config.makeGenusMaps = false
     }
     // Default outputtype to 'map'
-    if (!config.hasOwnProperty('outputtype')) {
+    if (!('outputtype' in config)) {
       config.outputtype = 'map'
     }
     // Default maptype to 'date'
-    if (!config.hasOwnProperty('maptype')) {
+    if (!('maptype' in config)) {
       config.maptype = 'date'
     }
     // Default makeAllMap to false
-    if (!config.hasOwnProperty('makeAllMap')) {
+    if (!('makeAllMap' in config)) {
       config.makeAllMap = false
     }
     // Default geojsonprecision to false
-    if (!config.hasOwnProperty('geojsonprecision')) {
+    if (!('geojsonprecision' in config)) {
       config.geojsonprecision = false
     }
 
     // Default saveSpacesAs to false
-    if (!config.hasOwnProperty('saveSpacesAs')) {
+    if (!('saveSpacesAs' in config)) {
       config.saveSpacesAs = false
     }
 
@@ -230,23 +230,23 @@ async function run(argv) {
     config.makeAllSpeciesMap = config.maptype === 'count' && config.makeAllMap
 
     // Set default datecolours if need be
-    if (!config.hasOwnProperty('datecolours')) {
+    if (!('datecolours' in config)) {
       console.log('Using default datecolours')
       config.datecolours = [
-        { 'minyear': 0, 'maxyear': 1959, 'colour': 'rgba(255,255,0, 1)', 'legend': 'pre-1960' },  // Yellow
-        { 'minyear': 1960, 'maxyear': 1999, 'colour': 'rgba(0,0,255, 1)', 'legend': '1960-1999' }, // Blue
-        { 'minyear': 2000, 'maxyear': 2019, 'colour': 'rgba(255,0,0, 1)', 'legend': '2000-2019' }, // Red
-        { 'minyear': 2020, 'maxyear': 2039, 'colour': 'rgba(0,255,0, 1)', 'legend': '2020-2039' }  // Green
+        { minyear: 0, maxyear: 1959, colour: 'rgba(255,255,0, 1)', legend: 'pre-1960' }, // Yellow
+        { minyear: 1960, maxyear: 1999, colour: 'rgba(0,0,255, 1)', legend: '1960-1999' }, // Blue
+        { minyear: 2000, maxyear: 2019, colour: 'rgba(255,0,0, 1)', legend: '2000-2019' }, // Red
+        { minyear: 2020, maxyear: 2039, colour: 'rgba(0,255,0, 1)', legend: '2020-2039' } // Green
       ]
     }
     // Set default countcolours if need be
-    if (!config.hasOwnProperty('countcolours')) {
+    if (!('countcolours' in config)) {
       console.log('Using default countcolours')
       config.countcolours = [
-        { 'min': 1, 'max': '1%', 'colour': 'rgba(0,255,0, 1)', 'legend': '' },      // Green
-        { 'min': '1%', 'max': '10%', 'colour': 'rgba(0,0,255, 1)', 'legend': '' },  // Blue
-        { 'min': '10%', 'max': '50%', 'colour': 'rgba(0,0,0, 1)', 'legend': '' },   // Black
-        { 'min': '50%', 'max': '100%', 'colour': 'rgba(255,0,0, 1)', 'legend': '' } // Red
+        { min: 1, max: '1%', colour: 'rgba(0,255,0, 1)', legend: '' }, // Green
+        { min: '1%', max: '10%', colour: 'rgba(0,0,255, 1)', legend: '' }, // Blue
+        { min: '10%', max: '50%', colour: 'rgba(0,0,0, 1)', legend: '' }, // Black
+        { min: '50%', max: '100%', colour: 'rgba(255,0,0, 1)', legend: '' } // Red
       ]
     }
 
@@ -302,23 +302,23 @@ async function run(argv) {
     if (!config.basemap.legend_fontsize) config.basemap.legend_fontsize = '12pt'
     if (!config.basemap.hectad_fontsize) config.basemap.hectad_fontsize = '12pt'
 
-    /////////////////
+    /// //////////////
     // Do everything!
     const headers = config.recordset.headers ? config.recordset.headers : true
     const renameHeaders = config.recordset.renameHeaders ? config.recordset.renameHeaders : false
 
     let totalrecords = 0
-    const processFiles = new Promise((resolveAll, rejectAll) => {
-      async function doAll() {
+    const processFiles = new Promise((resolve, reject) => {
+      async function doAll () {
         const files = glob.sync(config.recordset.csv)
         if (files.length === 0) {
           console.error('NO FILE(S) FOUND FOR: ', config.recordset.csv)
           rv = 0
         } else {
           let donecount = 0
-          const doFiles = new Promise((resolveFiles, rejectFiles) => {
+          const doFiles = new Promise((resolve, reject) => {
             for (const file of Object.values(files)) {
-              //console.log(file)
+              // console.log(file)
               const fileSpecieses = []
               fs.createReadStream(path.resolve(__dirname, file), { encoding: config.recordset.encoding })
                 .pipe(csv.parse({ headers: headers, renameHeaders: renameHeaders }))
@@ -331,7 +331,7 @@ async function run(argv) {
                   console.log(file, 'species:', Object.keys(fileSpecieses).length)
                   totalrecords += rowCount
                   if (++donecount === files.length) {
-                    resolveFiles()
+                    resolve() // doFiles
                   }
                 })
             }
@@ -340,12 +340,12 @@ async function run(argv) {
           console.log('COMPLETED READING DATA')
           await importComplete(totalrecords)
         }
-        resolveAll()
+        resolve() // processFiles
       }
       doAll()
     })
     await processFiles
-    if( rv) console.log('SUCCESS')
+    if (rv) console.log('SUCCESS')
     return 1
   } catch (e) {
     console.error('run EXCEPTION', e)
@@ -353,15 +353,15 @@ async function run(argv) {
   }
 }
 
-///////////////////////////////////////////////////////////////////////////////////////
-///////////////////////////////////////////////////////////////////////////////////////
+/// ////////////////////////////////////////////////////////////////////////////////////
+/// ////////////////////////////////////////////////////////////////////////////////////
 
 const charcode0 = '0'.charCodeAt(0)
 const charcode9 = '9'.charCodeAt(0)
 
 // notNumeric: return true if any characters in string in given range are not numeric
 
-function notNumeric(box, from, to) {
+function notNumeric (box, from, to) {
   const str = box.substring(from, to)
   for (let i = 0; i < str.length; i++) {
     const ich = str.charCodeAt(i)
@@ -375,18 +375,18 @@ function notNumeric(box, from, to) {
 
 // getGRtype: return various attributes of the given 'box' grid reference
 // A10, A10V, A1234, NY10, NY10X, NY1234
-function getGRtype(box) {
+function getGRtype (box) {
   const rv = { isHectad: false, isTetrad: false, isIE: false, boxfull: box }
   const len = box.length
-  const lastchar = box.charCodeAt(len-1)
+  const lastchar = box.charCodeAt(len - 1)
   const lastcharisdigit = lastchar >= charcode0 && lastchar <= charcode9
   if (!lastcharisdigit) {
     const tetradchar = box.substring(len - 1)
     const boxbl = _.find(tetradletters, boxbl => { return boxbl.l === tetradchar })
-    if (!boxbl) throw new Error("Tetrad letter not found", tetradchar)
+    if (!boxbl) throw new Error('Tetrad letter not found', tetradchar)
     rv.boxfull = box.substring(0, len - 2) + (boxbl.e / 100) + box.substring(len - 2, len - 1) + (boxbl.n / 100)
   }
-  
+
   switch (box.length) {
     case 3:
       rv.isIE = true
@@ -403,13 +403,12 @@ function getGRtype(box) {
     case 5:
       if (!lastcharisdigit) {
         rv.isTetrad = true
-      }
-      else rv.isIE = true
+      } else rv.isIE = true
       break
-    case 6: 
+    case 6:
       break
     default:
-      throw new Error('isGRie duff gr', gr)
+      throw new Error('isGRie duff box', box)
   }
   return rv
 }
@@ -423,7 +422,7 @@ function getGRtype(box) {
 //                       NY50951510                                           Some 12 figure GRs appear as 10 figures
 //                       NY7432046814
 
-//                       J3438674590           334386               374590 
+//                       J3438674590           334386               374590
 //                                       17646.6931-370000       0-467252
 
 const speciesesGrids = {} // gets a prop for each map generated with value object having per-map boxes etc
@@ -434,9 +433,9 @@ const errors = []
 let lineno = 0
 let records = 0
 let empties = 0
-const boxes = {}          // gets a prop for each square, eg A10, NY51, and SD23L or NC1234
+const boxes = {} // gets a prop for each square, eg A10, NY51, and SD23L or NC1234
 
-function updateSpeciesesGrids(TaxonName, box, Year, isGenus, fileSpecieses, inTotal, makeAllSpeciesMapTaxon) {
+function updateSpeciesesGrids (TaxonName, box, Year, isGenus, fileSpecieses, inTotal, makeAllSpeciesMapTaxon) {
   if (isGenus) TaxonName += ' -all'
   let speciesGrids = speciesesGrids[TaxonName]
   if (!speciesGrids) {
@@ -449,7 +448,6 @@ function updateSpeciesesGrids(TaxonName, box, Year, isGenus, fileSpecieses, inTo
     } else {
       allCount++
     }
-
   }
   if (!speciesGrids.boxes[box]) {
     speciesGrids.boxes[box] = { count: 0, minyear: 3000, maxyear: 0, species: [] }
@@ -485,17 +483,16 @@ function updateSpeciesesGrids(TaxonName, box, Year, isGenus, fileSpecieses, inTo
   }
 }
 
-
 // processLine: Process a line of CSV data ie a single record
 
-function processLine(file, row, fileSpecieses) {
-  //console.log(row)
+function processLine (file, row, fileSpecieses) {
+  // console.log(row)
   lineno++
 
   // Get GR (no spaces) and species name
   const SpatialReference = row[config.recordset.GRCol].toUpperCase().replace(/ /g, '')
   const TaxonName = row[config.recordset.TaxonCol].trim()
-  if (SpatialReference.length === 0 || TaxonName.length === 0 || TaxonName.substring(0,1)==='#') {
+  if (SpatialReference.length === 0 || TaxonName.length === 0 || TaxonName.substring(0, 1) === '#') {
     empties++
     return
   }
@@ -503,17 +500,17 @@ function processLine(file, row, fileSpecieses) {
   records++
 
   // Get other data fields
-  const EastingsExplicit = parseInt(row['Eastings'])
-  const NorthingsExplicit = parseInt(row['Northings'])
-  const ExplicitGiven = EastingsExplicit !== 0 || NorthingsExplicit!==0
+  const EastingsExplicit = parseInt(row.Eastings)
+  const NorthingsExplicit = parseInt(row.Northings)
+  const ExplicitGiven = EastingsExplicit !== 0 || NorthingsExplicit !== 0
   let ObsKey = row[config.recordset.ObsKeyCol]
-  let ObsDate = row[config.recordset.DateCol]
+  const ObsDate = row[config.recordset.DateCol]
   let Year = parseInt(row[config.recordset.YearCol])
-  //console.log('----------')
-  //console.log('SpatialReference', SpatialReference)
-  //console.log('EastingsExplicit', EastingsExplicit)
-  //console.log('NorthingsExplicit', NorthingsExplicit)
-  //console.log('TaxonName', TaxonName, TaxonName.length)
+  // console.log('----------')
+  // console.log('SpatialReference', SpatialReference)
+  // console.log('EastingsExplicit', EastingsExplicit)
+  // console.log('NorthingsExplicit', NorthingsExplicit)
+  // console.log('TaxonName', TaxonName, TaxonName.length)
 
   if (!ObsKey) ObsKey = 'Line#' + lineno
 
@@ -540,29 +537,26 @@ function processLine(file, row, fileSpecieses) {
   let box = SpatialReference
   const grfig = SCALE.gridreffigs / 2
   if (box.length === 12) {
-    if( notNumeric(box,2)) return
+    if (notNumeric(box, 2)) return
     Eastings += parseInt(box.substring(2, 7))
     Northings += parseInt(box.substring(7))
     box = box.substring(0, 2 + grfig) + box.substring(7, 7 + grfig)
     isGB = true
-  }
-  else if (box.length === 10) {
+  } else if (box.length === 10) {
     if (notNumeric(box, 2)) return
     Eastings += parseInt(box.substring(2, 6)) * 10
     Northings += parseInt(box.substring(6)) * 10
     box = box.substring(0, 2 + grfig) + box.substring(6, 6 + grfig)
     isGB = true
-  }
-  else if (box.length === 8) {
+  } else if (box.length === 8) {
     if (notNumeric(box, 2)) return
     Eastings += parseInt(box.substring(2, 5)) * 100
     Northings += parseInt(box.substring(5)) * 100
     box = box.substring(0, 2 + grfig) + box.substring(5, 5 + grfig)
     isGB = true
-  }
-  else if (box.length === 6) {
+  } else if (box.length === 6) {
     const lasttwochars = box.substring(4, 6)
-    const quadrantnw = lasttwochars==='NW'
+    const quadrantnw = lasttwochars === 'NW'
     const quadrantsw = lasttwochars === 'SW'
     const quadrantse = lasttwochars === 'SE'
     const quadrantne = lasttwochars === 'NE'
@@ -580,8 +574,7 @@ function processLine(file, row, fileSpecieses) {
       box = box.substring(0, 2 + grfig) + box.substring(4, 4 + grfig)
     }
     isGB = true
-  }
-  else if (box.length === 4) {
+  } else if (box.length === 4) {
     const tetradchar = box.substring(3).toUpperCase()
     if (tetradchar.match(/[A-Z]/)) {
       if (tetradchar === 'O') { errors.push(ObsKey + ' duff tetrad letter: ' + tetradchar + ': ' + SpatialReference); return }
@@ -604,29 +597,25 @@ function processLine(file, row, fileSpecieses) {
       Northings += parseInt(box.substring(3)) * 10000
       isGB = true
     }
-  }
-  else if (box.length === 11) {
+  } else if (box.length === 11) {
     if (notNumeric(box, 1)) return
     Eastings += parseInt(box.substring(1, 6))
     Northings += parseInt(box.substring(6))
     box = box.substring(0, 1 + grfig) + box.substring(6, 6 + grfig)
     isIE = true
-  }
-  else if (box.length === 9) {
+  } else if (box.length === 9) {
     if (notNumeric(box, 1)) return
     Eastings += parseInt(box.substring(1, 5)) * 10
     Northings += parseInt(box.substring(5)) * 10
     box = box.substring(0, 1 + grfig) + box.substring(5, 5 + grfig)
     isIE = true
-  }
-  else if (box.length === 7) {
+  } else if (box.length === 7) {
     if (notNumeric(box, 1)) return
     Eastings += parseInt(box.substring(1, 4)) * 100
     Northings += parseInt(box.substring(4)) * 100
     box = box.substring(0, 1 + grfig) + box.substring(4, 4 + grfig)
     isIE = true
-  }
-  else if (box.length === 5) {
+  } else if (box.length === 5) {
     const tetradchar = box.substring(4).toUpperCase()
     if (tetradchar.match(/[A-Z]/)) {
       if (tetradchar === 'O') { errors.push(ObsKey + ' duff tetrad letter: ' + tetradchar + ': ' + SpatialReference); return }
@@ -650,14 +639,12 @@ function processLine(file, row, fileSpecieses) {
       box = box.substring(0, 1 + grfig) + box.substring(3, 3 + grfig)
       isIE = true
     }
-  }
-  else if (box.length === 3) {
+  } else if (box.length === 3) {
     if (notNumeric(box, 1)) return
     Eastings += parseInt(box.substring(1, 2)) * 10000
     Northings += parseInt(box.substring(2)) * 10000
     isIE = true
-  }
-  else {
+  } else {
     errors.push(ObsKey + ' Spatial Reference duff length: ' + box.length + ': ' + SpatialReference)
     return
   }
@@ -673,7 +660,7 @@ function processLine(file, row, fileSpecieses) {
     for (let i = 0; i < GBletters1.length; i++) {
       const boxbl = GBletters1[i]
       if (boxbl.l === l1) {
-        //console.log('boxbl', boxbl)
+        // console.log('boxbl', boxbl)
         Eastings += boxbl.e * 1000
         Northings += boxbl.n * 1000
         break
@@ -684,7 +671,7 @@ function processLine(file, row, fileSpecieses) {
     for (let i = 0; i < GBletters2.length; i++) {
       const boxbl = GBletters2[i]
       if (boxbl.l === l2) {
-        //console.log('boxbl', boxbl)
+        // console.log('boxbl', boxbl)
         Eastings += boxbl.e * 1000
         Northings += boxbl.n * 1000
         break
@@ -694,7 +681,7 @@ function processLine(file, row, fileSpecieses) {
     for (let i = 0; i < IEletters.length; i++) {
       const boxbl = IEletters[i]
       if (boxbl.l === l1) {
-        //console.log('boxbl', boxbl)
+        // console.log('boxbl', boxbl)
         Eastings += boxbl.e * 1000
         Northings += boxbl.n * 1000
         break
@@ -703,7 +690,7 @@ function processLine(file, row, fileSpecieses) {
   }
   if (config.boxSize === BOXSIZES.TETRAD) { // If a monad, convert to tetrad form if need be
     const isMonad = (isGB && box.length === 6) || (isIE && box.length === 5)
-    const isTetrad = (isGB && box.length === 5) || (isIE && box.length === 4)
+    // const isTetrad = (isGB && box.length === 5) || (isIE && box.length === 4)
     if (isMonad) { // ie monad NY3329 or A1234
       const ebit = (Eastings % 10000) / 1000
       const nbit = (Northings % 10000) / 1000
@@ -721,7 +708,7 @@ function processLine(file, row, fileSpecieses) {
       }
     }
   }
-  //console.log(SpatialReference, box, Eastings, Northings, EastingsExplicit, NorthingsExplicit)
+  // console.log(SpatialReference, box, Eastings, Northings, EastingsExplicit, NorthingsExplicit)
 
   if (ExplicitGiven) {
     if ((Math.abs(Eastings - EastingsExplicit) > 2) || (Math.abs(Northings - NorthingsExplicit) > 2)) {
@@ -734,7 +721,7 @@ function processLine(file, row, fileSpecieses) {
   if (!boxes[box]) {
     const boxloc = {
       e: Math.floor(Eastings / 1000),
-      n: Math.floor(Northings / 1000),
+      n: Math.floor(Northings / 1000)
     }
     if (config.boxSize === BOXSIZES.HECTAD) {
       boxloc.e = Math.floor(boxloc.e / 10) * 10
@@ -764,14 +751,14 @@ function processLine(file, row, fileSpecieses) {
   }
 }
 
-///////////////////////////////////////////////////////////////////////////////////////
+/// ////////////////////////////////////////////////////////////////////////////////////
 // importComplete:  Having read all records, generate distribution maps for all found species
 
-async function importComplete(rowCount) {
+async function importComplete (rowCount) {
   if (config.outputtype === 'geojson') {
-    await make_geojson(rowCount)
+    await makeGeojson(rowCount)
   } else {
-    await make_images(rowCount)
+    await makeImages(rowCount)
   }
 
   // Report record count, errors, species and boxes
@@ -792,13 +779,13 @@ async function importComplete(rowCount) {
   console.log('Empty rows:', empties)
   console.log('Boxes:', Object.keys(boxes).length)
 
-  const dt_end = new Date()
-  const runtime_seconds = Math.floor((dt_end - dt_start) / (1000))
-  console.log('Runtime:', runtime_seconds, 'seconds')
+  const dtEnd = new Date()
+  const runtimeSeconds = Math.floor((dtEnd - dtStart) / (1000))
+  console.log('Runtime:', runtimeSeconds, 'seconds')
 }
 
-///////////////////////////////////////////////////////////////////////////////////////
-function setCountColours(speciesGrids, isAllSpeciesMap) {
+/// ////////////////////////////////////////////////////////////////////////////////////
+function setCountColours (speciesGrids, isAllSpeciesMap) {
   let next = 1
   const max = isAllSpeciesMap ? speciesGrids.speciesmax : speciesGrids.max
   for (const countcolour of Object.values(config.countcolours)) {
@@ -818,31 +805,31 @@ function setCountColours(speciesGrids, isAllSpeciesMap) {
   }
 }
 
-///////////////////////////////////////////////////////////////////////////////////////
+/// ////////////////////////////////////////////////////////////////////////////////////
 
-async function make_images(rowCount) {
+async function makeImages (rowCount) {
   // Load base map and work out main box dimensions (assumed to be square)
   const img = config.basemap.isPNG
     ? await PImage.decodePNGFromStream(fs.createReadStream(config.basemap.file))
     : await PImage.decodeJPEGFromStream(fs.createReadStream(config.basemap.file))
   const width = img.width / config.basemap.scaledown
   const height = img.height / config.basemap.scaledown
-  const mapeastings = config.basemap.east - config.basemap.west     // eg 390500-293169
-  const mapnorthings = config.basemap.north - config.basemap.south  // eg 589703-460155
+  const mapeastings = config.basemap.east - config.basemap.west // eg 390500-293169
+  const mapnorthings = config.basemap.north - config.basemap.south // eg 589703-460155
   console.log(mapeastings, mapnorthings)
   const boxswidthSmall = mapeastings / SCALE.smallBoxSize
   console.log('boxswidthSmall', boxswidthSmall)
-  let boxwidthSmall = width / boxswidthSmall  // boxheight should be the same if map in proportion
+  let boxwidthSmall = width / boxswidthSmall // boxheight should be the same if map in proportion
   console.log('boxwidthSmall', boxwidthSmall)
   const boxswidthHectad = mapeastings / hectadSize
   console.log('boxswidthHectad', boxswidthHectad)
-  const boxwidthHectad = width / boxswidthHectad  // boxheight should be the same if map in proportion
+  const boxwidthHectad = width / boxswidthHectad // boxheight should be the same if map in proportion
   console.log('boxwidthHectad', boxwidthHectad)
 
-  if (!config.basemap.legend_y) config.basemap.legend_y = Math.trunc(height/2)
+  if (!config.basemap.legend_y) config.basemap.legend_y = Math.trunc(height / 2)
 
   // Now set image x and y for each box
-  for (const [box, boxloc] of Object.entries(boxes)) {
+  for (const boxloc of Object.values(boxes)) {
     const n = (boxloc.n * 1000) - config.basemap.south
     const hn = n / 1000
     const hnp = hn * boxwidthHectad / 10
@@ -869,7 +856,7 @@ async function make_images(rowCount) {
   // Go through all species
   let done = 0
   for (const [MapName, speciesGrids] of Object.entries(speciesesGrids)) {
-    //console.log(MapName, speciesGrids)
+    // console.log(MapName, speciesGrids)
     const isAllRecordsMap = MapName === makeAllMapName
     const isAllSpeciesMap = MapName === makeAllSpeciesMapName
 
@@ -877,8 +864,8 @@ async function make_images(rowCount) {
     const img2 = PImage.make(width, height)
     const ctx = img2.getContext('2d')
     ctx.drawImage(img,
-      0, 0, img.width, img.height,  // source dimensions
-      0, 0, width, height           // destination dimensions
+      0, 0, img.width, img.height, // source dimensions
+      0, 0, width, height // destination dimensions
     )
 
     // Write summary text
@@ -907,7 +894,7 @@ async function make_images(rowCount) {
     for (const [box, boxdata] of Object.entries(speciesGrids.boxes)) {
       reccount += boxdata.count
       const boxloc = boxes[box]
-      const { isHectad, isTetrad, isIE, boxfull } = getGRtype(box)
+      const { isHectad } = getGRtype(box)
 
       // Determine box colour
       ctx.fillStyle = 'rgba(255,20, 147, 1)' // default to pink
@@ -929,9 +916,8 @@ async function make_images(rowCount) {
 
       // Draw solid or round box (and optional hectad outline)
       // Remember: y goes wrong way so subtract that first
-      console.log(box, boxloc)
       if (isHectad) {
-        //console.log('ISHECTAD', box, boxloc, boxloc.x, boxloc.y - boxwidthHectad + boxwidthHectad / 10, boxwidthHectad, boxwidthHectad)
+        // console.log('ISHECTAD', box, boxloc, boxloc.x, boxloc.y - boxwidthHectad + boxwidthHectad / 10, boxwidthHectad, boxwidthHectad)
         if (config.boxSize === BOXSIZES.HECTAD) {
           ctx.fillRect(boxloc.x, boxloc.y - boxwidthHectad, boxwidthHectad, boxwidthHectad)
         } else {
@@ -944,7 +930,7 @@ async function make_images(rowCount) {
           ctx.closePath()
           ctx.fill()
         } else {
-          ctx.fillRect(boxloc.x, boxloc.y-boxwidthSmall, boxwidthSmall, boxwidthSmall)
+          ctx.fillRect(boxloc.x, boxloc.y - boxwidthSmall, boxwidthSmall, boxwidthSmall)
         }
       }
 
@@ -972,20 +958,20 @@ async function make_images(rowCount) {
 
     if (!config.basemap.legend_hide) {
       ctx.font = config.basemap.legend_fontsize + " 'TheFont'"
-      let legend_y = config.basemap.legend_y
+      let legendY = config.basemap.legend_y
       ctx.fillStyle = config.font_colour
-      ctx.fillText(config.maptype, config.basemap.legend_x + 2 * config.basemap.legend_inc, legend_y)
-      //legend_y += config.basemap.legend_inc
-      
+      ctx.fillText(config.maptype, config.basemap.legend_x + 2 * config.basemap.legend_inc, legendY)
+      // legendY += config.basemap.legend_inc
+
       const legenditems = (config.maptype === 'count') ? config.countcolours : config.datecolours
       for (const legenditem of Object.values(legenditems)) {
         ctx.fillStyle = legenditem.colour
-        ctx.fillRect(config.basemap.legend_x, legend_y, config.basemap.legend_inc, config.basemap.legend_inc)
+        ctx.fillRect(config.basemap.legend_x, legendY, config.basemap.legend_inc, config.basemap.legend_inc)
         ctx.strokeStyle = config.font_colour
-        ctx.strokeRect(config.basemap.legend_x, legend_y, config.basemap.legend_inc, config.basemap.legend_inc)
+        ctx.strokeRect(config.basemap.legend_x, legendY, config.basemap.legend_inc, config.basemap.legend_inc)
         ctx.fillStyle = config.font_colour
-        legend_y += config.basemap.legend_inc
-        ctx.fillText(legenditem.legend, config.basemap.legend_x + 2 * config.basemap.legend_inc, legend_y)
+        legendY += config.basemap.legend_inc
+        ctx.fillText(legenditem.legend, config.basemap.legend_x + 2 * config.basemap.legend_inc, legendY)
       }
     }
 
@@ -994,7 +980,7 @@ async function make_images(rowCount) {
     if (config.saveSpacesAs) {
       saveFilename = saveFilename.replace(/ /g, config.saveSpacesAs)
     }
-    const outpath = path.join(__dirname, config.outputFolder, saveFilename+'.png')
+    const outpath = path.join(__dirname, config.outputFolder, saveFilename + '.png')
     await PImage.encodePNGToStream(img2, fs.createWriteStream(outpath))
     console.log('done', saveFilename, reccount)
     if (config.limit && ++done >= config.limit) {
@@ -1004,10 +990,10 @@ async function make_images(rowCount) {
   }
 }
 
-///////////////////////////////////////////////////////////////////////////////////////
+/// ////////////////////////////////////////////////////////////////////////////////////
 // https://leafletjs.com/examples/geojson/
 
-async function make_geojson(rowCount) {
+async function makeGeojson (rowCount) {
   // Go through all species
   let done = 0
   for (const [MapName, speciesGrids] of Object.entries(speciesesGrids)) {
@@ -1022,7 +1008,7 @@ async function make_geojson(rowCount) {
     const geojson = {}
     geojson.type = 'FeatureCollection'
     // https://wiki.openstreetmap.org/wiki/Geojson_CSS
-    //geojson.style = { stroke: 'pink' }
+    // geojson.style = { stroke: 'pink' }
     geojson.style = {
       color: '#000000',
       // fillColor: '#FFFFFF',
@@ -1036,7 +1022,7 @@ async function make_geojson(rowCount) {
       set: config.recordset.title,
       maptype: config.maptype,
       datecolours: config.datecolours,
-      generator: version,
+      generator: version
     }
     if (isAllSpeciesMap) {
       geojson.properties.name = 'Count of species in each square'
@@ -1049,16 +1035,14 @@ async function make_geojson(rowCount) {
     geojson.features = []
 
     let reccount = 0
-    let boxcount = 0
     for (let notHectad = 0; notHectad < 2; notHectad++) { // Process hectads first so they appear behind monads/tetrads
-      for (let [box, boxdata] of Object.entries(speciesGrids.boxes)) {
+      for (const [box, boxdata] of Object.entries(speciesGrids.boxes)) {
         const { isHectad, isTetrad, isIE, boxfull } = getGRtype(box)
         if ((isHectad && notHectad) || (!isHectad && !notHectad)) {
           continue
         }
         reccount += boxdata.count
-        const boxloc = boxes[box]
-        
+
         let color = rgbHex('rgba(255,20, 147, 1)') // default to pink
         if (config.maptype === 'count') {
           for (const countcolour of Object.values(config.countcolours)) {
@@ -1074,7 +1058,7 @@ async function make_geojson(rowCount) {
             }
           }
         }
-        
+
         let osgbie = new geotools2m.GT_OSGB()
         if (isIE) osgbie = new geotools2m.GT_Irish()
         osgbie.parseGridRef(boxfull)
@@ -1131,7 +1115,7 @@ async function make_geojson(rowCount) {
         }
 
         geojson.features.push(feature)
-        //if (boxcount++>1)break
+        // if (boxcount++>1)break
       }
     }
     if (isAllSpeciesMap) {
@@ -1164,9 +1148,8 @@ async function make_geojson(rowCount) {
       break
     }
   }
-
 }
-///////////////////////////////////////////////////////////////////////////////////////
+/// ////////////////////////////////////////////////////////////////////////////////////
 // If called from command line, then run now.
 // If testing, then don't.
 if (require.main === module) {

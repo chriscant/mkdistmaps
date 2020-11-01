@@ -2,9 +2,7 @@
 // node makerecords.js gb 10000 500 largetest/wordlist.txt largetest/testdata.csv afixedseedifyouwantit
 
 const fs = require('fs')
-const readline = require('readline')
 const path = require('path')
-const _ = require('lodash')
 const wordListPath = require('word-list')
 const seedrandom = require('seedrandom')
 
@@ -18,7 +16,7 @@ const GBletters = [
   'SV', 'SW', 'SX', 'SY', 'SZ',
   'TV',
   'SR', 'SS', 'ST', 'SU',
-  'TQ','TR',
+  'TQ', 'TR',
   'SM', 'SN', 'SO', 'SP',
   'TL', 'TM',
   'SH', 'SJ', 'SK',
@@ -46,7 +44,7 @@ const IEletters = [
 
 const GBIEletters = [...GBletters, ...IEletters]
 
-async function run(argv) {
+async function run (argv) {
   try {
     if (argv.length < 6) {
       console.error('usage: node makerecords.js GB|IE|GBIE <desired-record-count> <species-count> <output-csv-file> <random-seed>')
@@ -62,7 +60,7 @@ async function run(argv) {
     speciesCount = parseInt(argv[4])
     console.log('makerecord', gridtype, desiredRecordCount, speciesCount, argv[5])
 
-    console.log('Species list obtained from',wordListPath)
+    console.log('Species list obtained from', wordListPath)
     const speciesArray = fs.readFileSync(wordListPath, 'utf8').split('\n')
     if (speciesCount > speciesArray.length) {
       console.error('Not enough species names in list', speciesArray.length)
@@ -78,13 +76,13 @@ async function run(argv) {
     }
     console.log('distribution spread', distribution.length)
     console.log('Least likely', speciesArray[distribution[0]])
-    console.log('Most likely', speciesArray[distribution[distribution.length-1]])
+    console.log('Most likely', speciesArray[distribution[distribution.length - 1]])
 
     let randomseed = null
     if (argv.length >= 6) randomseed = argv[6]
     console.log('randomseed', randomseed)
 
-    var myrng = seedrandom(randomseed)
+    const myrng = seedrandom(randomseed)
 
     const outpath = path.resolve(__dirname, argv[5])
     const letters = gridtype === 'GBIEletters' ? GBIEletters : gridtype === 'GB' ? GBletters : IEletters
@@ -95,7 +93,7 @@ async function run(argv) {
         resolve()
       })
       stream.on('open', function (fd) {
-        stream.write("Spatial Reference,Date,Taxon Name\r")
+        stream.write('Spatial Reference,Date,Taxon Name\r')
 
         for (let recno = 0; recno < desiredRecordCount; recno++) {
           const gr1 = letters[parseInt(myrng() * letterslen)]
@@ -110,14 +108,13 @@ async function run(argv) {
     await generateRecords
     console.error('DONE')
     return 1
-  }
-  catch (e) {
+  } catch (e) {
     console.error('FAILED', e.message)
     return 2
   }
 }
 
-///////////////////////////////////////////////////////////////////////////////////////
+/// ////////////////////////////////////////////////////////////////////////////////////
 // If called from command line, then run now.
 // If testing, then don't.
 if (require.main === module) {
