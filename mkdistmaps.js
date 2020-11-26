@@ -490,6 +490,10 @@ function processLine (file, row, fileSpecieses) {
   lineno++
 
   // Get GR (no spaces) and species name
+  if (!(config.recordset.GRCol in row)) {
+    errors.push('Grid reference not found in: ' + JSON.stringify(row))
+    return
+  }
   const SpatialReference = row[config.recordset.GRCol].toUpperCase().replace(/ /g, '')
   const TaxonName = row[config.recordset.TaxonCol].trim()
   if (SpatialReference.length === 0 || TaxonName.length === 0 || TaxonName.substring(0, 1) === '#') {
