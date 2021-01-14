@@ -17,4 +17,5 @@ jobs:
       - run: mkdir tests/fonts
       - run: wget -P tests/fonts https://github.com/google/fonts/raw/master/ofl/sourcesanspro/SourceSansPro-Regular.ttf
       - run: mkdir tests/output
-      - run: npm run test
+      - run: npm install coveralls
+      - run: npm run testrel
