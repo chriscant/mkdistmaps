@@ -18,4 +18,5 @@ jobs:
       - run: wget -P tests/fonts https://github.com/google/fonts/raw/master/ofl/sourcesanspro/SourceSansPro-Regular.ttf
       - run: mkdir tests/output
       - run: npm install coveralls
-      - run: npm run testrel
+      - run: npm run test
+      - run: coveralls < coverage/lcov.info
