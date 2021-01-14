@@ -1,7 +1,7 @@
 # mkdistmaps
 
-[![CircleCI](https://circleci.com/gh/chriscant/mkdistmaps.svg?style=shield)](https://circleci.com/gh/chriscant/mkdistmaps)
 <!--[![Build Status](https://api.travis-ci.com/chriscant/mkdistmaps.svg?branch=main)](https://travis-ci.com/github/chriscant/mkdistmaps)-->
+[![CircleCI](https://circleci.com/gh/chriscant/mkdistmaps.svg?style=shield)](https://circleci.com/gh/chriscant/mkdistmaps)
 [![Coverage Status](https://coveralls.io/repos/github/chriscant/mkdistmaps/badge.svg?branch=main)](https://coveralls.io/github/chriscant/mkdistmaps?branch=main)
 [![JavaScript Style Guide](https://img.shields.io/badge/code_style-standard-brightgreen.svg)](https://standardjs.com)
 <!--[![Dependencies](https://david-dm.org/chriscant/mkdistmaps.svg)](https://david-dm.org/chriscant/mkdistmaps)-->
