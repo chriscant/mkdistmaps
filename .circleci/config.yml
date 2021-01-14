@@ -6,4 +6,25 @@ workflows:
     jobs:
 #      - npm install -g jest
 #      - mkdir tests/fonts
-      - node/test
+#      - node/test
+       - test-mkdistmaps
+
+jobs:
+  test-mkdistmaps:
+    steps:
+      - checkout
+      - run:
+          name: install-npm
+          command: npm install
+      - run:
+          name: install-jest
+          command: npm install jest
+      - run:
+          name: make-tests-fonts-directory
+          command: mkdir tests/fonts
+      - run:
+          name: get-font-for-test
+          command: wget -P tests/fonts https://github.com/google/fonts/raw/master/ofl/sourcesanspro/SourceSansPro-Regular.ttf
+      - run:
+          name: run-test
+          command: npm run test
