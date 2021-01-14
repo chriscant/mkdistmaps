@@ -2,7 +2,7 @@ version: 2.1
 orbs:
   node: circleci/node@4.1.0
 workflows:
-  test_my_app:
+  test_mkdistmaps:
     jobs:
       - test
 jobs:
@@ -19,4 +19,4 @@ jobs:
       - run: mkdir tests/output
       - run: npm install coveralls
       - run: npm run test
-      - run: node node_modules/coveralls/bin/coveralls.js < coverage/lcov.info
+      - run: node node_modules/coveralls/bin/coveralls.js < coverage/lcov.info # .coveralls.yml must contain circleci

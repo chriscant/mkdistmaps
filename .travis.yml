@@ -14,4 +14,4 @@ before_install:
 
 ################
 script:
-- npm run testrel
+- npm run testrel # .coveralls.yml must contain travis-ci
