@@ -85,7 +85,7 @@ async function run (argv) {
     const myrng = seedrandom(randomseed)
 
     const outpath = path.resolve(__dirname, argv[5])
-    const letters = gridtype === 'GBIEletters' ? GBIEletters : gridtype === 'GB' ? GBletters : IEletters
+    const letters = String(gridtype) === 'GBIEletters' ? GBIEletters : String(gridtype) === 'GB' ? GBletters : IEletters
     const letterslen = letters.length
     const generateRecords = new Promise((resolve, reject) => {
       const stream = fs.createWriteStream(outpath)
