@@ -175,7 +175,8 @@ async function run (argv) {
     }
     console.log(config)
 
-    if ('versionoverride' in config) {
+    console.log(typeof config)
+    if (typeof config === 'object' && 'versionoverride' in config) {
       version = config.versionoverride
     }
 
