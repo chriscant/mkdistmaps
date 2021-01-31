@@ -175,7 +175,6 @@ async function run (argv) {
     }
     console.log(config)
 
-    console.log(typeof config)
     if (typeof config === 'object' && 'versionoverride' in config) {
       version = config.versionoverride
     }
@@ -184,7 +183,7 @@ async function run (argv) {
     fs.mkdirSync(path.join(__dirname, config.outputFolder), { recursive: true })
 
     // Set scale factor for hectad or monad
-    if ('boxSize' in config) {
+    if (typeof config === 'object' && 'boxSize' in config) {
       const boxsize = config.boxSize.toLowerCase()
       if (boxsize === 'monad') config.boxSize = BOXSIZES.MONAD
       else if (boxsize === 'tetrad') config.boxSize = BOXSIZES.TETRAD
@@ -193,7 +192,7 @@ async function run (argv) {
         console.error('unrecognised config.boxSize', config.boxSize)
         return 0
       }
-    } else if ('useMonadsNotHectads' in config) {
+    } else if (typeof config === 'object' && 'useMonadsNotHectads' in config) {
       config.boxSize = config.useMonadsNotHectads ? config.boxSize = BOXSIZES.MONAD : config.boxSize = BOXSIZES.HECTAD
     } else {
       console.log('Using default: map to hectad')
@@ -202,28 +201,28 @@ async function run (argv) {
     SCALE = (config.boxSize === BOXSIZES.HECTAD) ? hectadSCALE : ((config.boxSize === BOXSIZES.TETRAD) ? tetradSCALE : monadSCALE)
 
     // Default makeGenusMaps to false
-    if (!('makeGenusMaps' in config)) {
+    if (!(typeof config === 'object' && 'makeGenusMaps' in config)) {
       config.makeGenusMaps = false
     }
     // Default outputtype to 'map'
-    if (!('outputtype' in config)) {
+    if (!(typeof config === 'object' && 'outputtype' in config)) {
       config.outputtype = 'map'
     }
     // Default maptype to 'date'
-    if (!('maptype' in config)) {
+    if (!(typeof config === 'object' && 'maptype' in config)) {
       config.maptype = 'date'
     }
     // Default makeAllMap to false
-    if (!('makeAllMap' in config)) {
+    if (!(typeof config === 'object' && 'makeAllMap' in config)) {
       config.makeAllMap = false
     }
     // Default geojsonprecision to false
-    if (!('geojsonprecision' in config)) {
+    if (!(typeof config === 'object' && 'geojsonprecision' in config)) {
       config.geojsonprecision = false
     }
 
     // Default saveSpacesAs to false
-    if (!('saveSpacesAs' in config)) {
+    if (!(typeof config === 'object' && 'saveSpacesAs' in config)) {
       config.saveSpacesAs = false
     }
 
@@ -231,7 +230,7 @@ async function run (argv) {
     config.makeAllSpeciesMap = config.maptype === 'count' && config.makeAllMap
 
     // Set default datecolours if need be
-    if (!('datecolours' in config)) {
+    if (!(typeof config === 'object' && 'datecolours' in config)) {
       console.log('Using default datecolours')
       config.datecolours = [
         { minyear: 0, maxyear: 1959, colour: 'rgba(255,255,0, 1)', legend: 'pre-1960' }, // Yellow
@@ -241,7 +240,7 @@ async function run (argv) {
       ]
     }
     // Set default countcolours if need be
-    if (!('countcolours' in config)) {
+    if (!(typeof config === 'object' && 'countcolours' in config)) {
       console.log('Using default countcolours')
       config.countcolours = [
         { min: 1, max: '1%', colour: 'rgba(0,255,0, 1)', legend: '' }, // Green
