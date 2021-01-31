@@ -3,7 +3,7 @@
 const output = []
 function accumulog(...err) {
   let line = ''
-  for (e of err) {
+  for (const e of err) {
     if (typeof e === 'object') {
       line += JSON.stringify(e)
     } else {
