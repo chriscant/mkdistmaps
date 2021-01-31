@@ -51,8 +51,8 @@ async function run (argv) {
       return 0
     }
 
-    gridtype = String(argv[2])
-    if (gridtype !== 'GB' && gridtype !== 'IE' && gridtype !== 'GBIE') {
+    gridtype = argv[2]
+    if (String(gridtype) !== 'GB' && String(gridtype) !== 'IE' && String(gridtype) !== 'GBIE') {
       console.error('duff gridtype', gridtype)
       return 0
     }
