@@ -1,6 +1,7 @@
 version: 2.1
 orbs:
   node: circleci/node@4.1.0
+  sonarcloud: sonarsource/sonarcloud@1.0.0
 workflows:
   test_mkdistmaps:
     jobs:
@@ -20,3 +21,4 @@ jobs:
       - run: npm install coveralls
       - run: npm run test
       - run: node node_modules/coveralls/bin/coveralls.js < coverage/lcov.info # .coveralls.yml must contain circleci
+      - sonarcloud/scan
