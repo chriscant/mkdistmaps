@@ -5,7 +5,7 @@
 [![Coverage Status](https://coveralls.io/repos/github/chriscant/mkdistmaps/badge.svg?branch=main)](https://coveralls.io/github/chriscant/mkdistmaps?branch=main)
 [![JavaScript Style Guide](https://img.shields.io/badge/code_style-standard-brightgreen.svg)](https://standardjs.com)
 [![Dependencies](https://david-dm.org/chriscant/mkdistmaps.svg)](https://david-dm.org/chriscant/mkdistmaps)
-[![SonarCloud](https://sonarcloud.io/images/project_badges/sonarcloud-white.svg)](https://sonarcloud.io/dashboard?id=chriscant_mkdistmaps)
+<a href="https://sonarcloud.io/dashboard?id=chriscant_mkdistmaps"><img src="https://sonarcloud.io/images/project_badges/sonarcloud-white.svg" height="20" alt="SonarCloud" ></a>
 
 
 Command line tool to make species distribution maps from species records with grid references.
