@@ -7,7 +7,7 @@ workflows:
   test_mkdistmaps:
     jobs:
       - test
-          context: sonarcloud
+        context: sonarcloud
 
 jobs:
   test:
