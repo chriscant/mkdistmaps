@@ -316,7 +316,7 @@ async function run (argv) {
           rv = 0
         } else {
           let donecount = 0
-          const doFiles = new Promise((resolve2, reject2) => {
+          const doFiles = new Promise((resolve, reject) => {
             for (const file of Object.values(files)) {
               // console.log(file)
               const fileSpecieses = []
@@ -331,7 +331,7 @@ async function run (argv) {
                   console.log(file, 'species:', Object.keys(fileSpecieses).length)
                   totalrecords += rowCount
                   if (++donecount === files.length) {
-                    resolve2() // doFiles
+                    resolve() // doFiles
                   }
                 })
             }
@@ -903,9 +903,10 @@ async function makeImages (rowCount) {
       // Determine box colour
       ctx.fillStyle = 'rgba(255,20, 147, 1)' // default to pink
       if (config.maptype === 'count') {
+        const thecount = isAllSpeciesMap ? boxdata.species.length : boxdata.count
         for (const countcolour of Object.values(config.countcolours)) {
-          if (((countcolour.imin === countcolour.imax) && (boxdata.count === countcolour.imin)) ||
-              (boxdata.count >= countcolour.imin && ((countcolour.imax === 0) || (boxdata.count <= countcolour.imax)))) {
+          if (((countcolour.imin === countcolour.imax) && (thecount === countcolour.imin)) ||
+            (thecount >= countcolour.imin && ((countcolour.imax === 0) || (thecount <= countcolour.imax)))) {
             ctx.fillStyle = countcolour.colour
           }
         }
@@ -1049,9 +1050,10 @@ async function makeGeojson (rowCount) {
 
         let color = rgbHex('rgba(255,20, 147, 1)') // default to pink
         if (config.maptype === 'count') {
+          const thecount = isAllSpeciesMap ? boxdata.species.length : boxdata.count
           for (const countcolour of Object.values(config.countcolours)) {
-            if (((countcolour.imin === countcolour.imax) && (boxdata.count === countcolour.imin)) ||
-              (boxdata.count >= countcolour.imin && ((countcolour.imax === 0) || (boxdata.count <= countcolour.imax)))) {
+            if (((countcolour.imin === countcolour.imax) && (thecount === countcolour.imin)) ||
+              (thecount >= countcolour.imin && ((countcolour.imax === 0) || (thecount <= countcolour.imax)))) {
               color = rgbHex(countcolour.colour)
             }
           }
