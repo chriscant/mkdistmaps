@@ -305,6 +305,7 @@ WGS84 latitude and longitude. I converted this code into a module called [geotoo
 
 * Josh Marinacci's [pureimage](https://www.npmjs.com/package/pureimage) - [docs](http://joshmarinacci.github.io/node-pureimage/) and contributors
 * C2FO's  [fast-csv](https://www.npmjs.com/package/fast-csv) - [docs](https://c2fo.io/fast-csv/docs/introduction/getting-started) and contributors
+* Source Sans Pro from [Google fonts](https://fonts.google.com/specimen/Source+Sans+Pro?preview.text_type=custom)
 * Other nodejs modules - see code
 
 I built base maps using [QGIS](https://qgis.org/en/site/), [Ordnance Survey open data](https://www.ordnancesurvey.co.uk/opendatadownload/products.html),
@@ -314,8 +315,6 @@ I built base maps using [QGIS](https://qgis.org/en/site/), [Ordnance Survey open
 Vice-county data from https://github.com/BiologicalRecordsCentre/vice-counties and https://github.com/SK53/Irish-Vice-Counties - thanks.
 
 I used data from the [British Lichen Society](https://www.britishlichensociety.org.uk/) - thanks.
-
-The tests use the font "SourceSansPro-Regular.ttf" from https://github.com/google/fonts - thanks.
 
 # transform tool
 
