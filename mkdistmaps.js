@@ -4,6 +4,8 @@
 
 // For each new release, update in package.json and create a new tag in GitHub - used in version string
 
+// Keep rgb-hex@3.0.0 to avoid ES module import
+
 let config = false
 let SCALE = false
 let usesGB = false
@@ -18,7 +20,7 @@ const csv = require('fast-csv')
 const PImage = require('pureimage')
 const execSync = require('child_process').execSync
 const moment = require('moment')
-const rgbHex = import('rgb-hex')
+const rgbHex = require('rgb-hex')
 const _ = require('lodash/core')
 
 const geotools2m = require('./geotools2m') // http://www.nearby.org.uk/tests/GeoTools2.html
