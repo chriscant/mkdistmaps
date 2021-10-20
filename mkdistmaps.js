@@ -18,7 +18,7 @@ const csv = require('fast-csv')
 const PImage = require('pureimage')
 const execSync = require('child_process').execSync
 const moment = require('moment')
-const rgbHex = require('rgb-hex')
+const rgbHex = import('rgb-hex')
 const _ = require('lodash/core')
 
 const geotools2m = require('./geotools2m') // http://www.nearby.org.uk/tests/GeoTools2.html
