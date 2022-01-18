@@ -1,6 +1,6 @@
 {
   "name": "mkdistmaps",
-  "version": "2.3.1",
+  "version": "2.3.2",
   "description": "Make Distribution Maps from CSV file(s)",
   "main": "mkdistmaps.js",
   "scripts": {
@@ -14,13 +14,16 @@
     "type": "git",
     "url": "https://github.com/chriscant/mkdistmaps.git"
   },
+  "comments": {
+    "comment3": "Keep at rgb-hex@3.0.0"
+  },
   "dependencies": {
     "fast-csv": "4.3.6",
     "filecompare": "1.0.4",
     "glob": "7.2.0",
     "lodash": "4.17.21",
     "moment": "2.29.1",
-    "pureimage": "0.3.5",
+    "pureimage": "0.3.8",
     "rgb-hex": "3.0.0",
     "seedrandom": "3.0.5",
     "word-list": "3.1.0"
