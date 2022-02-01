@@ -136,6 +136,9 @@ const monadSCALE = {
   gridreffigs: 4
 }
 
+const translateFrom = []
+const translateTo = []
+
 // Get version from last git commit
 const gitdescr = execSync('git describe --tags --long')
 let version = 'mkdistmaps ' + gitdescr.toString('utf8', 0, gitdescr.length - 1) + ' - run at ' + moment().format('Do MMMM YYYY, h:mm:ss a')
@@ -305,12 +308,45 @@ async function run (argv) {
     if (!config.basemap.hectad_fontsize) config.basemap.hectad_fontsize = '12pt'
 
     /// //////////////
+    if (config.recordset.translate) {
+      const opts = config.recordset.translate.split(',')
+      if (opts.length !== 3) {
+        console.error('recordset.translate must have 3 fields')
+        return 0
+      }
+      const translatecsv = opts[0]
+      const oldnamecol = opts[1]
+      const newnamecol = opts[2]
+      if (!fs.existsSync(translatecsv)) {
+        console.error('recordset.translate CSV does not exist -', translatecsv)
+        return 0
+      }
+      console.log('Reading: ', translatecsv)
+      const readTranslate = new Promise((resolve, reject) => {
+        fs.createReadStream(path.resolve(__dirname, translatecsv), { encoding: config.recordset.encoding })
+          .pipe(csv.parse({ headers: true }))
+          .on('data', row => {
+            const from = row[oldnamecol]
+            const to = row[newnamecol]
+            if (from.length > 0 && to.length > 0 && (from !== to)) {
+              translateFrom.push(from)
+              translateTo.push(to)
+            }
+          })
+          .on('end', function (rowCount) {
+            resolve()
+          })
+      })
+      await readTranslate
+    }
+
+    /// //////////////
     // Do everything!
     const headers = config.recordset.headers ? config.recordset.headers : true
     const renameHeaders = config.recordset.renameHeaders ? config.recordset.renameHeaders : false
 
     let totalrecords = 0
-    const processFiles = new Promise((resolve1, reject1) => {
+    const processFiles = new Promise((resolve, reject) => {
       async function doAll () {
         const files = glob.sync(config.recordset.csv)
         if (files.length === 0) {
@@ -318,7 +354,7 @@ async function run (argv) {
           rv = 0
         } else {
           let donecount = 0
-          const doFiles = new Promise((resolve2, reject2) => {
+          const doFiles = new Promise((resolve, reject) => {
             for (const file of Object.values(files)) {
               // console.log(file)
               const fileSpecieses = []
@@ -333,7 +369,7 @@ async function run (argv) {
                   console.log(file, 'species:', Object.keys(fileSpecieses).length)
                   totalrecords += rowCount
                   if (++donecount === files.length) {
-                    resolve2() // doFiles
+                    resolve() // doFiles
                   }
                 })
             }
@@ -342,7 +378,7 @@ async function run (argv) {
           console.log('COMPLETED READING DATA')
           await importComplete(totalrecords)
         }
-        resolve1() // processFiles
+        resolve() // processFiles
       }
       doAll()
     })
@@ -497,10 +533,17 @@ function processLine (file, row, fileSpecieses) {
     return
   }
   const SpatialReference = row[config.recordset.GRCol].toUpperCase().replace(/ /g, '')
-  const TaxonName = row[config.recordset.TaxonCol].trim()
+  let TaxonName = row[config.recordset.TaxonCol].trim()
   if (SpatialReference.length === 0 || TaxonName.length === 0 || TaxonName.substring(0, 1) === '#') {
     empties++
     return
+  }
+
+  if (translateFrom.length > 0) {
+    const fromix = translateFrom.indexOf(TaxonName)
+    if (fromix !== -1) {
+      TaxonName = translateTo[fromix]
+    }
   }
 
   records++
