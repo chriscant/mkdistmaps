@@ -354,7 +354,7 @@ async function run (argv) {
           rv = 0
         } else {
           let donecount = 0
-          const doFiles = new Promise((resolve, reject) => {
+          const doFiles = new Promise((resolve2, reject2) => {
             for (const file of Object.values(files)) {
               // console.log(file)
               const fileSpecieses = []
@@ -369,7 +369,7 @@ async function run (argv) {
                   console.log(file, 'species:', Object.keys(fileSpecieses).length)
                   totalrecords += rowCount
                   if (++donecount === files.length) {
-                    resolve() // doFiles
+                    resolve2() // doFiles
                   }
                 })
             }
