@@ -1,6 +1,6 @@
 {
   "name": "mkdistmaps",
-  "version": "2.4.0",
+  "version": "2.4.1",
   "description": "Make Distribution Maps from CSV file(s)",
   "main": "mkdistmaps.js",
   "scripts": {
@@ -22,7 +22,7 @@
     "filecompare": "1.0.4",
     "glob": "7.2.0",
     "lodash": "4.17.21",
-    "moment": "2.29.1",
+    "moment": "2.29.2",
     "pureimage": "0.3.8",
     "rgb-hex": "3.0.0",
     "seedrandom": "3.0.5",
