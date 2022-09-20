@@ -359,7 +359,7 @@ async function run (argv) {
               // console.log(file)
               const fileSpecieses = []
               fs.createReadStream(path.resolve(__dirname, file), { encoding: config.recordset.encoding })
-                .pipe(csv.parse({ headers: headers, renameHeaders: renameHeaders }))
+                .pipe(csv.parse({ headers, renameHeaders }))
                 .on('error', error => console.error(error))
                 .on('data', row => { processLine(file, row, fileSpecieses) })
                 .on('end', function (rowCount) {
