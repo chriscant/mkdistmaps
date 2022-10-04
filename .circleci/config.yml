@@ -1,6 +1,4 @@
 version: 2.1
-orbs:
-  node: circleci/node@4.1.0
 
 workflows:
   test_mkdistmaps:
@@ -9,12 +7,11 @@ workflows:
 
 jobs:
   test:
-    executor: node/default
+    docker:
+      - image: cimg/node:14.20.1
     steps:
       - checkout
-      - node/install-packages:
-          cache-path: ~/project/node_modules
-          override-ci-command: npm install
+      - run: node -v; npm -v
       - run: npm install jest
       - run: mkdir tests/output
       - run: npm install coveralls
