@@ -202,7 +202,7 @@ async function run (argv) {
         return 0
       }
     } else if (typeof config === 'object' && 'useMonadsNotHectads' in config) {
-      config.boxSize = config.useMonadsNotHectads ? config.boxSize = BOXSIZES.MONAD : config.boxSize = BOXSIZES.HECTAD
+      config.boxSize = config.useMonadsNotHectads ? BOXSIZES.MONAD : BOXSIZES.HECTAD
     } else {
       console.log('Using default: map to hectad')
       config.boxSize = BOXSIZES.HECTAD
@@ -744,8 +744,9 @@ function processLine (file, row, fileSpecieses) {
     }
 
     const l2 = box.substring(1, 2)
-    for (let i = 0; i < GBletters2.length; i++) {
-      const boxbl = GBletters2[i]
+    for (const boxbl of GBletters2) {
+    //for (let i = 0; i < GBletters2.length; i++) {
+      //const boxbl = GBletters2[i]
       if (boxbl.l === l2) {
         // console.log('boxbl', boxbl)
         Eastings += boxbl.e * 1000
@@ -754,8 +755,9 @@ function processLine (file, row, fileSpecieses) {
       }
     }
   } else {
-    for (let i = 0; i < IEletters.length; i++) {
-      const boxbl = IEletters[i]
+    for (const boxbl of IEletters) {
+    //for (let i = 0; i < IEletters.length; i++) {
+      //const boxbl = IEletters[i]
       if (boxbl.l === l1) {
         // console.log('boxbl', boxbl)
         Eastings += boxbl.e * 1000
@@ -1185,14 +1187,14 @@ async function makeGeojson (rowCount) {
           // Add on taxon conservation status letters if provided
           if (taxonLookupName && taxonLookupExtra && taxonLookup.length > 0) {
             const speciesWithExtra = []
-            for (let species of boxdata.species) {
+            for (const species of boxdata.species) {
+              let withextra = species
               const found = taxonLookup.find(taxon => taxon[taxonLookupName] === species)
               if (found) {
                 const extra = found[taxonLookupExtra].trim()
-                if (extra !== '0') species += ' ' + extra + ' '
-                else console.log(found)
+                if (extra !== '0') withextra += ' ' + extra + ' '
               }
-              speciesWithExtra.push(species)
+              speciesWithExtra.push(withextra)
             }
             feature.properties.species = speciesWithExtra.join('| ')
           } else {
