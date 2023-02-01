@@ -745,10 +745,7 @@ function processLine (file, row, fileSpecieses) {
 
     const l2 = box.substring(1, 2)
     for (const boxbl of GBletters2) {
-    //for (let i = 0; i < GBletters2.length; i++) {
-      //const boxbl = GBletters2[i]
       if (boxbl.l === l2) {
-        // console.log('boxbl', boxbl)
         Eastings += boxbl.e * 1000
         Northings += boxbl.n * 1000
         break
@@ -756,10 +753,7 @@ function processLine (file, row, fileSpecieses) {
     }
   } else {
     for (const boxbl of IEletters) {
-    //for (let i = 0; i < IEletters.length; i++) {
-      //const boxbl = IEletters[i]
       if (boxbl.l === l1) {
-        // console.log('boxbl', boxbl)
         Eastings += boxbl.e * 1000
         Northings += boxbl.n * 1000
         break
