@@ -142,6 +142,7 @@ const translateTo = []
 const taxonLookup = []
 let taxonLookupName = false
 let taxonLookupExtra = false
+let taxonLookupCurrent = false
 
 // Get version from last git commit
 const gitdescr = execSync('git describe --tags --long')
@@ -353,6 +354,7 @@ async function run (argv) {
     if (config.taxon && ('csv' in config.taxon) && ('lookup' in config.taxon) && ('extra' in config.taxon)) {
       taxonLookupName = config.taxon.lookup
       taxonLookupExtra = config.taxon.extra
+      taxonLookupCurrent = config.taxon.current
       const readTaxons = new Promise((resolve, reject) => {
         fs.createReadStream(path.resolve(__dirname, config.taxon.csv), { encoding: 'utf8' })
           .pipe(csv.parse({ headers: true }))
@@ -364,7 +366,20 @@ async function run (argv) {
           })
       })
       await readTaxons
+      for (const taxon of taxonLookup) {
+        let extra = taxon[taxonLookupExtra].trim()
+        if (extra === '0') extra = ''
+        taxon[taxonLookupExtra] = extra
+        if (extra === 'LC') extra = ''
+        const lcpos = extra.indexOf('LC ')
+        if (lcpos !== -1) extra = extra.substring(0, lcpos) + extra.substring(lcpos + 3)
+        taxon[taxonLookupExtra + 'nolc'] = extra // without LC
+      }
       console.log('Read taxon lookup: ', taxonLookup.length)
+      if (!taxonLookupName || !taxonLookupExtra || !taxonLookupCurrent) {
+        console.log('Incomplete taxon setup')
+        taxonLookup.length = 0 // Clear array
+      }
     }
 
     /// //////////////
@@ -733,10 +748,8 @@ function processLine (file, row, fileSpecieses) {
 
   const l1 = box.substring(0, 1)
   if (isGB) {
-    for (let i = 0; i < GBletters1.length; i++) {
-      const boxbl = GBletters1[i]
+    for (const boxbl of GBletters1) {
       if (boxbl.l === l1) {
-        // console.log('boxbl', boxbl)
         Eastings += boxbl.e * 1000
         Northings += boxbl.n * 1000
         break
@@ -1179,20 +1192,20 @@ async function makeGeojson (rowCount) {
           feature.properties.text += boxdata.species.length + ' species '
           boxdata.species.sort()
           // Add on taxon conservation status letters if provided
-          if (taxonLookupName && taxonLookupExtra && taxonLookup.length > 0) {
+          if (taxonLookup.length > 0) {
             const speciesWithExtra = []
             for (const species of boxdata.species) {
               let withextra = species
               const found = taxonLookup.find(taxon => taxon[taxonLookupName] === species)
               if (found) {
-                const extra = found[taxonLookupExtra].trim()
-                if (extra !== '0') withextra += ' ' + extra + ' '
+                const extra = found[taxonLookupExtra + 'nolc']
+                if (extra.length > 0) withextra += ' ' + extra
               }
               speciesWithExtra.push(withextra)
             }
-            feature.properties.species = speciesWithExtra.join('| ')
+            feature.properties.species = speciesWithExtra.join(' | ')
           } else {
-            feature.properties.species = boxdata.species.join('| ')
+            feature.properties.species = boxdata.species.join(' | ')
           }
         } else {
           feature.properties.text += boxdata.count + (boxdata.count > 1 ? ' records ' : ' record ')
@@ -1211,6 +1224,13 @@ async function makeGeojson (rowCount) {
       geojson.properties.subtitle = 'Species: ' + speciesCount.toLocaleString('en')
     } else {
       geojson.properties.subtitle = 'Records: ' + reccount.toLocaleString('en')
+      if (taxonLookupName && taxonLookupExtra && taxonLookup.length > 0) {
+        const found = taxonLookup.find(taxon => taxon[taxonLookupName] === MapName)
+        if (found) {
+          geojson.properties.current = found[taxonLookupCurrent]
+          geojson.properties.extra = found[taxonLookupExtra]
+        }
+      }
     }
     geojson.properties.countcolours = config.countcolours
 
