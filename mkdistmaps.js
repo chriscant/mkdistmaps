@@ -139,6 +139,10 @@ const monadSCALE = {
 const translateFrom = []
 const translateTo = []
 
+const taxonLookup = []
+let taxonLookupName = false
+let taxonLookupExtra = false
+
 // Get version from last git commit
 const gitdescr = execSync('git describe --tags --long')
 let version = 'mkdistmaps ' + gitdescr.toString('utf8', 0, gitdescr.length - 1) + ' - run at ' + moment().format('Do MMMM YYYY, h:mm:ss a')
@@ -224,6 +228,10 @@ async function run (argv) {
     // Default geojsonprecision to false
     if (!(typeof config === 'object' && 'geojsonprecision' in config)) {
       config.geojsonprecision = false
+    }
+    // Default taxon to false
+    if (!(typeof config === 'object' && 'taxon' in config)) {
+      config.taxon = false
     }
 
     // Default saveSpacesAs to false
@@ -338,6 +346,25 @@ async function run (argv) {
           })
       })
       await readTranslate
+    }
+
+    /// //////////////
+    // Read option taxon lookups
+    if (config.taxon && ('csv' in config.taxon) && ('lookup' in config.taxon) && ('extra' in config.taxon)) {
+      taxonLookupName = config.taxon.lookup
+      taxonLookupExtra = config.taxon.extra
+      const readTaxons = new Promise((resolve, reject) => {
+        fs.createReadStream(path.resolve(__dirname, config.taxon.csv), { encoding: 'utf8' })
+          .pipe(csv.parse({ headers: true }))
+          .on('data', row => {
+            taxonLookup.push(row)
+          })
+          .on('end', function (rowCount) {
+            resolve()
+          })
+      })
+      await readTaxons
+      console.log('Read taxon lookup: ', taxonLookup.length)
     }
 
     /// //////////////
@@ -1155,7 +1182,22 @@ async function makeGeojson (rowCount) {
         if (isAllSpeciesMap) {
           feature.properties.text += boxdata.species.length + ' species '
           boxdata.species.sort()
-          feature.properties.species = boxdata.species.join('| ')
+          // Add on taxon conservation status letters if provided
+          if (taxonLookupName && taxonLookupExtra && taxonLookup.length > 0) {
+            const speciesWithExtra = []
+            for (let species of boxdata.species) {
+              const found = taxonLookup.find(taxon => taxon[taxonLookupName] === species)
+              if (found) {
+                const extra = found[taxonLookupExtra].trim()
+                if (extra !== '0') species += ' ' + extra + ' '
+                else console.log(found)
+              }
+              speciesWithExtra.push(species)
+            }
+            feature.properties.species = speciesWithExtra.join('| ')
+          } else {
+            feature.properties.species = boxdata.species.join('| ')
+          }
         } else {
           feature.properties.text += boxdata.count + (boxdata.count > 1 ? ' records ' : ' record ')
         }
