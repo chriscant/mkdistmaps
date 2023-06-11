@@ -374,6 +374,7 @@ async function run (argv) {
         const lcpos = extra.indexOf('LC ')
         if (lcpos !== -1) extra = extra.substring(0, lcpos) + extra.substring(lcpos + 3)
         taxon[taxonLookupExtra + 'nolc'] = extra // without LC
+        if (taxon[taxonLookupName] === taxon[taxonLookupCurrent]) taxon[taxonLookupCurrent] = ''
       }
       console.log('Read taxon lookup: ', taxonLookup.length)
       if (!taxonLookupName || !taxonLookupExtra || !taxonLookupCurrent) {
