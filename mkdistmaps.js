@@ -947,7 +947,7 @@ async function makeImages (rowCount) {
     const isAllSpeciesMap = MapName === makeAllSpeciesMapName
 
     // Create output canvas from base map
-    const img2 = PImage.make(width, height)
+    const img2 = PImage.make(Math.floor(width), Math.floor(height))
     const ctx = img2.getContext('2d')
     ctx.drawImage(img,
       0, 0, img.width, img.height, // source dimensions
