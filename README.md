@@ -207,7 +207,7 @@ Note: if the CSV file has columns `Eastings` and `Northings` then these are cros
 
 ### boxSize
 
-* Set to `hectad`, `tetrad` or `monad`. Default is `hectad`.
+* Set to `hectad`, `tetrad`, `monad` or `all`. Default is `hectad`.
 
 ### makeGenusMaps
 
