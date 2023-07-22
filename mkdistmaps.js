@@ -738,7 +738,7 @@ function processLine (file, row, fileSpecieses) {
     Northings += parseInt(box.substring(4)) * 100
     box = box.substring(0, 1 + grfig) + box.substring(4, 4 + grfig)
     isIE = true
-  } else if (box.length === 5) { // TODO
+  } else if (box.length === 5) { // CHECK
     const tetradchar = box.substring(4).toUpperCase()
     if (tetradchar.match(/[A-Z]/)) {
       if (tetradchar === 'O') { errors.push(ObsKey + ' duff tetrad letter: ' + tetradchar + ': ' + SpatialReference); return }
@@ -1235,7 +1235,7 @@ async function makeGeojson (rowCount) {
         feature.geometry.coordinates.push(coords)
 
         feature.properties = {
-          square: isHectad ? 'hectad' : isQuadrant ? 'quadrant' : isTetrad ? 'tetrad' : isMonad ? 'monad' : '',
+          square: isHectad ? 'hectad' : (isQuadrant ? 'quadrant' : (isTetrad ? 'tetrad' : (isMonad ? 'monad' : ''))),
           color: '#' + color.substring(0, 6),
           text: box + ': '
         }
