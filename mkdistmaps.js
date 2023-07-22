@@ -4,7 +4,7 @@
 
 // For each new release, update in package.json and create a new tag in GitHub - used in version string
 
-// Keep rgb-hex@3.0.0 to avoid ES module import
+// Keep rgb-hex@3.0.0 to avoid ES module import. 22/7/23 seems OK now
 
 let config = false
 let SCALE = false
