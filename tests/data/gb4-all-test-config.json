@@ -1,0 +1,36 @@
+﻿{
+  "limit": 1,
+  "makeAllMap": true,
+  "versionoverride": "mkdistmaps test",
+  "outputFolder": "tests/output",
+  "recordset": {
+    "csv": "tests/data/csv/Test-GB4.csv",
+    "title": "Test GB Data",
+    "GRCol": "Grid ref",
+    "TaxonCol": "Taxon name",
+    "DateCol": "Date(s)",
+    "YearCol": "Year",
+    "ObsKeyCol": "Obs Key"
+  },
+  "boxSize": "all",
+  "makeGenusMaps": false,
+  "font_filename": "tests/fonts/SourceSansPro-Regular.ttf",
+  "basemap": {
+    "file": "tests/basemaps/QGIS-VC69-VC70.png",
+    "north": 589703.6682,
+    "west": 293169.8607,
+    "east": 390500,
+    "south": 460155.7305,
+    "scaledown": 4,
+    "showhectadname": false,
+    //  QGIS export image: 1:570000, 300dpi
+    "title_x": 10,
+    "title_y": 30,
+    "title_y_inc": 22,
+    "title_fontsize": "20pt",
+    "legend_x": 10,
+    "legend_y": 600,
+    "legend_inc": 10,
+    "legend_fontsize": "12pt"
+  }
+}

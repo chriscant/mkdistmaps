@@ -122,18 +122,21 @@ const BOXSIZES = {
   ALL: 0
 }
 
+const monadSize = 1000
+const tetradSize = 2000
+const quadrantSize = 5000
 const hectadSize = 10000
 
 const hectadSCALE = {
-  smallBoxSize: 10000,
+  smallBoxSize: hectadSize,
   gridreffigs: 2
 }
 const tetradSCALE = {
-  smallBoxSize: 2000,
+  smallBoxSize: tetradSize,
   gridreffigs: 4
 }
 const monadSCALE = {
-  smallBoxSize: 1000,
+  smallBoxSize: monadSize,
   gridreffigs: 4
 }
 
@@ -477,10 +480,11 @@ function getGRtype (box) {
       if (lasttwo === 'NE' || lasttwo === 'NW' || lasttwo === 'SE' || lasttwo === 'SW') {
         rv.isQuadrant = true
         let bf = box.substring(0, len - 3)
-        bf += (lasttwo === 'NE' || lasttwo === 'NW') ? '5' : '0'
+        bf += ((lasttwo === 'NE' || lasttwo === 'SE')) ? '5' : '0'
         bf += box.substring(3, 4)
-        bf += (lasttwo === 'NE' || lasttwo === 'NW') ? '0' : '5'
+        bf += ((lasttwo === 'NE' || lasttwo === 'NW')) ? '5' : '0'
         rv.boxfull = bf
+        // console.log('getGRtype', box, bf)
         return rv
       } else throw new Error('Bad quadrant letters ' + lasttwo)
     }
@@ -672,18 +676,17 @@ function processLine (file, row, fileSpecieses) {
     Northings += parseInt(box.substring(5)) * 100
     box = box.substring(0, 2 + grfig) + box.substring(5, 5 + grfig)
     isGB = true
-  } else if (box.length === 6) { // ALL-OK-ISH
+  } else if (box.length === 6) { // ALL-OK
     const lasttwochars = box.substring(4, 6)
     const quadrantnw = lasttwochars === 'NW'
     const quadrantsw = lasttwochars === 'SW'
     const quadrantse = lasttwochars === 'SE'
     const quadrantne = lasttwochars === 'NE'
     if (quadrantnw || quadrantsw || quadrantse || quadrantne) {
+      // console.log('lasttwochars', box, lasttwochars, quadrantnw, quadrantsw, quadrantse, quadrantne)
       if (notNumeric(box, 2, 4)) return
       Eastings += parseInt(box.substring(2, 3)) * 10000
       Northings += parseInt(box.substring(3)) * 10000
-      // NO as point stored at hectad level: if (quadrantne || quadrantse) Eastings += 5000
-      // NO as point stored at hectad level: if (quadrantne || quadrantnw) Northings += 5000
       if (quadrantne || quadrantse) Eastings += 5000
       if (quadrantne || quadrantnw) Northings += 5000
       // box = box.substring(0, 4) JUST LEAVE AS NY56SW
@@ -850,7 +853,7 @@ function processLine (file, row, fileSpecieses) {
     }
     boxes[box] = boxloc
   }
-  // console.log(box.padStart(28), boxes[box].e.toString().padStart(3, '0'), ' ', boxes[box].n.toString().padStart(3, '0'))
+  // console.log('boxloc', box.padStart(21), boxes[box].e.toString().padStart(3, '0'), ' ', boxes[box].n.toString().padStart(3, '0'))
 
   // Add/Update record for species ie count, min and max year for each box
   updateSpeciesesGrids(TaxonName, box, Year, false, fileSpecieses, true, false)
@@ -943,6 +946,14 @@ async function makeImages (rowCount) {
   console.log('boxswidthHectad', boxswidthHectad)
   const boxwidthHectad = width / boxswidthHectad // boxheight should be the same if map in proportion
   console.log('boxwidthHectad', boxwidthHectad)
+  const boxswidthTetrad = mapeastings / tetradSize
+  console.log('boxswidthTetrad', boxswidthTetrad)
+  const boxwidthTetrad = width / boxswidthTetrad // boxheight should be the same if map in proportion
+  console.log('boxwidthTetrad', boxwidthTetrad)
+  const boxswidthQuadrant = mapeastings / quadrantSize
+  console.log('boxswidthQuadrant', boxswidthQuadrant)
+  const boxwidthQuadrant = width / boxswidthQuadrant // boxheight should be the same if map in proportion
+  console.log('boxwidthQuadrant', boxwidthQuadrant)
 
   if (!config.basemap.legend_y) config.basemap.legend_y = Math.trunc(height / 2)
 
@@ -1012,7 +1023,7 @@ async function makeImages (rowCount) {
     for (const [box, boxdata] of Object.entries(speciesGrids.boxes)) {
       reccount += boxdata.count
       const boxloc = boxes[box]
-      const { isHectad } = getGRtype(box)
+      const { isHectad, isQuadrant, isTetrad, isMonad } = getGRtype(box)
 
       // Determine box colour
       ctx.fillStyle = 'rgba(255,20, 147, 1)' // default to pink
@@ -1036,13 +1047,16 @@ async function makeImages (rowCount) {
       // Draw solid or round box (and optional hectad outline)
       // Remember: y goes wrong way so subtract that first
       if (isHectad) {
-        // console.log('ISHECTAD', box, boxloc, boxloc.x, boxloc.y - boxwidthHectad + boxwidthHectad / 10, boxwidthHectad, boxwidthHectad)
         if (config.boxSize === BOXSIZES.HECTAD) {
           ctx.fillRect(boxloc.x, boxloc.y - boxwidthHectad, boxwidthHectad, boxwidthHectad)
         } else {
           ctx.strokeRect(boxloc.x, boxloc.y - boxwidthHectad, boxwidthHectad, boxwidthHectad)
         }
-      } else {
+      } else if (isQuadrant) {
+        ctx.strokeRect(boxloc.x, boxloc.y - boxwidthQuadrant, boxwidthQuadrant, boxwidthQuadrant)
+      } else if (isTetrad) {
+        ctx.strokeRect(boxloc.x, boxloc.y - boxwidthTetrad, boxwidthTetrad, boxwidthTetrad)
+      } else if (isMonad) {
         if ((boxdata.count === 1) && (config.boxSize !== BOXSIZES.HECTAD)) {
           ctx.beginPath()
           ctx.arc(boxloc.x + boxwidthSmallhalf, boxloc.y - boxwidthSmallhalf, boxwidthSmallhalf, 0, 2 * Math.PI, false) // Math.PI
@@ -1162,7 +1176,6 @@ async function makeGeojson (rowCount) {
         if (isTetrad && squaretype !== 2) continue
         if (isMonad && squaretype !== 3) continue
         reccount += boxdata.count
-        // console.log('getGRtype', isHectad, isQuadrant, isTetrad, isMonad, isIE, boxfull)
 
         let color = rgbHex('rgba(255,20, 147, 1)') // default to pink
         if (config.maptype === 'count') {
@@ -1181,15 +1194,16 @@ async function makeGeojson (rowCount) {
           }
         }
 
-        let osgbie = new geotools2m.GT_OSGB()
-        if (isIE) osgbie = new geotools2m.GT_Irish()
-        osgbie.parseGridRef(boxfull)
-        const boxbl = osgbie.getWGS84()
         let boxside = 1000 // monad
         if (isTetrad) boxside = 2000 // tetrad
         else if (isQuadrant) boxside = 5000 // quadrant
         else if (isHectad) boxside = 10000 // hectad
 
+        let osgbie = new geotools2m.GT_OSGB()
+        if (isIE) osgbie = new geotools2m.GT_Irish()
+        osgbie.parseGridRef(boxfull)
+
+        const boxbl = osgbie.getWGS84()
         osgbie.northings += boxside
         const boxtl = osgbie.getWGS84()
         osgbie.eastings += boxside
@@ -1221,6 +1235,7 @@ async function makeGeojson (rowCount) {
         feature.geometry.coordinates.push(coords)
 
         feature.properties = {
+          square: isHectad ? 'hectad' : isQuadrant ? 'quadrant' : isTetrad ? 'tetrad' : isMonad ? 'monad' : '',
           color: '#' + color.substring(0, 6),
           text: box + ': '
         }

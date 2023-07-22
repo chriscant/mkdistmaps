@@ -8,10 +8,11 @@ bryophytes
 cccw
 coverage
 cumbria*
-data
+/data
 fiddl*
 flora
-gb*
+gb-hectads-config.json
+gb-monads-config.json
 GR*
 harris*
 hectads*
@@ -29,9 +30,11 @@ Shared
 Source_Sans_Pro*
 t
 t.txt
-Temp*
 test.*
-tests
+tests/output*
+tests/fonts/save
+tests/expected/diff2020-10-29
+Temp*
 tests1.txt
 uktest
 users

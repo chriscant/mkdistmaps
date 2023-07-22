@@ -15,6 +15,7 @@
     "url": "https://github.com/chriscant/mkdistmaps.git"
   },
   "comments": {
+    "onetest": "jest -t ''GB GRID REFS #3'"
   },
   "dependencies": {
     "fast-csv": "4.3.6",

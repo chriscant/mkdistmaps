@@ -1,4 +1,5 @@
 ﻿const fc = require('filecompare');
+const fs = require('fs')
 
 const output = []
 function accumulog(...err) {
