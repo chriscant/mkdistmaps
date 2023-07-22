@@ -118,7 +118,8 @@ const tetradletters = [
 const BOXSIZES = {
   MONAD: 1,
   TETRAD: 2,
-  HECTAD: 10
+  HECTAD: 10,
+  ALL: 0
 }
 
 const hectadSize = 10000
@@ -195,7 +196,8 @@ async function run (argv) {
     // Set scale factor for hectad or monad
     if (typeof config === 'object' && 'boxSize' in config) {
       const boxsize = config.boxSize.toLowerCase()
-      if (boxsize === 'monad') config.boxSize = BOXSIZES.MONAD
+      if (boxsize === 'all') config.boxSize = BOXSIZES.ALL
+      else if (boxsize === 'monad') config.boxSize = BOXSIZES.MONAD
       else if (boxsize === 'tetrad') config.boxSize = BOXSIZES.TETRAD
       else if (boxsize === 'hectad') config.boxSize = BOXSIZES.HECTAD
       else {
@@ -208,7 +210,13 @@ async function run (argv) {
       console.log('Using default: map to hectad')
       config.boxSize = BOXSIZES.HECTAD
     }
-    SCALE = (config.boxSize === BOXSIZES.HECTAD) ? hectadSCALE : ((config.boxSize === BOXSIZES.TETRAD) ? tetradSCALE : monadSCALE)
+    switch (config.boxSize) {
+      case BOXSIZES.ALL:
+      case BOXSIZES.MONAD: SCALE = monadSCALE; break
+      case BOXSIZES.TETRAD: SCALE = tetradSCALE; break
+      case BOXSIZES.HECTAD: SCALE = hectadSCALE; break
+    }
+    // SCALE = (config.boxSize === BOXSIZES.HECTAD) ? hectadSCALE : ((config.boxSize === BOXSIZES.TETRAD) ? tetradSCALE : monadSCALE)
 
     // Default makeGenusMaps to false
     if (!(typeof config === 'object' && 'makeGenusMaps' in config)) {
@@ -455,16 +463,30 @@ function notNumeric (box, from, to) {
 }
 
 // getGRtype: return various attributes of the given 'box' grid reference
-// A10, A10V, A1234, NY10, NY10X, NY1234
+// A10, A10V, A1234, A12NE, NY10, NY10X, NY1234, NY57NE
 function getGRtype (box) {
-  const rv = { isHectad: false, isTetrad: false, isIE: false, boxfull: box }
+  const rv = { isHectad: false, isQuadrant: false, isTetrad: false, isMonad: false, isIE: false, boxfull: box }
   const len = box.length
+  const char2 = box.charCodeAt(1)
+  const char2isdigit = char2 >= charcode0 && char2 <= charcode9
   const lastchar = box.charCodeAt(len - 1)
   const lastcharisdigit = lastchar >= charcode0 && lastchar <= charcode9
   if (!lastcharisdigit) {
+    if ((len === 5 && char2isdigit) || len === 6) {
+      const lasttwo = box.substring(len - 2)
+      if (lasttwo === 'NE' || lasttwo === 'NW' || lasttwo === 'SE' || lasttwo === 'SW') {
+        rv.isQuadrant = true
+        let bf = box.substring(0, len - 3)
+        bf += (lasttwo === 'NE' || lasttwo === 'NW') ? '5' : '0'
+        bf += box.substring(3, 4)
+        bf += (lasttwo === 'NE' || lasttwo === 'NW') ? '0' : '5'
+        rv.boxfull = bf
+        return rv
+      } else throw new Error('Bad quadrant letters ' + lasttwo)
+    }
     const tetradchar = box.substring(len - 1)
     const boxbl = _.find(tetradletters, boxbl2 => { return boxbl2.l === tetradchar })
-    if (!boxbl) throw new Error('Tetrad letter not found', tetradchar)
+    if (!boxbl) throw new Error('Tetrad letter not found ' + tetradchar)
     rv.boxfull = box.substring(0, len - 2) + (boxbl.e / 100) + box.substring(len - 2, len - 1) + (boxbl.n / 100)
   }
 
@@ -484,12 +506,16 @@ function getGRtype (box) {
     case 5:
       if (!lastcharisdigit) {
         rv.isTetrad = true
-      } else rv.isIE = true
+      } else {
+        rv.isMonad = true
+        rv.isIE = true
+      }
       break
     case 6:
+      rv.isMonad = true
       break
     default:
-      throw new Error('isGRie duff box', box)
+      throw new Error('getGRtype duff box', box)
   }
   return rv
 }
@@ -628,25 +654,25 @@ function processLine (file, row, fileSpecieses) {
 
   let box = SpatialReference
   const grfig = SCALE.gridreffigs / 2
-  if (box.length === 12) {
+  if (box.length === 12) { // ALL-OK
     if (notNumeric(box, 2)) return
     Eastings += parseInt(box.substring(2, 7))
     Northings += parseInt(box.substring(7))
     box = box.substring(0, 2 + grfig) + box.substring(7, 7 + grfig)
     isGB = true
-  } else if (box.length === 10) {
+  } else if (box.length === 10) { // ALL-OK
     if (notNumeric(box, 2)) return
     Eastings += parseInt(box.substring(2, 6)) * 10
     Northings += parseInt(box.substring(6)) * 10
     box = box.substring(0, 2 + grfig) + box.substring(6, 6 + grfig)
     isGB = true
-  } else if (box.length === 8) {
+  } else if (box.length === 8) { // ALL-OK
     if (notNumeric(box, 2)) return
     Eastings += parseInt(box.substring(2, 5)) * 100
     Northings += parseInt(box.substring(5)) * 100
     box = box.substring(0, 2 + grfig) + box.substring(5, 5 + grfig)
     isGB = true
-  } else if (box.length === 6) {
+  } else if (box.length === 6) { // ALL-OK-ISH
     const lasttwochars = box.substring(4, 6)
     const quadrantnw = lasttwochars === 'NW'
     const quadrantsw = lasttwochars === 'SW'
@@ -658,7 +684,9 @@ function processLine (file, row, fileSpecieses) {
       Northings += parseInt(box.substring(3)) * 10000
       // NO as point stored at hectad level: if (quadrantne || quadrantse) Eastings += 5000
       // NO as point stored at hectad level: if (quadrantne || quadrantnw) Northings += 5000
-      box = box.substring(0, 4)
+      if (quadrantne || quadrantse) Eastings += 5000
+      if (quadrantne || quadrantnw) Northings += 5000
+      // box = box.substring(0, 4) JUST LEAVE AS NY56SW
     } else {
       if (notNumeric(box, 2)) return
       Eastings += parseInt(box.substring(2, 4)) * 1000
@@ -666,7 +694,7 @@ function processLine (file, row, fileSpecieses) {
       box = box.substring(0, 2 + grfig) + box.substring(4, 4 + grfig)
     }
     isGB = true
-  } else if (box.length === 4) {
+  } else if (box.length === 4) { // ALL-OK-GB
     const tetradchar = box.substring(3).toUpperCase()
     if (tetradchar.match(/[A-Z]/)) {
       if (tetradchar === 'O') { errors.push(ObsKey + ' duff tetrad letter: ' + tetradchar + ': ' + SpatialReference); return }
@@ -689,25 +717,25 @@ function processLine (file, row, fileSpecieses) {
       Northings += parseInt(box.substring(3)) * 10000
       isGB = true
     }
-  } else if (box.length === 11) {
+  } else if (box.length === 11) { // IRISH
     if (notNumeric(box, 1)) return
     Eastings += parseInt(box.substring(1, 6))
     Northings += parseInt(box.substring(6))
     box = box.substring(0, 1 + grfig) + box.substring(6, 6 + grfig)
     isIE = true
-  } else if (box.length === 9) {
+  } else if (box.length === 9) { // IRISH
     if (notNumeric(box, 1)) return
     Eastings += parseInt(box.substring(1, 5)) * 10
     Northings += parseInt(box.substring(5)) * 10
     box = box.substring(0, 1 + grfig) + box.substring(5, 5 + grfig)
     isIE = true
-  } else if (box.length === 7) {
+  } else if (box.length === 7) { // IRISH
     if (notNumeric(box, 1)) return
     Eastings += parseInt(box.substring(1, 4)) * 100
     Northings += parseInt(box.substring(4)) * 100
     box = box.substring(0, 1 + grfig) + box.substring(4, 4 + grfig)
     isIE = true
-  } else if (box.length === 5) {
+  } else if (box.length === 5) { // TODO
     const tetradchar = box.substring(4).toUpperCase()
     if (tetradchar.match(/[A-Z]/)) {
       if (tetradchar === 'O') { errors.push(ObsKey + ' duff tetrad letter: ' + tetradchar + ': ' + SpatialReference); return }
@@ -719,7 +747,8 @@ function processLine (file, row, fileSpecieses) {
       Eastings += boxbl.e * 10
       Northings += boxbl.n * 10
       isGB = true
-      if (config.boxSize !== BOXSIZES.TETRAD) { // If not showing tetrads then convert to show at hectad level
+      if ((config.boxSize !== BOXSIZES.ALL) &&
+          (config.boxSize !== BOXSIZES.TETRAD)) { // If not showing tetrads then convert to show at hectad level
         box = box.substring(0, 4)
         Eastings = Math.floor(Eastings / 10000) * 10000
         Northings = Math.floor(Northings / 10000) * 10000
@@ -731,7 +760,7 @@ function processLine (file, row, fileSpecieses) {
       box = box.substring(0, 1 + grfig) + box.substring(3, 3 + grfig)
       isIE = true
     }
-  } else if (box.length === 3) {
+  } else if (box.length === 3) { // IRISH
     if (notNumeric(box, 1)) return
     Eastings += parseInt(box.substring(1, 2)) * 10000
     Northings += parseInt(box.substring(2)) * 10000
@@ -746,6 +775,8 @@ function processLine (file, row, fileSpecieses) {
   }
   if (isGB) usesGB = true
   if (isIE) usesIE = true
+
+  // console.log('box', SpatialReference.padEnd(12), box.padEnd(12), Eastings.toString().padStart(5, '0'), Northings.toString().padStart(5, '0'))
 
   const l1 = box.substring(0, 1)
   if (isGB) {
@@ -819,6 +850,7 @@ function processLine (file, row, fileSpecieses) {
     }
     boxes[box] = boxloc
   }
+  // console.log(box.padStart(28), boxes[box].e.toString().padStart(3, '0'), ' ', boxes[box].n.toString().padStart(3, '0'))
 
   // Add/Update record for species ie count, min and max year for each box
   updateSpeciesesGrids(TaxonName, box, Year, false, fileSpecieses, true, false)
@@ -1122,13 +1154,15 @@ async function makeGeojson (rowCount) {
     geojson.features = []
 
     let reccount = 0
-    for (let notHectad = 0; notHectad < 2; notHectad++) { // Process hectads first so they appear behind monads/tetrads
+    for (let squaretype = 0; squaretype < 4; squaretype++) { // Process hectads then quadrants then tetrads then monads
       for (const [box, boxdata] of Object.entries(speciesGrids.boxes)) {
-        const { isHectad, isTetrad, isIE, boxfull } = getGRtype(box)
-        if ((isHectad && notHectad) || (!isHectad && !notHectad)) {
-          continue
-        }
+        const { isHectad, isQuadrant, isTetrad, isMonad, isIE, boxfull } = getGRtype(box)
+        if (isHectad && squaretype !== 0) continue
+        if (isQuadrant && squaretype !== 1) continue
+        if (isTetrad && squaretype !== 2) continue
+        if (isMonad && squaretype !== 3) continue
         reccount += boxdata.count
+        // console.log('getGRtype', isHectad, isQuadrant, isTetrad, isMonad, isIE, boxfull)
 
         let color = rgbHex('rgba(255,20, 147, 1)') // default to pink
         if (config.maptype === 'count') {
@@ -1153,6 +1187,7 @@ async function makeGeojson (rowCount) {
         const boxbl = osgbie.getWGS84()
         let boxside = 1000 // monad
         if (isTetrad) boxside = 2000 // tetrad
+        else if (isQuadrant) boxside = 5000 // quadrant
         else if (isHectad) boxside = 10000 // hectad
 
         osgbie.northings += boxside
