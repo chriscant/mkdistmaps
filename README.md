@@ -53,8 +53,9 @@ The code reads all the records in the specified CSV file(s) and then creates one
 A monad, tetrad or hectad is coloured in if there are records for that species in that square.
 The fill colour is determined by **maptype** eg the date of the most recent record for that square.
 
-Set **boxSize** to `hectad` to only draw hectads, `tetrad` to draw hectads and tetrads and `monad` to draw hectads and monads.
-If on `monad` then tetrad grid references are assigned to the lower left monad. Quadrant grid references are always put surrounding hectad.
+Set **boxSize** to `hectad` to only draw hectads, `tetrad` to draw hectads and tetrads, `monad` to draw hectads and monads and 
+`all` to draw hectads, quadrants, tetrads and monads.
+If on `monad` then tetrad grid references are assigned to the lower left monad.
 
 If you opt to make monad or tetrad maps, then:
 * the monad/tetrad is shown as a circle if there is only one record for the monad or tetrad

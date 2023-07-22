@@ -1234,8 +1234,13 @@ async function makeGeojson (rowCount) {
         coords.push([boxbr.latitude, boxbr.longitude])
         feature.geometry.coordinates.push(coords)
 
+        let square = ''
+        if (isMonad) square = 'monad'
+        if (isTetrad) square = 'tetrad'
+        if (isQuadrant) square = 'quadrant'
+        if (isHectad) square = 'hectad'
         feature.properties = {
-          square: isHectad ? 'hectad' : (isQuadrant ? 'quadrant' : (isTetrad ? 'tetrad' : (isMonad ? 'monad' : ''))),
+          square,
           color: '#' + color.substring(0, 6),
           text: box + ': '
         }
