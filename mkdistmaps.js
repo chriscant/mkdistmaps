@@ -148,6 +148,9 @@ let taxonLookupName = false
 let taxonLookupExtra = false
 let taxonLookupCurrent = false
 
+const propertiesLookup = []
+let propertiesLookupName = false
+
 // Get version from last git commit
 const gitdescr = execSync('git describe --tags --long')
 let version = 'mkdistmaps ' + gitdescr.toString('utf8', 0, gitdescr.length - 1) + ' - run at ' + moment().format('Do MMMM YYYY, h:mm:ss a')
@@ -361,7 +364,7 @@ async function run (argv) {
     }
 
     /// //////////////
-    // Read option taxon lookups
+    // Read optional taxon lookups
     if (config.taxon && ('csv' in config.taxon) && ('lookup' in config.taxon) && ('extra' in config.taxon)) {
       taxonLookupName = config.taxon.lookup
       taxonLookupExtra = config.taxon.extra
@@ -392,6 +395,31 @@ async function run (argv) {
         console.log('Incomplete taxon setup')
         taxonLookup.length = 0 // Clear array
       }
+    }
+
+    /// //////////////
+    // Read optional properties lookups
+    if (config.properties && ('csv' in config.properties) && ('lookup' in config.properties)) {
+      propertiesLookupName = config.properties.lookup
+      const readProperties = new Promise((resolve, reject) => {
+        fs.createReadStream(path.resolve(__dirname, config.properties.csv), { encoding: 'utf8' })
+          .pipe(csv.parse({ headers: true }))
+          .on('data', row => {
+            if (propertiesLookupName in row) {
+              if (row[propertiesLookupName]) {
+                propertiesLookup.push(row)
+              }
+            }
+          })
+          .on('end', function (rowCount) {
+            resolve()
+          })
+      })
+      await readProperties
+      /* for (const property of propertiesLookup) {
+        console.log()
+        console.log(property.Name)
+      } */
     }
 
     /// //////////////
@@ -1162,6 +1190,14 @@ async function makeGeojson (rowCount) {
     } else if (isAllRecordsMap) {
       if (config.maptype === 'count') {
         geojson.properties.name = 'Count of records in each square'
+      }
+    }
+    const property = propertiesLookup.find(p => p[propertiesLookupName] === MapName)
+    if (property) {
+      for (const field in property) {
+        if (field !== propertiesLookupName) {
+          geojson.properties[field] = property[field]
+        }
       }
     }
 
