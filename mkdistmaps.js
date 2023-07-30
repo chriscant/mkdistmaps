@@ -416,10 +416,6 @@ async function run (argv) {
           })
       })
       await readProperties
-      /* for (const property of propertiesLookup) {
-        console.log()
-        console.log(property.Name)
-      } */
     }
 
     /// //////////////
