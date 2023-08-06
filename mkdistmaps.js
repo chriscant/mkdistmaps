@@ -399,7 +399,9 @@ async function run (argv) {
 
     /// //////////////
     // Read optional properties lookups
+    const englishlookups = []
     if (config.properties && ('csv' in config.properties) && ('lookup' in config.properties)) {
+      const englishlookup = 'englishlookup' in config.properties ? config.properties.englishlookup : false
       propertiesLookupName = config.properties.lookup
       const readProperties = new Promise((resolve, reject) => {
         fs.createReadStream(path.resolve(__dirname, config.properties.csv), { encoding: 'utf8' })
@@ -408,6 +410,14 @@ async function run (argv) {
             if (propertiesLookupName in row) {
               if (row[propertiesLookupName]) {
                 propertiesLookup.push(row)
+                if (englishlookup) {
+                  if (englishlookup in row) {
+                    const english = row[englishlookup]
+                    if (english && english.trim().length > 0) {
+                      englishlookups.push({ english, taxon: row[propertiesLookupName], found: false })
+                    }
+                  }
+                }
               }
             }
           })
@@ -461,6 +471,36 @@ async function run (argv) {
       doAll()
     })
     await processFiles
+
+    if (englishlookups.length > 0) {
+      console.log('englishlookups', englishlookups.length)
+      englishlookups.sort((a, b) => a.english.localeCompare(b.english))
+      for (const [MapName] of Object.entries(speciesesGrids)) {
+        console.log('MapName', MapName)
+        const el = englishlookups.find(el => el.taxon === MapName)
+        if (el) el.found = true
+      }
+      let allenglishlookups = ''
+      for (const el of englishlookups) {
+        if (el.found) allenglishlookups += el.english + ':' + el.taxon + ';'
+      }
+      console.log('allenglishlookups', allenglishlookups)
+      const saveFilename = 'english.txt'
+      const outpath = path.join(__dirname, config.outputFolder, saveFilename)
+      const writeEnglishLookups = new Promise((resolve, reject) => {
+        const stream = fs.createWriteStream(outpath)
+        stream.on('close', function (fd) {
+          resolve()
+        })
+        stream.on('open', function (fd) {
+          stream.write(allenglishlookups)
+          stream.end()
+          console.log('Written english to ', outpath)
+        })
+      })
+      await writeEnglishLookups
+    }
+
     if (rv) console.log('SUCCESS')
     return 1
   } catch (e) {
