@@ -6,6 +6,9 @@
 
 // Keep rgb-hex@3.0.0 to avoid ES module import. 22/7/23 seems OK now
 
+// ls -m | sed ':a;N;$!ba;s/\n//g' | sed 's/ //g' >../files.txt
+// Remove .geojson and move All_species,All_records, to the start
+
 let config = false
 let SCALE = false
 let usesGB = false
@@ -442,7 +445,7 @@ async function run (argv) {
           rv = 0
         } else {
           let donecount = 0
-          const doFiles = new Promise((resolve2, reject2) => {
+          const doFiles = new Promise((_resolve, _reject) => {
             for (const file of Object.values(files)) {
               // console.log(file)
               const fileSpecieses = []
@@ -457,7 +460,7 @@ async function run (argv) {
                   console.log(file, 'species:', Object.keys(fileSpecieses).length)
                   totalrecords += rowCount
                   if (++donecount === files.length) {
-                    resolve2() // doFiles
+                    _resolve() // doFiles
                   }
                 })
             }
