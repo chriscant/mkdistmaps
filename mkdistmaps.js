@@ -297,6 +297,11 @@ async function run (argv) {
       config.recordset.encoding = 'utf8'
     }
 
+    // delimiter must be a single character
+    if (!config.recordset.delimiter) {
+      config.recordset.delimiter = ','
+    }
+
     if (!config.font_colour) {
       console.log('Using default font_colour')
       config.font_colour = '#000000'
@@ -450,7 +455,7 @@ async function run (argv) {
               // console.log(file)
               const fileSpecieses = []
               fs.createReadStream(path.resolve(__dirname, file), { encoding: config.recordset.encoding })
-                .pipe(csv.parse({ headers, renameHeaders }))
+                .pipe(csv.parse({ headers, renameHeaders, delimiter: config.recordset.delimiter }))
                 .on('error', error => console.error(error))
                 .on('data', row => { processLine(file, row, fileSpecieses) })
                 .on('end', function (rowCount) {
