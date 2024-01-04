@@ -166,7 +166,7 @@ async function run (argv) {
   try {
     // Display usage
     if (argv.length <= 2) {
-      console.error('usage: node index.js <config.json>')
+      console.error('usage: node mkdistmaps.js <config.json>')
       return 0
     }
     console.log(version)

@@ -6,5 +6,5 @@ test('CHECK MESSAGE WHEN NO PARAMS GIVEN', async () => {
   jest.spyOn(console, 'error').mockImplementation(err => { lastOutput = err });
   const argv = ['node', '.']
   await mkdistmaps.run(argv)
-  expect(lastOutput).toBe('usage: node index.js <config.json>')
+  expect(lastOutput).toBe('usage: node mkdistmaps.js <config.json>')
 })
