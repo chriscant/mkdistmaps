@@ -1045,14 +1045,9 @@ async function makeImages (rowCount) {
   console.log('boxwidthSmallhalf', boxwidthSmallhalf)
 
   // Load the font
-  const loadFont = new Promise((resolve, reject) => {
-    const fontpath = path.join(__dirname, config.font_filename)
-    const fnt = PImage.registerFont(fontpath, 'TheFont')
-    fnt.load(() => {
-      resolve()
-    })
-  })
-  await loadFont
+  const fontpath = path.join(__dirname, config.font_filename)
+  const fnt = PImage.registerFont(fontpath, 'TheFont')
+  fnt.loadSync()
 
   // Go through all species
   let done = 0
