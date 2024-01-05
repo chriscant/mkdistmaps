@@ -8,7 +8,7 @@
     "test": "node --experimental-vm-modules node_modules/jest/bin/jest.js",
     "test2": "jest",
     "testrel": "node --experimental-vm-modules node_modules/jest/bin/jest.js && coveralls < coverage/lcov.info",
-    "standard": "standard mkdistmaps.js transform.js makerecords.js"
+    "standard": "standard mkdistmaps.js geotools2em.js transform.js makerecords.js"
   },
   "author": "Chris Cant",
   "license": "MIT",
