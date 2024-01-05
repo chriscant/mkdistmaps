@@ -4,10 +4,20 @@
 
 // For each new release, update in package.json and create a new tag in GitHub - used in version string
 
-// Keep rgb-hex@3.0.0 to avoid ES module import. 22/7/23 seems OK now
-
 // ls -m | sed ':a;N;$!ba;s/\n//g' | sed 's/ //g' >../files.txt
 // Remove .geojson and move All_species,All_records, to the start
+
+import fs from 'fs'
+import { glob } from 'glob'
+import path from 'path'
+import csv from 'fast-csv'
+import PImage from 'pureimage'
+import { execSync } from 'child_process'
+import moment from 'moment'
+import rgbHex from 'rgb-hex'
+import * as geotools2em from './geotools2em.js' // http://www.nearby.org.uk/tests/GeoTools2.html
+import { fileURLToPath } from 'url'
+const __dirname = path.dirname(fileURLToPath(import.meta.url))
 
 let config = false
 let SCALE = false
@@ -15,18 +25,6 @@ let usesGB = false
 let usesIE = false
 
 const dtStart = new Date()
-
-const fs = require('fs')
-const glob = require('glob')
-const path = require('path')
-const csv = require('fast-csv')
-const PImage = require('pureimage')
-const execSync = require('child_process').execSync
-const moment = require('moment')
-const rgbHex = require('rgb-hex')
-const _ = require('lodash/core')
-
-const geotools2m = require('./geotools2m') // http://www.nearby.org.uk/tests/GeoTools2.html
 
 const makeAllMapName = 'All records'
 const makeAllSpeciesMapName = 'All species'
@@ -161,7 +159,7 @@ let version = 'mkdistmaps ' + gitdescr.toString('utf8', 0, gitdescr.length - 1) 
 /// ////////////////////////////////////////////////////////////////////////////////////
 // run: called when run from command line
 
-async function run (argv) {
+export async function run (argv) {
   let rv = 1
   try {
     // Display usage
@@ -561,7 +559,8 @@ function getGRtype (box) {
       } else throw new Error('Bad quadrant letters ' + lasttwo)
     }
     const tetradchar = box.substring(len - 1)
-    const boxbl = _.find(tetradletters, boxbl2 => { return boxbl2.l === tetradchar })
+    const boxbl = tetradletters.find(boxbl2 => { return boxbl2.l === tetradchar }) // TODO
+    // const boxbl = _.find(tetradletters, boxbl2 => { return boxbl2.l === tetradchar })
     if (!boxbl) throw new Error('Tetrad letter not found ' + tetradchar)
     rv.boxfull = box.substring(0, len - 2) + (boxbl.e / 100) + box.substring(len - 2, len - 1) + (boxbl.n / 100)
   }
@@ -776,7 +775,8 @@ function processLine (file, row, fileSpecieses) {
       if (notNumeric(box, 1, 3)) return
       Eastings += parseInt(box.substring(1, 2)) * 10000
       Northings += parseInt(box.substring(2)) * 10000
-      const boxbl = _.find(tetradletters, boxbl2 => { return boxbl2.l === tetradchar })
+      const boxbl = tetradletters.find(boxbl2 => { return boxbl2.l === tetradchar }) // TODO
+      // const boxbl = _.find(tetradletters, boxbl2 => { return boxbl2.l === tetradchar })
       if (!boxbl) { errors.push(ObsKey + ' duff tetrad letter: ' + tetradchar + ': ' + SpatialReference); return }
       Eastings += boxbl.e * 10
       Northings += boxbl.n * 10
@@ -817,7 +817,8 @@ function processLine (file, row, fileSpecieses) {
       if (notNumeric(box, 2, 4)) return
       Eastings += parseInt(box.substring(2, 3)) * 10000
       Northings += parseInt(box.substring(3)) * 10000
-      const boxbl = _.find(tetradletters, boxbl2 => { return boxbl2.l === tetradchar })
+      const boxbl = tetradletters.find(boxbl2 => { return boxbl2.l === tetradchar }) // TODO
+      // const boxbl = _.find(tetradletters, boxbl2 => { return boxbl2.l === tetradchar })
       if (!boxbl) { errors.push(ObsKey + ' duff tetrad letter: ' + tetradchar + ': ' + SpatialReference); return }
       Eastings += boxbl.e * 10
       Northings += boxbl.n * 10
@@ -1274,8 +1275,8 @@ async function makeGeojson (rowCount) {
         else if (isQuadrant) boxside = 5000 // quadrant
         else if (isHectad) boxside = 10000 // hectad
 
-        let osgbie = new geotools2m.GT_OSGB()
-        if (isIE) osgbie = new geotools2m.GT_Irish()
+        let osgbie = new geotools2em.GT_OSGB()
+        if (isIE) osgbie = new geotools2em.GT_Irish()
         osgbie.parseGridRef(boxfull)
 
         const boxbl = osgbie.getWGS84()
@@ -1391,9 +1392,7 @@ async function makeGeojson (rowCount) {
 }
 /// ////////////////////////////////////////////////////////////////////////////////////
 // If called from command line, then run now.
-// If testing, then don't.
-if (require.main === module) {
+// If jest testing, then don't.
+if (process.env.JEST_WORKER_ID === undefined) {
   run(process.argv)
 }
-
-module.exports = { run, processLine, importComplete }

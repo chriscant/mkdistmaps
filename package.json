@@ -1,11 +1,13 @@
 {
   "name": "mkdistmaps",
-  "version": "2.6.3",
+  "version": "2.7.0",
   "description": "Make Distribution Maps from CSV file(s)",
-  "main": "mkdistmaps.js",
+  "exports": "./mkdistmaps.js",
+  "type": "module",
   "scripts": {
-    "test": "jest",
-    "testrel": "jest && coveralls < coverage/lcov.info",
+    "test": "node --experimental-vm-modules node_modules/jest/bin/jest.js",
+    "test2": "jest",
+    "testrel": "node --experimental-vm-modules node_modules/jest/bin/jest.js && coveralls < coverage/lcov.info",
     "standard": "standard mkdistmaps.js transform.js makerecords.js"
   },
   "author": "Chris Cant",
@@ -15,7 +17,8 @@
     "url": "https://github.com/chriscant/mkdistmaps.git"
   },
   "comments": {
-    "onetest": "jest -t 'GB GRID REFS #3'"
+    "onetest": "node --experimental-vm-modules node_modules/jest/bin/jest.js -t 'GB GRID REFS #3' 2>t.txt",
+    "main": "mkdistmaps.js"
   },
   "dependencies": {
     "fast-csv": "4.3.6",
@@ -24,8 +27,11 @@
     "lodash": "4.17.21",
     "moment": "^2.29.4",
     "pureimage": "^0.4.13",
-    "rgb-hex": "^3.0.0",
+    "rgb-hex": "^4.1.0",
     "seedrandom": "3.0.5",
     "word-list": "3.1.0"
+  },
+  "devDependencies": {
+    "jest": "^29.7.0"
   }
 }

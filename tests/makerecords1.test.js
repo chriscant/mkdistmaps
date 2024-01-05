@@ -1,5 +1,6 @@
-﻿const makerecords = require('../makerecords')
-const testhelper = require('./testhelper');
+﻿import * as makerecords from '../makerecords.js'
+import * as testhelper from './testhelper.js'
+import { jest } from '@jest/globals'
 
 test('MAKERECORDS TEST #1', async () => {
 

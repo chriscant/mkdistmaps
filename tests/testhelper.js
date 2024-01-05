@@ -1,8 +1,8 @@
-﻿const fc = require('filecompare');
-const fs = require('fs')
+﻿import fc from 'filecompare'
+import fs from 'fs'
 
 const output = []
-function accumulog(...err) {
+export function accumulog(...err) {
   let line = ''
   for (const e of err) {
     if (typeof e === 'object') {
@@ -14,11 +14,11 @@ function accumulog(...err) {
   output.push(line)
 }
 
-function accumulogged() {
+export function accumulogged() {
   return output.join("\n")
 }
 
-async function checkFilesEqual(path1, path2) {
+export async function checkFilesEqual(path1, path2) {
   const areFilesEqual = new Promise((resolve, reject) => {
     fc(path1, path2, isEqual => {
         resolve(isEqual)
@@ -33,5 +33,3 @@ async function checkFilesEqual(path1, path2) {
   }
   return 1
 }
-
-module.exports = { checkFilesEqual, accumulog, accumulogged }

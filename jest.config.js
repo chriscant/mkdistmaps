@@ -1,7 +1,10 @@
 // For a detailed explanation regarding each configuration property, visit:
 // https://jestjs.io/docs/en/configuration.html
 
-module.exports = {
+
+//module.exports = {
+export default {
+  transform: {},
 
   testTimeout: 100000,
 

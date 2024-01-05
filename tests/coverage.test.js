@@ -1,5 +1,6 @@
-﻿const fs = require('fs')
-const mkdistmaps = require('../mkdistmaps')
+﻿import fs from 'fs'
+import * as mkdistmaps from '../mkdistmaps.js'
+import { jest } from '@jest/globals';
 
 test('COVERAGE: DUFF DATA', async () => {
   const output = []

@@ -50,317 +50,292 @@
 *
 *****************************************************************************/
 
-function GT_OSGB()
-{
-	this.northings=0;
-	this.eastings=0;
-	this.status="Undefined";
-}
+export function GT_OSGB() {
+	this.northings = 0;
+	this.eastings = 0;
+	this.status = "Undefined";
 
-GT_OSGB.prefixes = new Array (
-	new Array("SV","SW","SX","SY","SZ","TV","TW"),
-	new Array("SQ","SR","SS","ST","SU","TQ","TR"),
-	new Array("SL","SM","SN","SO","SP","TL","TM"),
-	new Array("SF","SG","SH","SJ","SK","TF","TG"),
-	new Array("SA","SB","SC","SD","SE","TA","TB"),
-	new Array("NV","NW","NX","NY","NZ","OV","OW"),
-	new Array("NQ","NR","NS","NT","NU","OQ","OR"),
-	new Array("NL","NM","NN","NO","NP","OL","OM"),
-	new Array("NF","NG","NH","NJ","NK","OF","OG"),
-	new Array("NA","NB","NC","ND","NE","OA","OB"),
-	new Array("HV","HW","HX","HY","HZ","JV","JW"),
-	new Array("HQ","HR","HS","HT","HU","JQ","JR"),
-	new Array("HL","HM","HN","HO","HP","JL","JM"));
-			
+	this.prefixes = new Array(
+		new Array("SV", "SW", "SX", "SY", "SZ", "TV", "TW"),
+		new Array("SQ", "SR", "SS", "ST", "SU", "TQ", "TR"),
+		new Array("SL", "SM", "SN", "SO", "SP", "TL", "TM"),
+		new Array("SF", "SG", "SH", "SJ", "SK", "TF", "TG"),
+		new Array("SA", "SB", "SC", "SD", "SE", "TA", "TB"),
+		new Array("NV", "NW", "NX", "NY", "NZ", "OV", "OW"),
+		new Array("NQ", "NR", "NS", "NT", "NU", "OQ", "OR"),
+		new Array("NL", "NM", "NN", "NO", "NP", "OL", "OM"),
+		new Array("NF", "NG", "NH", "NJ", "NK", "OF", "OG"),
+		new Array("NA", "NB", "NC", "ND", "NE", "OA", "OB"),
+		new Array("HV", "HW", "HX", "HY", "HZ", "JV", "JW"),
+		new Array("HQ", "HR", "HS", "HT", "HU", "JQ", "JR"),
+		new Array("HL", "HM", "HN", "HO", "HP", "JL", "JM"));
 
-GT_OSGB.prototype.setGridCoordinates = function(eastings,northings)
-{
-	this.northings=northings;
-	this.eastings=eastings;
-	this.status="OK";
-}
 
-GT_OSGB.prototype.setError = function(msg)
-{
-	this.status=msg;
-}
-
-GT_OSGB.prototype._zeropad = function(num, len)
-{
-	var str=new String(num);
-	while (str.length<len)
-	{
-		str='0'+str;
+	this.setGridCoordinates = function (eastings, northings) {
+		this.northings = northings;
+		this.eastings = eastings;
+		this.status = "OK";
 	}
-	return str;
-}
 
-GT_OSGB.prototype.getGridRef = function(precision)
-{
-	
-	
-
-	if (precision<0)
-		precision=0;
-	if (precision>5)
-		precision=5;
-		
-	var e="";
-
-	var n="";
-	if (precision>0)
-	{
-		var y=Math.floor(this.northings/100000);
-		var x=Math.floor(this.eastings/100000);
-
-
-		var e=Math.floor(this.eastings%100000);
-		var n=Math.floor(this.northings%100000);
-
-
-		var div=(5-precision);
-		e=Math.floor(e / Math.pow(10, div));
-		n=Math.floor(n / Math.pow(10, div));
+	this.setError = function (msg) {
+		this.status = msg;
 	}
-	
-	var prefix=GT_OSGB.prefixes[y][x];
-	
-    return prefix+" "+this._zeropad(e, precision)+" "+this._zeropad(n, precision);
-}
 
-GT_OSGB.prototype.parseGridRef = function(landranger)
-{
-	var ok=false;
-
-	
-	this.northings=0;
-	this.eastings=0;
-	
-	var precision;
-
-	for (precision=5; precision>=1; precision--)
-	{
-		var pattern = new RegExp("^([A-Z]{2})\\s*(\\d{"+precision+"})\\s*(\\d{"+precision+"})$", "i")
-		var gridRef = landranger.match(pattern);
-		if (gridRef)
-		{
-			var gridSheet = gridRef[1];
-			var gridEast=0;
-			var gridNorth=0;
-			
-			//5x1 4x10 3x100 2x1000 1x10000 
-			if (precision>0)
-			{
-				var mult=Math.pow(10, 5-precision);
-				gridEast=parseInt(gridRef[2],10) * mult;
-				gridNorth=parseInt(gridRef[3],10) * mult;
-			}
-			
-			var x,y;
-			search: for(y=0; y<GT_OSGB.prefixes.length; y++) 
-			{
-				for(x=0; x<GT_OSGB.prefixes[y].length; x++)
-					if (GT_OSGB.prefixes[y][x] == gridSheet) {
-						this.eastings = (x * 100000)+gridEast;
-						this.northings = (y * 100000)+gridNorth;
-						ok=true;
-						break search;
-					}
-			
-			}
-		
+	this._zeropad = function (num, len) {
+		var str = new String(num);
+		while (str.length < len) {
+			str = '0' + str;
 		}
+		return str;
 	}
 
-	
-
-	return ok;
-}
+	this.getGridRef = function (precision) {
 
 
-GT_OSGB.prototype.getWGS84 = function()
-{
-	
-	var height = 0;
 
-	var lat1 = GT_Math.E_N_to_Lat (this.eastings,this.northings,6377563.396,6356256.910,400000,-100000,0.999601272,49.00000,-2.00000);
-	var lon1 = GT_Math.E_N_to_Long(this.eastings,this.northings,6377563.396,6356256.910,400000,-100000,0.999601272,49.00000,-2.00000);
+		if (precision < 0)
+			precision = 0;
+		if (precision > 5)
+			precision = 5;
 
-	var x1 = GT_Math.Lat_Long_H_to_X(lat1,lon1,height,6377563.396,6356256.910);
-	var y1 = GT_Math.Lat_Long_H_to_Y(lat1,lon1,height,6377563.396,6356256.910);
-	var z1 = GT_Math.Lat_H_to_Z     (lat1,      height,6377563.396,6356256.910);
+		var e = "";
 
-	var x2 = GT_Math.Helmert_X(x1,y1,z1,446.448 ,0.2470,0.8421,-20.4894);
-	var y2 = GT_Math.Helmert_Y(x1,y1,z1,-125.157,0.1502,0.8421,-20.4894);
-	var z2 = GT_Math.Helmert_Z(x1,y1,z1,542.060 ,0.1502,0.2470,-20.4894);
+		var n = "";
+		if (precision > 0) {
+			var y = Math.floor(this.northings / 100000);
+			var x = Math.floor(this.eastings / 100000);
 
-	var latitude = GT_Math.XYZ_to_Lat(x2,y2,z2,6378137.000,6356752.313);
-	var longitude = GT_Math.XYZ_to_Long(x2,y2);
 
-	var wgs84=new GT_WGS84();
-	wgs84.setDegrees(latitude, longitude);
-	return wgs84;
+			var e = Math.floor(this.eastings % 100000);
+			var n = Math.floor(this.northings % 100000);
+
+
+			var div = (5 - precision);
+			e = Math.floor(e / Math.pow(10, div));
+			n = Math.floor(n / Math.pow(10, div));
+		}
+
+		var prefix = this.prefixes[y][x];
+
+		return prefix + " " + this._zeropad(e, precision) + " " + this._zeropad(n, precision);
+	}
+
+	this.parseGridRef = function (landranger) {
+		var ok = false;
+
+
+		this.northings = 0;
+		this.eastings = 0;
+
+		var precision;
+
+		for (precision = 5; precision >= 1; precision--) {
+			var pattern = new RegExp("^([A-Z]{2})\\s*(\\d{" + precision + "})\\s*(\\d{" + precision + "})$", "i")
+			var gridRef = landranger.match(pattern);
+			if (gridRef) {
+				var gridSheet = gridRef[1];
+				var gridEast = 0;
+				var gridNorth = 0;
+
+				//5x1 4x10 3x100 2x1000 1x10000 
+				if (precision > 0) {
+					var mult = Math.pow(10, 5 - precision);
+					gridEast = parseInt(gridRef[2], 10) * mult;
+					gridNorth = parseInt(gridRef[3], 10) * mult;
+				}
+
+				var x, y;
+				search: for (y = 0; y < this.prefixes.length; y++) {
+					for (x = 0; x < this.prefixes[y].length; x++)
+						if (this.prefixes[y][x] == gridSheet) {
+							this.eastings = (x * 100000) + gridEast;
+							this.northings = (y * 100000) + gridNorth;
+							ok = true;
+							break search;
+						}
+
+				}
+
+			}
+		}
+
+
+
+		return ok;
+	}
+
+
+	this.getWGS84 = function () {
+
+		var height = 0;
+
+		var lat1 = GT_Math.E_N_to_Lat(this.eastings, this.northings, 6377563.396, 6356256.910, 400000, -100000, 0.999601272, 49.00000, -2.00000);
+		var lon1 = GT_Math.E_N_to_Long(this.eastings, this.northings, 6377563.396, 6356256.910, 400000, -100000, 0.999601272, 49.00000, -2.00000);
+
+		var x1 = GT_Math.Lat_Long_H_to_X(lat1, lon1, height, 6377563.396, 6356256.910);
+		var y1 = GT_Math.Lat_Long_H_to_Y(lat1, lon1, height, 6377563.396, 6356256.910);
+		var z1 = GT_Math.Lat_H_to_Z(lat1, height, 6377563.396, 6356256.910);
+
+		var x2 = GT_Math.Helmert_X(x1, y1, z1, 446.448, 0.2470, 0.8421, -20.4894);
+		var y2 = GT_Math.Helmert_Y(x1, y1, z1, -125.157, 0.1502, 0.8421, -20.4894);
+		var z2 = GT_Math.Helmert_Z(x1, y1, z1, 542.060, 0.1502, 0.2470, -20.4894);
+
+		var latitude = GT_Math.XYZ_to_Lat(x2, y2, z2, 6378137.000, 6356752.313);
+		var longitude = GT_Math.XYZ_to_Long(x2, y2);
+
+		var wgs84 = new GT_WGS84();
+		wgs84.setDegrees(latitude, longitude);
+		return wgs84;
+	}
 }
 
 /*****************************************************************************
 *
-* GT_OSGB holds Irish grid coordinates
+* GT_Irish holds Irish grid coordinates
 *
 *****************************************************************************/
 
-function GT_Irish()
-{
-	this.northings=0;
-	this.eastings=0;
-	this.status="Undefined";
-}
+export function GT_Irish() {
+	this.northings = 0;
+	this.eastings = 0;
+	this.status = "Undefined";
 
-GT_Irish.prefixes = new Array (
-	new Array("V", "Q", "L", "F", "A"),
-	new Array("W", "R", "M", "G", "B"),
-	new Array("X", "S", "N", "H", "C"),
-	new Array("Y", "T", "O", "J", "D"),
-	new Array("Z", "U", "P", "K", "E"));
+	this.prefixes = new Array(
+		new Array("V", "Q", "L", "F", "A"),
+		new Array("W", "R", "M", "G", "B"),
+		new Array("X", "S", "N", "H", "C"),
+		new Array("Y", "T", "O", "J", "D"),
+		new Array("Z", "U", "P", "K", "E"));
 
-GT_Irish.prototype.setGridCoordinates = function(eastings,northings)
-{
-	this.northings=northings;
-	this.eastings=eastings;
-	this.status="OK";
-}
-
-GT_Irish.prototype.setError = function(msg)
-{
-	this.status=msg;
-}
-
-GT_Irish.prototype._zeropad = function(num, len)
-{
-	var str=new String(num);
-	while (str.length<len)
-	{
-		str='0'+str;
+	this.setGridCoordinates = function (eastings, northings) {
+		this.northings = northings;
+		this.eastings = eastings;
+		this.status = "OK";
 	}
-	return str;
-}
 
-GT_Irish.prototype.getGridRef = function(precision)
-{
-	
-	
-
-	if (precision<0)
-		precision=0;
-	if (precision>5)
-		precision=5;
-		
-	var e="";
-
-	var n="";
-	if (precision>0)
-	{
-		var y=Math.floor(this.northings/100000);
-		var x=Math.floor(this.eastings/100000);
-
-
-		var e=Math.floor(this.eastings%100000);
-		var n=Math.floor(this.northings%100000);
-
-
-		var div=(5-precision);
-		e=Math.floor(e / Math.pow(10, div));
-		n=Math.floor(n / Math.pow(10, div));
+	this.setError = function (msg) {
+		this.status = msg;
 	}
-	
-	var prefix=GT_Irish.prefixes[x][y];
-	
-    return prefix+" "+this._zeropad(e, precision)+" "+this._zeropad(n, precision);
-}
 
-GT_Irish.prototype.parseGridRef = function(landranger)
-{
-	var ok=false;
-
-	
-	this.northings=0;
-	this.eastings=0;
-	
-	var precision;
-
-	for (precision=5; precision>=1; precision--)
-	{
-		var pattern = new RegExp("^([A-Z]{1})\\s*(\\d{"+precision+"})\\s*(\\d{"+precision+"})$", "i")
-		var gridRef = landranger.match(pattern);
-		if (gridRef)
-		{
-			var gridSheet = gridRef[1];
-			var gridEast=0;
-			var gridNorth=0;
-			
-			//5x1 4x10 3x100 2x1000 1x10000 
-			if (precision>0)
-			{
-				var mult=Math.pow(10, 5-precision);
-				gridEast=parseInt(gridRef[2],10) * mult;
-				gridNorth=parseInt(gridRef[3],10) * mult;
-			}
-			
-			var x,y;
-			search: for(x=0; x<GT_Irish.prefixes.length; x++) 
-			{
-				for(y=0; y<GT_Irish.prefixes[x].length; y++)
-					if (GT_Irish.prefixes[x][y] == gridSheet) {
-						this.eastings = (x * 100000)+gridEast;
-						this.northings = (y * 100000)+gridNorth;
-						ok=true;
-						break search;
-					}
-			
-			}
-		
+	this._zeropad = function (num, len) {
+		var str = new String(num);
+		while (str.length < len) {
+			str = '0' + str;
 		}
+		return str;
 	}
 
-	
-
-	return ok;
-}
+	this.getGridRef = function (precision) {
 
 
-GT_Irish.prototype.getWGS84 = function(uselevel2)
-{
 
-	var height = 0;
+		if (precision < 0)
+			precision = 0;
+		if (precision > 5)
+			precision = 5;
 
-	if (uselevel2) {
-		e = this.eastings;
-		n = this.northings;
-	} else {
-		//fixed datum shift correction (instead of fancy hermert translation below!)
-		e = this.eastings-49;
-		n = this.northings+23.4;
+		var e = "";
+
+		var n = "";
+		if (precision > 0) {
+			var y = Math.floor(this.northings / 100000);
+			var x = Math.floor(this.eastings / 100000);
+
+
+			var e = Math.floor(this.eastings % 100000);
+			var n = Math.floor(this.northings % 100000);
+
+
+			var div = (5 - precision);
+			e = Math.floor(e / Math.pow(10, div));
+			n = Math.floor(n / Math.pow(10, div));
+		}
+
+		var prefix = this.prefixes[x][y];
+
+		return prefix + " " + this._zeropad(e, precision) + " " + this._zeropad(n, precision);
 	}
 
-	var lat1 = GT_Math.E_N_to_Lat (e,n,6377340.189,6356034.447,200000,250000,1.000035,53.50000,-8.00000);
-	var lon1 = GT_Math.E_N_to_Long(e,n,6377340.189,6356034.447,200000,250000,1.000035,53.50000,-8.00000);
+	this.parseGridRef = function (landranger) {
+		var ok = false;
 
-	var wgs84=new GT_WGS84();
-	if (uselevel2) {
-		var x1 = GT_Math.Lat_Long_H_to_X(lat1,lon1,height,6377340.189,6356034.447);
-		var y1 = GT_Math.Lat_Long_H_to_Y(lat1,lon1,height,6377340.189,6356034.447);
-		var z1 = GT_Math.Lat_H_to_Z     (lat1,     height,6377340.189,6356034.447);
 
-		var x2 = GT_Math.Helmert_X(x1,y1,z1, 482.53 ,0.214,0.631,8.15);
-		var y2 = GT_Math.Helmert_Y(x1,y1,z1,-130.596,1.042,0.631,8.15);
-		var z2 = GT_Math.Helmert_Z(x1,y1,z1, 564.557,1.042,0.214,8.15);
+		this.northings = 0;
+		this.eastings = 0;
 
-		var latitude = GT_Math.XYZ_to_Lat(x2,y2,z2,6378137.000,6356752.313);
-		var longitude = GT_Math.XYZ_to_Long(x2,y2);
-		wgs84.setDegrees(latitude, longitude);
-	} else {
-		wgs84.setDegrees(lat1,lon1);
+		var precision;
+
+		for (precision = 5; precision >= 1; precision--) {
+			var pattern = new RegExp("^([A-Z]{1})\\s*(\\d{" + precision + "})\\s*(\\d{" + precision + "})$", "i")
+			var gridRef = landranger.match(pattern);
+			if (gridRef) {
+				var gridSheet = gridRef[1];
+				var gridEast = 0;
+				var gridNorth = 0;
+
+				//5x1 4x10 3x100 2x1000 1x10000 
+				if (precision > 0) {
+					var mult = Math.pow(10, 5 - precision);
+					gridEast = parseInt(gridRef[2], 10) * mult;
+					gridNorth = parseInt(gridRef[3], 10) * mult;
+				}
+
+				var x, y;
+				search: for (x = 0; x < this.prefixes.length; x++) {
+					for (y = 0; y < this.prefixes[x].length; y++)
+						if (this.prefixes[x][y] == gridSheet) {
+							this.eastings = (x * 100000) + gridEast;
+							this.northings = (y * 100000) + gridNorth;
+							ok = true;
+							break search;
+						}
+
+				}
+
+			}
+		}
+
+
+
+		return ok;
 	}
-	return wgs84;
+
+
+	this.getWGS84 = function (uselevel2) {
+
+		var height = 0;
+		var e, n;
+
+		if (uselevel2) {
+			e = this.eastings;
+			n = this.northings;
+		} else {
+			//fixed datum shift correction (instead of fancy hermert translation below!)
+			e = this.eastings - 49;
+			n = this.northings + 23.4;
+		}
+
+		var lat1 = GT_Math.E_N_to_Lat(e, n, 6377340.189, 6356034.447, 200000, 250000, 1.000035, 53.50000, -8.00000);
+		var lon1 = GT_Math.E_N_to_Long(e, n, 6377340.189, 6356034.447, 200000, 250000, 1.000035, 53.50000, -8.00000);
+
+		var wgs84 = new GT_WGS84();
+		if (uselevel2) {
+			var x1 = GT_Math.Lat_Long_H_to_X(lat1, lon1, height, 6377340.189, 6356034.447);
+			var y1 = GT_Math.Lat_Long_H_to_Y(lat1, lon1, height, 6377340.189, 6356034.447);
+			var z1 = GT_Math.Lat_H_to_Z(lat1, height, 6377340.189, 6356034.447);
+
+			var x2 = GT_Math.Helmert_X(x1, y1, z1, 482.53, 0.214, 0.631, 8.15);
+			var y2 = GT_Math.Helmert_Y(x1, y1, z1, -130.596, 1.042, 0.631, 8.15);
+			var z2 = GT_Math.Helmert_Z(x1, y1, z1, 564.557, 1.042, 0.214, 8.15);
+
+			var latitude = GT_Math.XYZ_to_Lat(x2, y2, z2, 6378137.000, 6356752.313);
+			var longitude = GT_Math.XYZ_to_Long(x2, y2);
+			wgs84.setDegrees(latitude, longitude);
+		} else {
+			wgs84.setDegrees(lat1, lon1);
+		}
+		return wgs84;
+	}
 }
 
 /*****************************************************************************
@@ -369,177 +344,163 @@ GT_Irish.prototype.getWGS84 = function(uselevel2)
 *
 *****************************************************************************/
 
-function GT_WGS84()
-{
-	this.latitude=0;
-	this.longitude=0;
-}
+export function GT_WGS84() {
+	this.latitude = 0;
+	this.longitude = 0;
 
-GT_WGS84.prototype.setDegrees = function(latitude,longitude)
-{
-	this.latitude=latitude;
-	this.longitude=longitude;
-}
-
-GT_WGS84.prototype.parseString = function(text)
-{
-	var ok=false;
-
-	var str=new String(text);
-
-	//N 51° 53.947 W 000° 10.018
-
-	var pattern = /([ns])\s*(\d+)[°\s]+(\d+\.\d+)\s+([we])\s*(\d+)[°\s]+(\d+\.\d+)/i;
-	var matches=str.match(pattern);
-	if (matches)
-	{
-		ok=true;
-		var latsign=(matches[1]=='s' || matches[1]=='S')?-1:1;
-		var longsign=(matches[4]=='w' || matches[4]=='W')?-1:1;
-		
-		var d1=parseFloat(matches[2]);
-		var m1=parseFloat(matches[3]);
-		var d2=parseFloat(matches[5]);
-		var m2=parseFloat(matches[6]);
-		
-		this.latitude=latsign * (d1 + (m1/60.0));
-		this.longitude=longsign * (d2 + (m2/60.0));
-		
-		
+	this.setDegrees = function (latitude, longitude) {
+		this.latitude = latitude;
+		this.longitude = longitude;
 	}
-	
-	return ok;
-}
+
+	this.parseString = function (text) {
+		var ok = false;
+
+		var str = new String(text);
+
+		//N 51° 53.947 W 000° 10.018
+
+		var pattern = /([ns])\s*(\d+)[°\s]+(\d+\.\d+)\s+([we])\s*(\d+)[°\s]+(\d+\.\d+)/i;
+		var matches = str.match(pattern);
+		if (matches) {
+			ok = true;
+			var latsign = (matches[1] == 's' || matches[1] == 'S') ? -1 : 1;
+			var longsign = (matches[4] == 'w' || matches[4] == 'W') ? -1 : 1;
+
+			var d1 = parseFloat(matches[2]);
+			var m1 = parseFloat(matches[3]);
+			var d2 = parseFloat(matches[5]);
+			var m2 = parseFloat(matches[6]);
+
+			this.latitude = latsign * (d1 + (m1 / 60.0));
+			this.longitude = longsign * (d2 + (m2 / 60.0));
+
+
+		}
+
+		return ok;
+	}
 
 
 
-GT_WGS84.prototype.isGreatBritain = function()
-{
-	return this.latitude > 49 &&
-		this.latitude < 62 &&
-		this.longitude > -9.5 &&
-		this.longitude < 2.3;
-}
+	this.isGreatBritain = function () {
+		return this.latitude > 49 &&
+			this.latitude < 62 &&
+			this.longitude > -9.5 &&
+			this.longitude < 2.3;
+	}
 
-GT_WGS84.prototype.isIreland = function()
-{
-	return this.latitude > 51.2 &&
-		this.latitude < 55.73 &&
-		this.longitude > -12.2 &&
-		this.longitude < -4.8;
-}
+	this.isIreland = function () {
+		return this.latitude > 51.2 &&
+			this.latitude < 55.73 &&
+			this.longitude > -12.2 &&
+			this.longitude < -4.8;
+	}
 
-GT_WGS84.prototype.isIreland2 = function()
-{
+	this.isIreland2 = function () {
 
-	//rough border for ireland
-	var points = [
-		[-12.19,50.38],
-		[ -6.39,50.94],
-		[ -5.07,53.71],
-		[ -5.25,54.71],
-		[ -6.13,55.42],
-		[-10.65,56.15],
-		[-12.19,50.38] ];
-		
-// === A method for testing if a point is inside a polygon
-// === Returns true if poly contains point
-// === Algorithm shamelessly stolen from http://alienryderflex.com/polygon/ 
-	var j=0;
-	var oddNodes = false;
-	var x = this.longitude;
-	var y = this.latitude;
-	for (var i=0; i < points.length; i++) {
-		j++;
-		if (j == points.length) {j = 0;}
-		if (((points[i][1] < y) && (points[j][1] >= y))
+		//rough border for ireland
+		var points = [
+			[-12.19, 50.38],
+			[-6.39, 50.94],
+			[-5.07, 53.71],
+			[-5.25, 54.71],
+			[-6.13, 55.42],
+			[-10.65, 56.15],
+			[-12.19, 50.38]];
+
+		// === A method for testing if a point is inside a polygon
+		// === Returns true if poly contains point
+		// === Algorithm shamelessly stolen from http://alienryderflex.com/polygon/ 
+		var j = 0;
+		var oddNodes = false;
+		var x = this.longitude;
+		var y = this.latitude;
+		for (var i = 0; i < points.length; i++) {
+			j++;
+			if (j == points.length) { j = 0; }
+			if (((points[i][1] < y) && (points[j][1] >= y))
 				|| ((points[j][1] < y) && (points[i][1] >= y))) {
-			if ( points[i][0] + (y - points[i][1])
-					/  (points[j][1]-points[i][1])
-					*  (points[j][0] - points[i][0])<x ) {
-				oddNodes = !oddNodes
+				if (points[i][0] + (y - points[i][1])
+					/ (points[j][1] - points[i][1])
+					* (points[j][0] - points[i][0]) < x) {
+					oddNodes = !oddNodes
+				}
 			}
 		}
+		return oddNodes;
 	}
-	return oddNodes;
-}
 
 
-GT_WGS84.prototype.getIrish = function(uselevel2)
-{
-	var irish=new GT_Irish();
-	if (this.isIreland())
-	{
-		var height = 0;
+	this.getIrish = function (uselevel2) {
+		var irish = new this();
+		if (this.isIreland()) {
+			var height = 0;
 
-		if (uselevel2) {
-			var x1 = GT_Math.Lat_Long_H_to_X(this.latitude,this.longitude,height,6378137.00,6356752.313);
-			var y1 = GT_Math.Lat_Long_H_to_Y(this.latitude,this.longitude,height,6378137.00,6356752.313);
-			var z1 = GT_Math.Lat_H_to_Z     (this.latitude,height,6378137.00,6356752.313);
+			if (uselevel2) {
+				var x1 = GT_Math.Lat_Long_H_to_X(this.latitude, this.longitude, height, 6378137.00, 6356752.313);
+				var y1 = GT_Math.Lat_Long_H_to_Y(this.latitude, this.longitude, height, 6378137.00, 6356752.313);
+				var z1 = GT_Math.Lat_H_to_Z(this.latitude, height, 6378137.00, 6356752.313);
 
-			var x2 = GT_Math.Helmert_X(x1,y1,z1,-482.53 ,-0.214,-0.631,-8.15);
-			var y2 = GT_Math.Helmert_Y(x1,y1,z1, 130.596,-1.042,-0.631,-8.15);
-			var z2 = GT_Math.Helmert_Z(x1,y1,z1,-564.557,-1.042,-0.214,-8.15);
+				var x2 = GT_Math.Helmert_X(x1, y1, z1, -482.53, -0.214, -0.631, -8.15);
+				var y2 = GT_Math.Helmert_Y(x1, y1, z1, 130.596, -1.042, -0.631, -8.15);
+				var z2 = GT_Math.Helmert_Z(x1, y1, z1, -564.557, -1.042, -0.214, -8.15);
 
-			var latitude2  = GT_Math.XYZ_to_Lat (x2,y2,z2,6377340.189,6356034.447);
-			var longitude2 = GT_Math.XYZ_to_Long(x2,y2);
-		} else {
-			var latitude2  = this.latitude;
-			var longitude2 = this.longitude;
+				var latitude2 = GT_Math.XYZ_to_Lat(x2, y2, z2, 6377340.189, 6356034.447);
+				var longitude2 = GT_Math.XYZ_to_Long(x2, y2);
+			} else {
+				var latitude2 = this.latitude;
+				var longitude2 = this.longitude;
+			}
+
+			var e = GT_Math.Lat_Long_to_East(latitude2, longitude2, 6377340.189, 6356034.447, 200000, 1.000035, 53.50000, -8.00000);
+			var n = GT_Math.Lat_Long_to_North(latitude2, longitude2, 6377340.189, 6356034.447, 200000, 250000, 1.000035, 53.50000, -8.00000);
+
+			if (!uselevel2) {
+				//Level 1 Transformation - 95% of points within 2 metres
+				//fixed datum shift correction (instead of fancy hermert translation above!)
+				//source http://www.osni.gov.uk/downloads/Making%20maps%20GPS%20compatible.pdf
+				e = e + 49;
+				n = n - 23.4;
+			}
+
+			irish.setGridCoordinates(Math.round(e), Math.round(n));
+		}
+		else {
+			irish.setError("Coordinate not within Ireland");
 		}
 
-		var e = GT_Math.Lat_Long_to_East (latitude2,longitude2,6377340.189,6356034.447, 200000,1.000035,53.50000,-8.00000);
-		var n = GT_Math.Lat_Long_to_North(latitude2,longitude2,6377340.189,6356034.447, 200000,250000,1.000035,53.50000,-8.00000);
+		return irish;
+	}
 
-		if (!uselevel2) {
-			//Level 1 Transformation - 95% of points within 2 metres
-			//fixed datum shift correction (instead of fancy hermert translation above!)
-			//source http://www.osni.gov.uk/downloads/Making%20maps%20GPS%20compatible.pdf
-			e=e+49;
-			n=n-23.4;
+	this.getOSGB = function (uselevel2) {
+		var osgb = new GT_OSGB();
+		if (this.isGreatBritain()) {
+			var height = 0;
+
+			var x1 = GT_Math.Lat_Long_H_to_X(this.latitude, this.longitude, height, 6378137.00, 6356752.313);
+			var y1 = GT_Math.Lat_Long_H_to_Y(this.latitude, this.longitude, height, 6378137.00, 6356752.313);
+			var z1 = GT_Math.Lat_H_to_Z(this.latitude, height, 6378137.00, 6356752.313);
+
+			var x2 = GT_Math.Helmert_X(x1, y1, z1, -446.448, -0.2470, -0.8421, 20.4894);
+			var y2 = GT_Math.Helmert_Y(x1, y1, z1, 125.157, -0.1502, -0.8421, 20.4894);
+			var z2 = GT_Math.Helmert_Z(x1, y1, z1, -542.060, -0.1502, -0.2470, 20.4894);
+
+			var latitude2 = GT_Math.XYZ_to_Lat(x2, y2, z2, 6377563.396, 6356256.910);
+			var longitude2 = GT_Math.XYZ_to_Long(x2, y2);
+
+			var e = GT_Math.Lat_Long_to_East(latitude2, longitude2, 6377563.396, 6356256.910, 400000, 0.999601272, 49.00000, -2.00000);
+			var n = GT_Math.Lat_Long_to_North(latitude2, longitude2, 6377563.396, 6356256.910, 400000, -100000, 0.999601272, 49.00000, -2.00000);
+
+			osgb.setGridCoordinates(Math.round(e), Math.round(n));
+		}
+		else {
+			osgb.setError("Coordinate not within Great Britain");
 		}
 
-		irish.setGridCoordinates(Math.round(e), Math.round(n));
+		return osgb;
 	}
-	else 
-	{
-		irish.setError("Coordinate not within Ireland");
-	}
-
-	return irish;
 }
-
-GT_WGS84.prototype.getOSGB = function(uselevel2)
-{
-	var osgb=new GT_OSGB();
-	if (this.isGreatBritain())
-	{
-		var height = 0;
-		
-		var x1 = GT_Math.Lat_Long_H_to_X(this.latitude,this.longitude,height,6378137.00,6356752.313);
-		var y1 = GT_Math.Lat_Long_H_to_Y(this.latitude,this.longitude,height,6378137.00,6356752.313);
-		var z1 = GT_Math.Lat_H_to_Z     (this.latitude,height,6378137.00,6356752.313);
-
-		var x2 = GT_Math.Helmert_X(x1,y1,z1,-446.448,-0.2470,-0.8421,20.4894);
-		var y2 = GT_Math.Helmert_Y(x1,y1,z1, 125.157,-0.1502,-0.8421,20.4894);
-		var z2 = GT_Math.Helmert_Z(x1,y1,z1,-542.060,-0.1502,-0.2470,20.4894);
-
-		var latitude2  = GT_Math.XYZ_to_Lat (x2,y2,z2,6377563.396,6356256.910);
-		var longitude2 = GT_Math.XYZ_to_Long(x2,y2);
-
-		var e = GT_Math.Lat_Long_to_East (latitude2,longitude2,6377563.396,6356256.910,400000,0.999601272,49.00000,-2.00000);
-		var n = GT_Math.Lat_Long_to_North(latitude2,longitude2,6377563.396,6356256.910,400000,-100000,0.999601272,49.00000,-2.00000);
-
-		osgb.setGridCoordinates(Math.round(e), Math.round(n));
-	}
-	else
-	{
-		osgb.setError("Coordinate not within Great Britain");
-	}
-
-	return osgb;
-}
-
 
 
 
@@ -947,10 +908,4 @@ GT_Math.Lat_Long_to_North =function (PHI, LAM, a, b, e0, n0, f0, PHI0, LAM0)
     var IIIA = ((nu / 720) * (Math.sin(RadPHI)) * (Math.pow(Math.cos(RadPHI),5))) * (61 - (58 * (Math.pow(Math.tan(RadPHI),2))) + (Math.pow(Math.tan(RadPHI),4)));
     
     return I + (Math.pow(p,2) * II) + (Math.pow(p,4) * III) + (Math.pow(p,6) * IIIA);
-}
-
-module.exports = {
-  GT_WGS84,
-  GT_OSGB,
-  GT_Irish
 }

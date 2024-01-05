@@ -1,5 +1,6 @@
-﻿const transform = require('../transform')
-const testhelper = require('./testhelper');
+﻿import * as transform from '../transform.js'
+import * as testhelper from './testhelper.js'
+import { jest } from '@jest/globals'
 
 test('TRANSFORM TEST #1', async () => {
 

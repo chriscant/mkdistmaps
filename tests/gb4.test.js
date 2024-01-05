@@ -1,5 +1,6 @@
-﻿const mkdistmaps = require('../mkdistmaps')
-const testhelper = require('./testhelper');
+﻿import * as mkdistmaps from '../mkdistmaps.js'
+import * as testhelper from './testhelper.js'
+import { jest } from '@jest/globals'
 
 test('GB GRID REFS #4', async () => {
 

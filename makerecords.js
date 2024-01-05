@@ -1,10 +1,12 @@
 // Usage eg:
-// node makerecords.js gb 10000 500 largetest/wordlist.txt largetest/testdata.csv afixedseedifyouwantit
+// node makerecords.js GB 10000 500 largetest/wordlist.txt largetest/testdata.csv afixedseedifyouwantit
 
-const fs = require('fs')
-const path = require('path')
-const wordListPath = require('word-list')
-const seedrandom = require('seedrandom')
+import fs from 'fs'
+import path from 'path'
+import wordListPath from 'word-list'
+import seedrandom from 'seedrandom'
+import { fileURLToPath } from 'url'
+const __dirname = path.dirname(fileURLToPath(import.meta.url))
 
 let gridtype = false
 let desiredRecordCount = 0
@@ -44,7 +46,7 @@ const IEletters = [
 
 const GBIEletters = [...GBletters, ...IEletters]
 
-async function run (argv) {
+export async function run (argv) {
   try {
     if (argv.length < 6) {
       console.error('usage: node makerecords.js GB|IE|GBIE <desired-record-count> <species-count> <output-csv-file> <random-seed>')
@@ -117,8 +119,6 @@ async function run (argv) {
 /// ////////////////////////////////////////////////////////////////////////////////////
 // If called from command line, then run now.
 // If testing, then don't.
-if (require.main === module) {
+if (process.env.JEST_WORKER_ID === undefined) {
   run(process.argv)
 }
-
-module.exports = { run }

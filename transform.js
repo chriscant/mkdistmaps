@@ -1,19 +1,20 @@
 // Usage eg:
 // node transform.js basedata/VC69-VC70-OSGB36.geojson basedata/VC69-VC70-WGS64.geojson 7
 
-const fs = require('fs')
-const path = require('path')
-const _ = require('lodash')
+import fs from 'fs'
+import path from 'path'
+import * as geotools2em from './geotools2em.js' // http://www.nearby.org.uk/tests/GeoTools2.html
+import _ from 'lodash'
+import { fileURLToPath } from 'url'
+const __dirname = path.dirname(fileURLToPath(import.meta.url))
 
-const geotools2m = require('./geotools2m') // http://www.nearby.org.uk/tests/GeoTools2.html
-
-const osgb = new geotools2m.GT_OSGB()
+const osgb = new geotools2em.GT_OSGB()
 
 let precision = 8
 
 console.log('Transform geojson from OSGB36 to WGS84')
 
-/* const wgs = new geotools2m.GT_WGS84()
+/* const wgs = new geotools2em.GT_WGS84()
 //wgs.setDegrees(54.1223, -2.91951) // 469995 340000
 wgs.setDegrees(54.25556, -3.216814) // 485115 320825
 const os = wgs.getOSGB()
@@ -23,7 +24,7 @@ return
 // 320825.02811229, 485115.62617599 */
 
 function customCloner (value) {
-  if (_.isArray(value) && value.length === 2 && _.isNumber(value[0])) {
+  if (Array.isArray(value) && value.length === 2 && _.isNumber(value[0])) {
     // console.log(value)
     osgb.setGridCoordinates(value[0], value[1])
     const wsg = osgb.getWGS84()
@@ -38,7 +39,7 @@ function customCloner (value) {
   }
 }
 
-async function run (argv) {
+export async function run (argv) {
   try {
     if (argv.length < 5) {
       console.error('usage: node transform.js <in.geojson> <out.geojson> <precision>')
@@ -86,8 +87,6 @@ async function run (argv) {
 /// ////////////////////////////////////////////////////////////////////////////////////
 // If called from command line, then run now.
 // If testing, then don't.
-if (require.main === module) {
+if (process.env.JEST_WORKER_ID === undefined) {
   run(process.argv)
 }
-
-module.exports = { run }

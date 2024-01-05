@@ -1,4 +1,5 @@
-﻿const mkdistmaps = require('../mkdistmaps')
+﻿import * as mkdistmaps from '../mkdistmaps.js'
+import { jest } from '@jest/globals'
 
 test('CHECK MESSAGE WHEN DUFF CONFIG JSON PASSED', async () => {
   let lastOutput = false
