@@ -559,8 +559,7 @@ function getGRtype (box) {
       } else throw new Error('Bad quadrant letters ' + lasttwo)
     }
     const tetradchar = box.substring(len - 1)
-    const boxbl = tetradletters.find(boxbl2 => { return boxbl2.l === tetradchar }) // TODO
-    // const boxbl = _.find(tetradletters, boxbl2 => { return boxbl2.l === tetradchar })
+    const boxbl = tetradletters.find(boxbl2 => { return boxbl2.l === tetradchar })
     if (!boxbl) throw new Error('Tetrad letter not found ' + tetradchar)
     rv.boxfull = box.substring(0, len - 2) + (boxbl.e / 100) + box.substring(len - 2, len - 1) + (boxbl.n / 100)
   }
@@ -775,8 +774,7 @@ function processLine (file, row, fileSpecieses) {
       if (notNumeric(box, 1, 3)) return
       Eastings += parseInt(box.substring(1, 2)) * 10000
       Northings += parseInt(box.substring(2)) * 10000
-      const boxbl = tetradletters.find(boxbl2 => { return boxbl2.l === tetradchar }) // TODO
-      // const boxbl = _.find(tetradletters, boxbl2 => { return boxbl2.l === tetradchar })
+      const boxbl = tetradletters.find(boxbl2 => { return boxbl2.l === tetradchar })
       if (!boxbl) { errors.push(ObsKey + ' duff tetrad letter: ' + tetradchar + ': ' + SpatialReference); return }
       Eastings += boxbl.e * 10
       Northings += boxbl.n * 10
@@ -817,8 +815,7 @@ function processLine (file, row, fileSpecieses) {
       if (notNumeric(box, 2, 4)) return
       Eastings += parseInt(box.substring(2, 3)) * 10000
       Northings += parseInt(box.substring(3)) * 10000
-      const boxbl = tetradletters.find(boxbl2 => { return boxbl2.l === tetradchar }) // TODO
-      // const boxbl = _.find(tetradletters, boxbl2 => { return boxbl2.l === tetradchar })
+      const boxbl = tetradletters.find(boxbl2 => { return boxbl2.l === tetradchar })
       if (!boxbl) { errors.push(ObsKey + ' duff tetrad letter: ' + tetradchar + ': ' + SpatialReference); return }
       Eastings += boxbl.e * 10
       Northings += boxbl.n * 10
