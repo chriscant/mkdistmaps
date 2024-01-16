@@ -616,7 +616,7 @@ let records = 0
 let empties = 0
 const boxes = {} // gets a prop for each square, eg A10, NY51, and SD23L or NC1234
 
-function updateSpeciesesGrids(TaxonName, box, Year, isGenus, fileSpecieses, inTotal, makeAllSpeciesMapTaxon, MoreInfo) {
+function updateSpeciesesGrids (TaxonName, box, Year, isGenus, fileSpecieses, inTotal, makeAllSpeciesMapTaxon, MoreInfo) {
   // console.log('updateSpeciesesGrids', TaxonName, box, MoreInfo)
   if (isGenus) TaxonName += ' -all'
   let speciesGrids = speciesesGrids[TaxonName]
@@ -637,7 +637,7 @@ function updateSpeciesesGrids(TaxonName, box, Year, isGenus, fileSpecieses, inTo
   if (MoreInfo) {
     if (!speciesGrids.boxes[box].moreinfo) speciesGrids.boxes[box].moreinfo = [MoreInfo]
     else {
-      const found = speciesGrids.boxes[box].moreinfo.find(mi => mi == MoreInfo)
+      const found = speciesGrids.boxes[box].moreinfo.find(mi => mi == MoreInfo) // eslint-disable-line eqeqeq
       if (!found) {
         speciesGrids.boxes[box].moreinfo.push(MoreInfo)
       }
@@ -711,7 +711,7 @@ function processLine (file, row, fileSpecieses) {
   let MoreInfo = false
   if ('MoreInfo' in config.recordset) MoreInfo = row[config.recordset.MoreInfo]
   if (MoreInfo && config.recordset.FixForBLS) {
-    if (MoreInfo === 'BLS Mapping Scheme: Britain 2009') MoreInfo = false
+    if (MoreInfo == 'BLS Mapping Scheme: Britain 2009') MoreInfo = false // eslint-disable-line eqeqeq
     else if (MoreInfo.startsWith('VC')) {
       let ch6 = MoreInfo.charAt(5)
       if (ch6 === 'a' || ch6 === 'c') MoreInfo = MoreInfo.substring(0, 5) + MoreInfo.substring(6) // Remove c from "VC 01c" - and same for a
