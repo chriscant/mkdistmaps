@@ -616,7 +616,8 @@ let records = 0
 let empties = 0
 const boxes = {} // gets a prop for each square, eg A10, NY51, and SD23L or NC1234
 
-function updateSpeciesesGrids (TaxonName, box, Year, isGenus, fileSpecieses, inTotal, makeAllSpeciesMapTaxon) {
+function updateSpeciesesGrids(TaxonName, box, Year, isGenus, fileSpecieses, inTotal, makeAllSpeciesMapTaxon, MoreInfo) {
+  // console.log('updateSpeciesesGrids', TaxonName, box, MoreInfo)
   if (isGenus) TaxonName += ' -all'
   let speciesGrids = speciesesGrids[TaxonName]
   if (!speciesGrids) {
@@ -631,7 +632,16 @@ function updateSpeciesesGrids (TaxonName, box, Year, isGenus, fileSpecieses, inT
     }
   }
   if (!speciesGrids.boxes[box]) {
-    speciesGrids.boxes[box] = { count: 0, minyear: 3000, maxyear: 0, species: [] }
+    speciesGrids.boxes[box] = { count: 0, minyear: 3000, maxyear: 0, species: [], moreinfo: false }
+  }
+  if (MoreInfo) {
+    if (!speciesGrids.boxes[box].moreinfo) speciesGrids.boxes[box].moreinfo = [MoreInfo]
+    else {
+      const found = speciesGrids.boxes[box].moreinfo.find(mi => mi == MoreInfo)
+      if (!found) {
+        speciesGrids.boxes[box].moreinfo.push(MoreInfo)
+      }
+    }
   }
   speciesGrids.boxes[box].count++
   if (speciesGrids.boxes[box].count > speciesGrids.max) {
@@ -698,11 +708,23 @@ function processLine (file, row, fileSpecieses) {
   let ObsKey = row[config.recordset.ObsKeyCol]
   const ObsDate = row[config.recordset.DateCol]
   let Year = parseInt(row[config.recordset.YearCol])
+  let MoreInfo = false
+  if ('MoreInfo' in config.recordset) MoreInfo = row[config.recordset.MoreInfo]
+  if (MoreInfo && config.recordset.FixForBLS) {
+    if (MoreInfo === 'BLS Mapping Scheme: Britain 2009') MoreInfo = false
+    else if (MoreInfo.startsWith('VC')) {
+      let ch6 = MoreInfo.charAt(5)
+      if (ch6 === 'a' || ch6 === 'c') MoreInfo = MoreInfo.substring(0, 5) + MoreInfo.substring(6) // Remove c from "VC 01c" - and same for a
+      ch6 = MoreInfo.charAt(5)
+      if (ch6 === 'a' || ch6 === 'c') MoreInfo = MoreInfo.substring(0, 5) + MoreInfo.substring(6) // Remove c from "VC 01c" - and same for a
+    }
+  }
   // console.log('----------')
   // console.log('SpatialReference', SpatialReference)
   // console.log('EastingsExplicit', EastingsExplicit)
   // console.log('NorthingsExplicit', NorthingsExplicit)
   // console.log('TaxonName', TaxonName, TaxonName.length)
+  // console.log('MoreInfo', MoreInfo, MoreInfo.length)
 
   if (!ObsKey) ObsKey = 'Line#' + lineno
 
@@ -926,19 +948,19 @@ function processLine (file, row, fileSpecieses) {
   // console.log('boxloc', box.padStart(21), boxes[box].e.toString().padStart(3, '0'), ' ', boxes[box].n.toString().padStart(3, '0'))
 
   // Add/Update record for species ie count, min and max year for each box
-  updateSpeciesesGrids(TaxonName, box, Year, false, fileSpecieses, true, false)
+  updateSpeciesesGrids(TaxonName, box, Year, false, fileSpecieses, true, false, MoreInfo)
 
   if (config.makeAllMap) {
-    updateSpeciesesGrids(makeAllMapName, box, Year, false, fileSpecieses, false, false)
+    updateSpeciesesGrids(makeAllMapName, box, Year, false, fileSpecieses, false, false, MoreInfo)
   }
 
   if (config.makeAllSpeciesMap) {
-    updateSpeciesesGrids(makeAllSpeciesMapName, box, Year, false, fileSpecieses, false, TaxonName)
+    updateSpeciesesGrids(makeAllSpeciesMapName, box, Year, false, fileSpecieses, false, TaxonName, MoreInfo)
   }
 
   if (config.makeGenusMaps) {
     const words = TaxonName.split(' ')
-    updateSpeciesesGrids(words[0], box, Year, true, fileSpecieses, true, false)
+    updateSpeciesesGrids(words[0], box, Year, true, fileSpecieses, true, false, MoreInfo)
   }
 }
 
@@ -1344,6 +1366,7 @@ async function makeGeojson (rowCount) {
         } else {
           feature.properties.text += boxdata.minyear
         }
+        if (boxdata.moreinfo) feature.properties.text += '.<br/> ' + boxdata.moreinfo.join('<br/>')
 
         geojson.features.push(feature)
         // if (boxcount++>1)break
