@@ -1,6 +1,6 @@
 // Usage eg:
 // node transform.js basedata/VC69-VC70-OSGB36.geojson basedata/VC69-VC70-WGS64.geojson 7
-// node transform.js /d/QGIS/Projects/GB-vice-countiesVC60.geojson basedata/GB-vice-countiesVC60-WGS64.geojson 7
+// node transform.js /d/QGIS/Projects/GB-vice-countiesVC60.geojson /d/QGIS/Projects/GB-vice-countiesVC60-WGS64.geojson 7
 
 import fs from 'fs'
 import path from 'path'

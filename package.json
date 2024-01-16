@@ -21,7 +21,7 @@
     "main": "mkdistmaps.js"
   },
   "dependencies": {
-    "fast-csv": "4.3.6",
+    "fast-csv": "^5.0.0",
     "filecompare": "1.0.4",
     "glob": "^10.0.0",
     "lodash": "4.17.21",
