@@ -414,13 +414,15 @@ export async function run (argv) {
           .pipe(csv.parse({ headers: true }))
           .on('data', row => {
             if (propertiesLookupName in row) {
-              if (row[propertiesLookupName]) {
+              const taxon = row[propertiesLookupName].trim()
+              row[propertiesLookupName] = taxon
+              if (taxon) {
                 propertiesLookup.push(row)
                 if (englishlookup) {
                   if (englishlookup in row) {
                     const english = row[englishlookup]
                     if (english && english.trim().length > 0) {
-                      englishlookups.push({ english, taxon: row[propertiesLookupName], found: false })
+                      englishlookups.push({ english: english.trim(), taxon, found: false })
                     }
                   }
                 }
@@ -479,10 +481,8 @@ export async function run (argv) {
     await processFiles
 
     if (englishlookups.length > 0) {
-      console.log('englishlookups', englishlookups.length)
       englishlookups.sort((a, b) => a.english.localeCompare(b.english))
       for (const [MapName] of Object.entries(speciesesGrids)) {
-        console.log('MapName', MapName)
         const el = englishlookups.find(el => el.taxon === MapName)
         if (el) el.found = true
       }
@@ -1390,6 +1390,7 @@ async function makeGeojson (rowCount) {
     if (config.saveSpacesAs) {
       saveFilename = saveFilename.replace(/ /g, config.saveSpacesAs)
     }
+    saveFilename = saveFilename.replaceAll('×', 'x')
     const outpath = path.join(__dirname, config.outputFolder, saveFilename + '.geojson')
     const writeGeoJson = new Promise((resolve, reject) => {
       const stream = fs.createWriteStream(outpath)
