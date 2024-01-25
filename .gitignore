@@ -4,6 +4,8 @@ arial*
 basemaps
 benloyal-config.json
 BLS
+BLSGB
+BVC60
 bryophytes
 cccw
 coverage
@@ -20,6 +22,7 @@ index_hectads.js
 irish*
 jc*
 knapdale*
+largetest
 lichen-leaflet*
 mkdistmaps.njsproj
 mkdistmaps.sln
