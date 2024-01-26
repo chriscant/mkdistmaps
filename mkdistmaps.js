@@ -1390,10 +1390,10 @@ async function makeGeojson (rowCount) {
     if (config.saveSpacesAs) {
       saveFilename = saveFilename.replace(/ /g, config.saveSpacesAs)
     }
-    saveFilename = saveFilename.replaceAll('×', 'x')
+    saveFilename = saveFilename.replaceAll("\u00D7", 'x') // 'Ã—'
     const outpath = path.join(__dirname, config.outputFolder, saveFilename + '.geojson')
     const writeGeoJson = new Promise((resolve, reject) => {
-      const stream = fs.createWriteStream(outpath)
+      const stream = fs.createWriteStream(outpath, { encoding: 'utf8' })
       stream.on('close', function (fd) {
         resolve()
       })
