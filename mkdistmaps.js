@@ -151,6 +151,7 @@ let taxonLookupCurrent = false
 
 const propertiesLookup = []
 let propertiesLookupName = false
+const speciesNotMatchedToProperties = []
 
 // Get version from last git commit
 const gitdescr = execSync('git describe --tags --long')
@@ -616,6 +617,8 @@ let lineno = 0
 let records = 0
 let empties = 0
 const boxes = {} // gets a prop for each square, eg A10, NY51, and SD23L or NC1234
+let excluded = 0
+let included = 0
 
 function updateSpeciesesGrids (TaxonName, box, Year, isGenus, fileSpecieses, inTotal, makeAllSpeciesMapTaxon, MoreInfo) {
   // console.log('updateSpeciesesGrids', TaxonName, box, MoreInfo)
@@ -698,6 +701,29 @@ function processLine (file, row, fileSpecieses) {
     if (fromix !== -1) {
       TaxonName = translateTo[fromix]
     }
+  }
+
+  function taxonmatchbasicwildcard (v) {
+    // console.log(TaxonName, v)
+    // console.log(TaxonName.substring(0, v.length - 1), v.substring(0, v.length - 1))
+    // console.log(TaxonName.substring(v.length - 1), v.substring(v.length - 1))
+    // exit
+    if (v.endsWith('*')) { if (TaxonName.substring(0, v.length - 1) === v.substring(0, v.length - 1)) return true }
+    if (v.startsWith('*')) { if (TaxonName.substring(v.length - 1) === v.substring(v.length - 1)) return true }
+  }
+  if (config.excludes) {
+    if (config.excludes.find(taxonmatchbasicwildcard)) {
+      excluded++
+      return
+    }
+    included++
+  }
+  if (config.includes) {
+    if (!config.includes.find(taxonmatchbasicwildcard)) {
+      excluded++
+      return
+    }
+    included++
   }
 
   records++
@@ -991,6 +1017,8 @@ async function importComplete (rowCount) {
 
   console.log('Records:', records.toLocaleString('en'))
   console.log('Empty rows:', empties)
+  console.log('Excluded rows:', excluded)
+  console.log('Included rows:', included)
   console.log('Boxes:', Object.keys(boxes).length)
 
   const dtEnd = new Date()
@@ -1260,6 +1288,8 @@ async function makeGeojson (rowCount) {
           geojson.properties[field] = property[field]
         }
       }
+    } else if (speciesNotMatchedToProperties.indexOf(MapName) === -1) {
+      speciesNotMatchedToProperties.push(MapName)
     }
 
     geojson.features = []
@@ -1420,6 +1450,8 @@ async function makeGeojson (rowCount) {
     }
   }
   console.log('Properties not matched:', propertiesNotMatched)
+  speciesNotMatchedToProperties.sort()
+  console.log('Species not matched to properties:', speciesNotMatchedToProperties.length, speciesNotMatchedToProperties.join(', '))
 }
 /// ////////////////////////////////////////////////////////////////////////////////////
 // If called from command line, then run now.
