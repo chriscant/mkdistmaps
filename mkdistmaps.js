@@ -417,6 +417,7 @@ export async function run (argv) {
               const taxon = row[propertiesLookupName].trim()
               row[propertiesLookupName] = taxon
               if (taxon) {
+                row.found = false
                 propertiesLookup.push(row)
                 if (englishlookup) {
                   if (englishlookup in row) {
@@ -1253,6 +1254,7 @@ async function makeGeojson (rowCount) {
     }
     const property = propertiesLookup.find(p => p[propertiesLookupName] === MapName)
     if (property) {
+      property.found = true
       for (const field in property) {
         if (field !== propertiesLookupName) {
           geojson.properties[field] = property[field]
@@ -1390,7 +1392,7 @@ async function makeGeojson (rowCount) {
     if (config.saveSpacesAs) {
       saveFilename = saveFilename.replace(/ /g, config.saveSpacesAs)
     }
-    saveFilename = saveFilename.replaceAll("\u00D7", 'x') // '×'
+    saveFilename = saveFilename.replaceAll('\u00D7', 'x') // '×'
     const outpath = path.join(__dirname, config.outputFolder, saveFilename + '.geojson')
     const writeGeoJson = new Promise((resolve, reject) => {
       const stream = fs.createWriteStream(outpath, { encoding: 'utf8' })
@@ -1410,6 +1412,14 @@ async function makeGeojson (rowCount) {
       break
     }
   }
+  let propertiesNotMatched = 0
+  for (const property of propertiesLookup) {
+    if (!property.found) {
+      console.log('Property not matched:', property[propertiesLookupName])
+      propertiesNotMatched++
+    }
+  }
+  console.log('Properties not matched:', propertiesNotMatched)
 }
 /// ////////////////////////////////////////////////////////////////////////////////////
 // If called from command line, then run now.
