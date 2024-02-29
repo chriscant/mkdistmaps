@@ -1287,18 +1287,20 @@ async function makeGeojson (rowCount) {
         geojson.properties.name = 'Count of records in each square'
       }
     }
-    const property = propertiesLookup.find(p => p[propertiesLookupName] === MapName)
-    if (property) {
-      property.found = true
-      for (const field in property) {
-        if (field !== propertiesLookupName) {
-          geojson.properties[field] = property[field]
+    if (config.properties) {
+      const property = propertiesLookup.find(p => p[propertiesLookupName] === MapName)
+      if (property) {
+        property.found = true
+        for (const field in property) {
+          if (field !== propertiesLookupName) {
+            geojson.properties[field] = property[field]
+          }
         }
-      }
-    } else if (speciesNotMatchedToProperties.indexOf(MapName) === -1) {
-      speciesNotMatchedToProperties.push(MapName)
-      if (config.onlysaveifinproperties && !oktoinclude) {
-        continue // ie abort this map
+      } else if (speciesNotMatchedToProperties.indexOf(MapName) === -1) {
+        speciesNotMatchedToProperties.push(MapName)
+        if (config.onlysaveifinproperties && !oktoinclude) {
+          continue // ie abort this map
+        }
       }
     }
 
@@ -1452,16 +1454,18 @@ async function makeGeojson (rowCount) {
       break
     }
   }
-  let propertiesNotMatched = 0
-  for (const property of propertiesLookup) {
-    if (!property.found) {
-      console.log('Property not matched:', property[propertiesLookupName])
-      propertiesNotMatched++
+  if (config.properties) {
+    let propertiesNotMatched = 0
+    for (const property of propertiesLookup) {
+      if (!property.found) {
+        console.log('Property not matched:', property[propertiesLookupName])
+        propertiesNotMatched++
+      }
     }
+    console.log('Properties not matched:', propertiesNotMatched)
+    speciesNotMatchedToProperties.sort()
+    console.log('Species not matched to properties:', speciesNotMatchedToProperties.length, speciesNotMatchedToProperties.join(', '))
   }
-  console.log('Properties not matched:', propertiesNotMatched)
-  speciesNotMatchedToProperties.sort()
-  console.log('Species not matched to properties:', speciesNotMatchedToProperties.length, speciesNotMatchedToProperties.join(', '))
 }
 /// ////////////////////////////////////////////////////////////////////////////////////
 // If called from command line, then run now.
