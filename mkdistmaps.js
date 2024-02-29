@@ -250,6 +250,10 @@ export async function run (argv) {
     if (!(typeof config === 'object' && 'taxon' in config)) {
       config.taxon = false
     }
+    // Default onlysaveifinproperties to false
+    if (!(typeof config === 'object' && 'onlysaveifinproperties' in config)) {
+      config.onlysaveifinproperties = false
+    }
 
     // Default saveSpacesAs to false
     if (!(typeof config === 'object' && 'saveSpacesAs' in config)) {
@@ -1273,9 +1277,12 @@ async function makeGeojson (rowCount) {
       datecolours: config.datecolours,
       generator: version
     }
+    let oktoinclude = false
     if (isAllSpeciesMap) {
       geojson.properties.name = 'Count of species in each square'
+      oktoinclude = true
     } else if (isAllRecordsMap) {
+      oktoinclude = true
       if (config.maptype === 'count') {
         geojson.properties.name = 'Count of records in each square'
       }
@@ -1290,6 +1297,9 @@ async function makeGeojson (rowCount) {
       }
     } else if (speciesNotMatchedToProperties.indexOf(MapName) === -1) {
       speciesNotMatchedToProperties.push(MapName)
+      if (config.onlysaveifinproperties && !oktoinclude) {
+        continue // ie abort this map
+      }
     }
 
     geojson.features = []
