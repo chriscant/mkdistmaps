@@ -254,6 +254,10 @@ export async function run (argv) {
     if (!(typeof config === 'object' && 'onlysaveifinproperties' in config)) {
       config.onlysaveifinproperties = false
     }
+    // Default saveallproperties to false
+    if (!(typeof config === 'object' && 'saveallproperties' in config)) {
+      config.saveallproperties = false
+    }
 
     // Default saveSpacesAs to false
     if (!(typeof config === 'object' && 'saveSpacesAs' in config)) {
@@ -1243,70 +1247,57 @@ async function makeImages (rowCount) {
   }
 }
 
-/// ////////////////////////////////////////////////////////////////////////////////////
-// https://leafletjs.com/examples/geojson/
+async function makeOneGeojson (isAllRecordsMap, isAllSpeciesMap, MapName, speciesGrids) {
+  const geojson = {}
+  geojson.type = 'FeatureCollection'
+  // https://wiki.openstreetmap.org/wiki/Geojson_CSS
+  // geojson.style = { stroke: 'pink' }
+  geojson.style = {
+    color: '#000000',
+    // fillColor: '#FFFFFF',
+    fillOpacity: 0.1,
+    weight: 1,
+    opacity: 1
+  }
 
-async function makeGeojson (rowCount) {
-  // Go through all species
-  let done = 0
-  for (const [MapName, speciesGrids] of Object.entries(speciesesGrids)) {
-    console.log(MapName)
-    const isAllRecordsMap = MapName === makeAllMapName
-    const isAllSpeciesMap = MapName === makeAllSpeciesMapName
-
+  geojson.properties = {
+    name: MapName,
+    set: config.recordset.title,
+    maptype: config.maptype,
+    datecolours: config.datecolours,
+    generator: version
+  }
+  let oktoinclude = false
+  if (isAllSpeciesMap) {
+    geojson.properties.name = 'Count of species in each square'
+    oktoinclude = true
+  } else if (isAllRecordsMap) {
+    oktoinclude = true
     if (config.maptype === 'count') {
-      setCountColours(speciesGrids, isAllSpeciesMap)
+      geojson.properties.name = 'Count of records in each square'
     }
-
-    const geojson = {}
-    geojson.type = 'FeatureCollection'
-    // https://wiki.openstreetmap.org/wiki/Geojson_CSS
-    // geojson.style = { stroke: 'pink' }
-    geojson.style = {
-      color: '#000000',
-      // fillColor: '#FFFFFF',
-      fillOpacity: 0.1,
-      weight: 1,
-      opacity: 1
-    }
-
-    geojson.properties = {
-      name: MapName,
-      set: config.recordset.title,
-      maptype: config.maptype,
-      datecolours: config.datecolours,
-      generator: version
-    }
-    let oktoinclude = false
-    if (isAllSpeciesMap) {
-      geojson.properties.name = 'Count of species in each square'
-      oktoinclude = true
-    } else if (isAllRecordsMap) {
-      oktoinclude = true
-      if (config.maptype === 'count') {
-        geojson.properties.name = 'Count of records in each square'
-      }
-    }
-    if (config.properties) {
-      const property = propertiesLookup.find(p => p[propertiesLookupName] === MapName)
-      if (property) {
-        property.found = true
-        for (const field in property) {
-          if (field !== propertiesLookupName) {
-            geojson.properties[field] = property[field]
-          }
-        }
-      } else if (speciesNotMatchedToProperties.indexOf(MapName) === -1) {
-        speciesNotMatchedToProperties.push(MapName)
-        if (config.onlysaveifinproperties && !oktoinclude) {
-          continue // ie abort this map
+  }
+  if (config.properties) {
+    const property = propertiesLookup.find(p => p[propertiesLookupName] === MapName)
+    if (property) {
+      property.found = true
+      for (const field in property) {
+        if (field !== propertiesLookupName) {
+          geojson.properties[field] = property[field]
         }
       }
+    } else if (speciesNotMatchedToProperties.indexOf(MapName) === -1) {
+      speciesNotMatchedToProperties.push(MapName)
+      if (config.onlysaveifinproperties && !oktoinclude) {
+        return // ie abort this map
+      }
     }
+  }
 
-    geojson.features = []
+  geojson.features = []
 
-    let reccount = 0
+  let reccount = 0
+  if (speciesGrids) {
     for (let squaretype = 0; squaretype < 4; squaretype++) { // Process hectads then quadrants then tetrads then monads
       for (const [box, boxdata] of Object.entries(speciesGrids.boxes)) {
         const { isHectad, isQuadrant, isTetrad, isMonad, isIE, boxfull } = getGRtype(box)
@@ -1416,39 +1407,59 @@ async function makeGeojson (rowCount) {
         // if (boxcount++>1)break
       }
     }
-    if (isAllSpeciesMap) {
-      geojson.properties.subtitle = 'Species: ' + speciesCount.toLocaleString('en')
-    } else {
-      geojson.properties.subtitle = 'Records: ' + reccount.toLocaleString('en')
-      if (taxonLookupName && taxonLookupExtra && taxonLookup.length > 0) {
-        const found = taxonLookup.find(taxon => taxon[taxonLookupName] === MapName)
-        if (found) {
-          geojson.properties.current = found[taxonLookupCurrent]
-          geojson.properties.extra = found[taxonLookupExtra]
-        }
+  }
+  if (isAllSpeciesMap) {
+    geojson.properties.subtitle = 'Species: ' + speciesCount.toLocaleString('en')
+  } else {
+    geojson.properties.subtitle = 'Records: ' + reccount.toLocaleString('en')
+    if (taxonLookupName && taxonLookupExtra && taxonLookup.length > 0) {
+      const found = taxonLookup.find(taxon => taxon[taxonLookupName] === MapName)
+      if (found) {
+        geojson.properties.current = found[taxonLookupCurrent]
+        geojson.properties.extra = found[taxonLookupExtra]
       }
     }
-    geojson.properties.countcolours = config.countcolours
+  }
+  geojson.properties.countcolours = config.countcolours
 
-    let saveFilename = MapName
-    if (config.saveSpacesAs) {
-      saveFilename = saveFilename.replace(/ /g, config.saveSpacesAs)
-    }
-    saveFilename = saveFilename.replaceAll('\u00D7', 'x') // '×'
-    const outpath = path.join(__dirname, config.outputFolder, saveFilename + '.geojson')
-    const writeGeoJson = new Promise((resolve, reject) => {
-      const stream = fs.createWriteStream(outpath, { encoding: 'utf8' })
-      stream.on('close', function (fd) {
-        resolve()
-      })
-      stream.on('open', function (fd) {
-        stream.write(JSON.stringify(geojson))
-        stream.end()
-      })
+  let saveFilename = MapName
+  if (config.saveSpacesAs) {
+    saveFilename = saveFilename.replace(/ /g, config.saveSpacesAs)
+  }
+  saveFilename = saveFilename.replaceAll('\u00D7', 'x') // '×'
+  saveFilename = saveFilename.replaceAll('/', '^')
+  const outpath = path.join(__dirname, config.outputFolder, saveFilename + '.geojson')
+  const writeGeoJson = new Promise((resolve, reject) => {
+    const stream = fs.createWriteStream(outpath, { encoding: 'utf8' })
+    stream.on('close', function (fd) {
+      resolve()
     })
-    await writeGeoJson
+    stream.on('open', function (fd) {
+      stream.write(JSON.stringify(geojson))
+      stream.end()
+    })
+  })
+  await writeGeoJson
+  console.log('done', saveFilename, reccount)
+}
 
-    console.log('done', saveFilename, reccount)
+/// ////////////////////////////////////////////////////////////////////////////////////
+// https://leafletjs.com/examples/geojson/
+
+async function makeGeojson (rowCount) {
+  // Go through all species
+  let done = 0
+  for (const [MapName, speciesGrids] of Object.entries(speciesesGrids)) {
+    console.log(MapName)
+    const isAllRecordsMap = MapName === makeAllMapName
+    const isAllSpeciesMap = MapName === makeAllSpeciesMapName
+
+    if (config.maptype === 'count') {
+      setCountColours(speciesGrids, isAllSpeciesMap)
+    }
+
+    await makeOneGeojson(isAllRecordsMap, isAllSpeciesMap, MapName, speciesGrids)
+
     if (config.limit && ++done >= config.limit) {
       errors.push('Map generation stopped after reaching limit of ' + config.limit)
       break
@@ -1458,8 +1469,14 @@ async function makeGeojson (rowCount) {
     let propertiesNotMatched = 0
     for (const property of propertiesLookup) {
       if (!property.found) {
-        console.log('Property not matched:', property[propertiesLookupName])
+        const TaxonName = property[propertiesLookupName]
         propertiesNotMatched++
+        if (config.saveallproperties) {
+          await makeOneGeojson(false, false, TaxonName, false)
+          speciesesGrids[TaxonName] = {}
+          speciesCount++
+          console.log('Property not matched but made:', TaxonName)
+        } else console.log('Property not matched:', TaxonName)
       }
     }
     console.log('Properties not matched:', propertiesNotMatched)
