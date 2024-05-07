@@ -415,6 +415,7 @@ export async function run (argv) {
     /// //////////////
     // Read optional properties lookups
     const englishlookups = []
+    let anyerrors = false
     if (config.properties && ('csv' in config.properties) && ('lookup' in config.properties)) {
       const englishlookup = 'englishlookup' in config.properties ? config.properties.englishlookup : false
       propertiesLookupName = config.properties.lookup
@@ -427,6 +428,11 @@ export async function run (argv) {
               row[propertiesLookupName] = taxon
               if (taxon) {
                 row.found = false
+                if (propertiesLookup.findIndex((r) => r[propertiesLookupName] === taxon) !== -1) {
+                  console.error('Duplicate properties taxon', taxon)
+                  anyerrors = true
+                  return
+                }
                 propertiesLookup.push(row)
                 if (englishlookup) {
                   if (englishlookup in row) {
@@ -444,6 +450,10 @@ export async function run (argv) {
           })
       })
       await readProperties
+      if (anyerrors) {
+        console.log('Please fix these issues and try again')
+        return 0
+      }
     }
 
     /// //////////////
