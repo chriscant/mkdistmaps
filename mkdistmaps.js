@@ -697,7 +697,6 @@ function updateSpeciesesGrids (TaxonName, box, Year, isGenus, fileSpecieses, inT
 }
 
 // processLine: Process a line of CSV data ie a single record
-
 function processLine (file, row, fileSpecieses) {
   // console.log(row)
   lineno++
@@ -711,6 +710,7 @@ function processLine (file, row, fileSpecieses) {
   let TaxonName = row[config.recordset.TaxonCol].trim()
   if (SpatialReference.length === 0 || TaxonName.length === 0 || TaxonName.substring(0, 1) === '#') {
     empties++
+    //console.log("Empty", records, JSON.stringify(row))
     return
   }
 
