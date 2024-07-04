@@ -457,10 +457,9 @@ export async function run (argv) {
     }
 
     /// //////////////
-    // Do everything!
+    // Do everything! One CSV file at a time.
     const headers = config.recordset.headers ? config.recordset.headers : true
     const renameHeaders = config.recordset.renameHeaders ? config.recordset.renameHeaders : false
-
     let totalrecords = 0
     const processFiles = new Promise((resolve, reject) => {
       async function doAll () {
@@ -469,26 +468,32 @@ export async function run (argv) {
           console.error('NO FILE(S) FOUND FOR: ', config.recordset.csv)
           rv = 0
         } else {
-          let donecount = 0
           const doFiles = new Promise((_resolve, _reject) => {
-            for (const file of Object.values(files)) {
-              // console.log(file)
-              const fileSpecieses = []
-              fs.createReadStream(path.resolve(__dirname, file), { encoding: config.recordset.encoding })
-                .pipe(csv.parse({ headers, renameHeaders, delimiter: config.recordset.delimiter }))
-                .on('error', error => console.error(error))
-                .on('data', row => { processLine(file, row, fileSpecieses) })
-                .on('end', function (rowCount) {
-                  if (Object.keys(fileSpecieses).length === 0) {
-                    errors.push(file + ' no species found')
-                  }
-                  console.log(file, 'species:', Object.keys(fileSpecieses).length)
-                  totalrecords += rowCount
-                  if (++donecount === files.length) {
-                    _resolve() // doFiles
-                  }
+            async function asyncDoFiles () {
+              // console.log('asyncDoFiles',files.length)
+              for (const file of Object.values(files)) {
+                console.log(file)
+                const processFile = new Promise((__resolve, __reject) => { // eslint-disable-line promise/param-names
+                  const fileSpecieses = []
+                  fs.createReadStream(path.resolve(__dirname, file), { encoding: config.recordset.encoding })
+                    .pipe(csv.parse({ headers, renameHeaders, delimiter: config.recordset.delimiter }))
+                    .on('error', error => console.error(error))
+                    .on('data', row => { processLine(file, row, fileSpecieses) })
+                    .on('end', function (rowCount) {
+                      if (Object.keys(fileSpecieses).length === 0) {
+                        errors.push(file + ' no species found')
+                      }
+                      console.log(file, 'species:', Object.keys(fileSpecieses).length)
+                      totalrecords += rowCount
+                      __resolve() // processFile
+                    })
                 })
+                await processFile
+                console.log('DONE', file)
+              }
+              _resolve() // doFiles
             }
+            asyncDoFiles()
           })
           await doFiles
           console.log('COMPLETED READING DATA')
@@ -710,9 +715,13 @@ function processLine (file, row, fileSpecieses) {
   let TaxonName = row[config.recordset.TaxonCol].trim()
   if (SpatialReference.length === 0 || TaxonName.length === 0 || TaxonName.substring(0, 1) === '#') {
     empties++
-    //console.log("Empty", records, JSON.stringify(row))
+    // console.log("Empty", records, JSON.stringify(row))
     return
   }
+
+  // if (TaxonName === "Bellis perennis" && SpatialReference === "SD69C") {
+  //  console.log(row)
+  // }
 
   if (translateFrom.length > 0) {
     const fromix = translateFrom.indexOf(TaxonName)
