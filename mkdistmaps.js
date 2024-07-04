@@ -719,10 +719,6 @@ function processLine (file, row, fileSpecieses) {
     return
   }
 
-  // if (TaxonName === "Bellis perennis" && SpatialReference === "SD69C") {
-  //  console.log(row)
-  // }
-
   if (translateFrom.length > 0) {
     const fromix = translateFrom.indexOf(TaxonName)
     if (fromix !== -1) {
