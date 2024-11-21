@@ -1,5 +1,5 @@
 // Usage eg:
-// node makerecords.js GB 10000 500 largetest/wordlist.txt largetest/testdata.csv afixedseedifyouwantit
+// node makerecords.js GB 10000 500 largetest/testdata.csv afixedseedifyouwantit
 
 import fs from 'fs'
 import path from 'path'
