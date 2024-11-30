@@ -87,7 +87,7 @@ export async function run (argv) {
     const myrng = seedrandom(randomseed)
 
     const outpath = path.resolve(__dirname, argv[5])
-    const letters = String(gridtype) === 'GBIEletters' ? GBIEletters : String(gridtype) === 'GB' ? GBletters : IEletters
+    const letters = String(gridtype) === 'GBIE' ? GBIEletters : String(gridtype) === 'GB' ? GBletters : IEletters
     const letterslen = letters.length
     const generateRecords = new Promise((resolve, reject) => {
       const stream = fs.createWriteStream(outpath)
@@ -106,12 +106,17 @@ export async function run (argv) {
         }
         stream.end()
       })
+      stream.on('error', function (err) {
+        console.error('Write error', err.message)
+        console.log(err.stack);
+        reject("FILE ERROR")
+      })
     })
     await generateRecords
     console.error('DONE')
     return 1
   } catch (e) {
-    console.error('FAILED', e.message)
+    console.error('FAILED', e)
     return 2
   }
 }
