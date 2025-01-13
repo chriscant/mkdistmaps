@@ -643,13 +643,13 @@ const boxes = {} // gets a prop for each square, eg A10, NY51, and SD23L or NC12
 let excluded = 0
 let included = 0
 
-function updateSpeciesesGrids (TaxonName, box, Year, isGenus, fileSpecieses, inTotal, makeAllSpeciesMapTaxon, MoreInfo) {
+function updateSpeciesesGrids(TaxonName, box, Year, DateOrRange, isGenus, fileSpecieses, inTotal, makeAllSpeciesMapTaxon, MoreInfo) {
   // console.log('updateSpeciesesGrids', TaxonName, box, MoreInfo)
   if (isGenus) TaxonName += ' -all'
   let speciesGrids = speciesesGrids[TaxonName]
   if (!speciesGrids) {
     speciesGrids = { max: 0, speciesmax: 0, boxes: {} }
-    speciesGrids.boxes[box] = { count: 0, minyear: 3000, maxyear: 0, species: [] }
+    speciesGrids.boxes[box] = { count: 0, minyear: 3000, maxyear: 0, species: [], range: null }
     speciesesGrids[TaxonName] = speciesGrids
     if (inTotal) {
       if (isGenus) genusCount++
@@ -680,6 +680,9 @@ function updateSpeciesesGrids (TaxonName, box, Year, isGenus, fileSpecieses, inT
   }
   if (Year < speciesGrids.boxes[box].minyear) {
     speciesGrids.boxes[box].minyear = Year
+  }
+  if (DateOrRange && (DateOrRange.substring(4, 7) === ' - ')) {
+    speciesGrids.boxes[box].range = DateOrRange
   }
 
   // Now remember per-file counts
@@ -775,6 +778,7 @@ function processLine (file, row, fileSpecieses) {
   // console.log('NorthingsExplicit', NorthingsExplicit)
   // console.log('TaxonName', TaxonName, TaxonName.length)
   // console.log('MoreInfo', MoreInfo, MoreInfo.length)
+  // console.log('ObsDate', ObsDate)
 
   if (!ObsKey) ObsKey = 'Line#' + lineno
 
@@ -790,6 +794,10 @@ function processLine (file, row, fileSpecieses) {
   if (!YearFound) {
     errors.push(ObsKey + ' Date invalid:' + ObsDate + ' Year:' + Year)
     return
+  }
+  let DateOrRange = null
+  if (config.recordset.DateOrRangeCol) {
+    DateOrRange = row[config.recordset.DateOrRangeCol] // May still be null
   }
 
   // From grid reference, work out Eastings and Northings and box name eg NY51 or NY5714
@@ -998,19 +1006,19 @@ function processLine (file, row, fileSpecieses) {
   // console.log('boxloc', box.padStart(21), boxes[box].e.toString().padStart(3, '0'), ' ', boxes[box].n.toString().padStart(3, '0'))
 
   // Add/Update record for species ie count, min and max year for each box
-  updateSpeciesesGrids(TaxonName, box, Year, false, fileSpecieses, true, false, MoreInfo)
+  updateSpeciesesGrids(TaxonName, box, Year, DateOrRange, false, fileSpecieses, true, false, MoreInfo)
 
   if (config.makeAllMap) {
-    updateSpeciesesGrids(makeAllMapName, box, Year, false, fileSpecieses, false, false, MoreInfo)
+    updateSpeciesesGrids(makeAllMapName, box, Year, DateOrRange, false, fileSpecieses, false, false, MoreInfo)
   }
 
   if (config.makeAllSpeciesMap) {
-    updateSpeciesesGrids(makeAllSpeciesMapName, box, Year, false, fileSpecieses, false, TaxonName, MoreInfo)
+    updateSpeciesesGrids(makeAllSpeciesMapName, box, Year, DateOrRange, false, fileSpecieses, false, TaxonName, MoreInfo)
   }
 
   if (config.makeGenusMaps) {
     const words = TaxonName.split(' ')
-    updateSpeciesesGrids(words[0], box, Year, true, fileSpecieses, true, false, MoreInfo)
+    updateSpeciesesGrids(words[0], box, Year, DateOrRange, true, fileSpecieses, true, false, MoreInfo)
   }
 }
 
@@ -1411,7 +1419,9 @@ async function makeOneGeojson (isAllRecordsMap, isAllSpeciesMap, MapName, specie
         } else {
           feature.properties.text += boxdata.count + (boxdata.count > 1 ? ' records ' : ' record ')
         }
-        if (boxdata.minyear !== boxdata.maxyear) {
+        if (boxdata.range) {
+          feature.properties.text += boxdata.range
+        } else if (boxdata.minyear !== boxdata.maxyear) {
           feature.properties.text += boxdata.minyear + '-' + boxdata.maxyear
         } else {
           feature.properties.text += boxdata.minyear
