@@ -1419,7 +1419,7 @@ async function makeOneGeojson (isAllRecordsMap, isAllSpeciesMap, MapName, specie
         } else {
           feature.properties.text += boxdata.count + (boxdata.count > 1 ? ' records ' : ' record ')
         }
-        if (boxdata.range) {
+        if (boxdata.count===1 && boxdata.range) {
           feature.properties.text += boxdata.range
         } else if (boxdata.minyear !== boxdata.maxyear) {
           feature.properties.text += boxdata.minyear + '-' + boxdata.maxyear
