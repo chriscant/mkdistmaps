@@ -928,6 +928,10 @@ function processLine (file, row, fileSpecieses) {
   //}
   if (isGB) usesGB = true
   if (isIE) usesIE = true
+  if (isGB && config.IEonly) {
+    errors.push(ObsKey + ' Only IE grid references permitted: ' + SpatialReference)
+    return
+  }
 
   // console.log('box', SpatialReference.padEnd(12), box.padEnd(12), Eastings.toString().padStart(5, '0'), Northings.toString().padStart(5, '0'))
 

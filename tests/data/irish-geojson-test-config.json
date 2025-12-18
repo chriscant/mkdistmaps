@@ -4,6 +4,7 @@
   "outputFolder": "tests/output",
   "outputtype": "geojson",
   "geojsonprecision": 6,
+  "IEonly": true,
   "recordset": {
     "csv": "tests/data/csv/Test-Irish.csv",
     "title": "Test Irish Data",

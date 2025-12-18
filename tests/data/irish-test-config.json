@@ -2,6 +2,7 @@
   "limit": 1,
   "versionoverride": "mkdistmaps test",
   "outputFolder": "tests/output",
+  "IEonly":  true,
   "recordset": {
     "csv": "tests/data/csv/Test-Irish.csv",
     "title": "Test Irish Data",
