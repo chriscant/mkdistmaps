@@ -715,7 +715,18 @@ function processLine (file, row, fileSpecieses) {
     return
   }
   const SpatialReference = row[config.recordset.GRCol].toUpperCase().replace(/ /g, '')
-  let TaxonName = row[config.recordset.TaxonCol].trim()
+  //console.log('row', row)
+  //console.log('SpatialReference', SpatialReference)
+  //console.log('config.recordset.TaxonCol', config.recordset.TaxonCol)
+  //console.log('row[config.recordset.TaxonCol]', row[config.recordset.TaxonCol])
+  let TaxonName = row[config.recordset.TaxonCol]
+  if (!TaxonName) {
+    empties++
+    // console.log("Undefined", file, JSON.stringify(row))
+    return
+  }
+  // console.log(JSON.stringify(row))
+  TaxonName = TaxonName.trim()
   if (SpatialReference.length === 0 || TaxonName.length === 0 || TaxonName.substring(0, 1) === '#') {
     empties++
     // console.log("Empty", records, JSON.stringify(row))
