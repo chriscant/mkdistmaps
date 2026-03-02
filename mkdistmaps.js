@@ -21,8 +21,8 @@ const __dirname = path.dirname(fileURLToPath(import.meta.url))
 
 let config = false
 let SCALE = false
-let usesGB = false
-let usesIE = false
+// let usesGB = false
+// let usesIE = false
 
 const dtStart = new Date()
 
@@ -258,6 +258,11 @@ export async function run (argv) {
     if (!(typeof config === 'object' && 'saveallproperties' in config)) {
       config.saveallproperties = false
     }
+    // Default splitByDate to false AND switch off if not date maptype
+    if (!(typeof config === 'object' && 'splitByDate' in config)) {
+      config.splitByDate = false
+    }
+    if (config.maptype !== 'date') config.splitByDate = false
 
     // Default saveSpacesAs to false
     if (!(typeof config === 'object' && 'saveSpacesAs' in config)) {
@@ -643,8 +648,8 @@ const boxes = {} // gets a prop for each square, eg A10, NY51, and SD23L or NC12
 let excluded = 0
 let included = 0
 
-function updateSpeciesesGrids(TaxonName, box, Year, DateOrRange, isGenus, fileSpecieses, inTotal, makeAllSpeciesMapTaxon, MoreInfo) {
-  // console.log('updateSpeciesesGrids', TaxonName, box, MoreInfo)
+function updateSpeciesesGrids (TaxonName, box, Year, DateOrRange, isGenus, fileSpecieses, inTotal, makeAllSpeciesMapTaxon, MoreInfo) {
+  // console.log('updateSpeciesesGrids', TaxonName, box, Year, MoreInfo)
   if (isGenus) TaxonName += ' -all'
   let speciesGrids = speciesesGrids[TaxonName]
   if (!speciesGrids) {
@@ -684,6 +689,22 @@ function updateSpeciesesGrids(TaxonName, box, Year, DateOrRange, isGenus, fileSp
   if (DateOrRange && (DateOrRange.substring(4, 7) === ' - ')) {
     speciesGrids.boxes[box].range = DateOrRange
   }
+  if (config.splitByDate) {
+    const boxloc = speciesGrids.boxes[box]
+    if (!boxloc.splitByDate) {
+      boxloc.splitByDate = Array(config.datecolours.length)
+    }
+    for (let dci = 0; dci < config.datecolours.length; dci++) {
+      const datecolour = config.datecolours[dci]
+      if (Year >= datecolour.minyear && Year <= datecolour.maxyear) {
+        if (!boxloc.splitByDate[dci]) boxloc.splitByDate[dci] = { legend: datecolour.legend, minyear: 9999, maxyear: 0, count: 0 }
+        const dc = boxloc.splitByDate[dci]
+        dc.count++
+        if (Year > dc.maxyear) dc.maxyear = Year
+        if (Year < dc.minyear) dc.minyear = Year
+      }
+    }
+  }
 
   // Now remember per-file counts
   if (!fileSpecieses[TaxonName]) {
@@ -715,10 +736,10 @@ function processLine (file, row, fileSpecieses) {
     return
   }
   const SpatialReference = row[config.recordset.GRCol].toUpperCase().replace(/ /g, '')
-  //console.log('row', row)
-  //console.log('SpatialReference', SpatialReference)
-  //console.log('config.recordset.TaxonCol', config.recordset.TaxonCol)
-  //console.log('row[config.recordset.TaxonCol]', row[config.recordset.TaxonCol])
+  // console.log('row', row)
+  // console.log('SpatialReference', SpatialReference)
+  // console.log('config.recordset.TaxonCol', config.recordset.TaxonCol)
+  // console.log('row[config.recordset.TaxonCol]', row[config.recordset.TaxonCol])
   let TaxonName = row[config.recordset.TaxonCol]
   if (!TaxonName) {
     empties++
@@ -912,7 +933,7 @@ function processLine (file, row, fileSpecieses) {
       Northings += boxbl.n * 10
       isGB = true
       if ((config.boxSize !== BOXSIZES.ALL) &&
-          (config.boxSize !== BOXSIZES.TETRAD)) { // If not showing tetrads then convert to show at hectad level
+        (config.boxSize !== BOXSIZES.TETRAD)) { // If not showing tetrads then convert to show at hectad level
         box = box.substring(0, 4)
         Eastings = Math.floor(Eastings / 10000) * 10000
         Northings = Math.floor(Northings / 10000) * 10000
@@ -933,12 +954,12 @@ function processLine (file, row, fileSpecieses) {
     errors.push(ObsKey + ' Spatial Reference duff length: ' + box.length + ': ' + SpatialReference)
     return
   }
-  //if ((usesGB && isIE) || (usesIE && isGB)) {
+  // if ((usesGB && isIE) || (usesIE && isGB)) {
   //  errors.push(ObsKey + ' Cannot use GB and IE grid references: ' + SpatialReference)
   //  return
-  //}
-  if (isGB) usesGB = true
-  if (isIE) usesIE = true
+  // }
+  // if (isGB) usesGB = true
+  // if (isIE) usesIE = true
   if (isGB && config.IEonly) {
     errors.push(ObsKey + ' Only IE grid references permitted: ' + SpatialReference)
     return
@@ -1336,13 +1357,34 @@ async function makeOneGeojson (isAllRecordsMap, isAllSpeciesMap, MapName, specie
 
   let reccount = 0
   if (speciesGrids) {
-    for (let squaretype = 0; squaretype < 4; squaretype++) { // Process hectads then quadrants then tetrads then monads
+    let maxsquaretype = 4
+    if (config.splitByDate) {
+      maxsquaretype += config.datecolours.length
+    }
+    for (let squaretype = 0; squaretype < maxsquaretype; squaretype++) { // Process hectads then quadrants then tetrads then monads THEN date ranges
       for (const [box, boxdata] of Object.entries(speciesGrids.boxes)) {
         const { isHectad, isQuadrant, isTetrad, isMonad, isIE, boxfull } = getGRtype(box)
-        if (isHectad && squaretype !== 0) continue
-        if (isQuadrant && squaretype !== 1) continue
-        if (isTetrad && squaretype !== 2) continue
-        if (isMonad && squaretype !== 3) continue
+        let dc = null
+        if (squaretype >= 4) {
+          const dci = squaretype - 4
+          if (boxdata.splitByDate) {
+            dc = boxdata.splitByDate[dci]
+            if (dc) {
+              boxdata.count = dc.count
+              boxdata.maxyear = dc.maxyear
+              boxdata.minyear = dc.minyear
+            } else {
+              continue
+            }
+          } else {
+            continue
+          }
+        } else {
+          if (isHectad && squaretype !== 0) continue
+          if (isQuadrant && squaretype !== 1) continue
+          if (isTetrad && squaretype !== 2) continue
+          if (isMonad && squaretype !== 3) continue
+        }
         reccount += boxdata.count
 
         let color = rgbHex('rgba(255,20, 147, 1)') // default to pink
@@ -1407,6 +1449,7 @@ async function makeOneGeojson (isAllRecordsMap, isAllSpeciesMap, MapName, specie
         if (isTetrad) square = 'tetrad'
         if (isQuadrant) square = 'quadrant'
         if (isHectad) square = 'hectad'
+        if (dc) square += ' ' + dc.legend
         feature.properties = {
           square,
           color: '#' + color.substring(0, 6),
@@ -1434,7 +1477,7 @@ async function makeOneGeojson (isAllRecordsMap, isAllSpeciesMap, MapName, specie
         } else {
           feature.properties.text += boxdata.count + (boxdata.count > 1 ? ' records ' : ' record ')
         }
-        if (boxdata.count===1 && boxdata.range) {
+        if (boxdata.count === 1 && boxdata.range) {
           feature.properties.text += boxdata.range
         } else if (boxdata.minyear !== boxdata.maxyear) {
           feature.properties.text += boxdata.minyear + '-' + boxdata.maxyear

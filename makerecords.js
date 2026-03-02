@@ -108,8 +108,8 @@ export async function run (argv) {
       })
       stream.on('error', function (err) {
         console.error('Write error', err.message)
-        console.log(err.stack);
-        reject("FILE ERROR")
+        console.log(err.stack)
+        reject('FILE ERROR')
       })
     })
     await generateRecords
