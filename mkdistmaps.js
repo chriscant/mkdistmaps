@@ -1384,8 +1384,8 @@ async function makeOneGeojson (isAllRecordsMap, isAllSpeciesMap, MapName, specie
           if (isQuadrant && squaretype !== 1) continue
           if (isTetrad && squaretype !== 2) continue
           if (isMonad && squaretype !== 3) continue
+          reccount += boxdata.count
         }
-        reccount += boxdata.count
 
         let color = rgbHex('rgba(255,20, 147, 1)') // default to pink
         if (config.maptype === 'count') {
@@ -1476,6 +1476,7 @@ async function makeOneGeojson (isAllRecordsMap, isAllSpeciesMap, MapName, specie
           }
         } else {
           feature.properties.text += boxdata.count + (boxdata.count > 1 ? ' records ' : ' record ')
+          feature.properties.records = boxdata.count
         }
         if (boxdata.count === 1 && boxdata.range) {
           feature.properties.text += boxdata.range
