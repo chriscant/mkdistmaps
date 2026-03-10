@@ -1495,6 +1495,7 @@ async function makeOneGeojson (isAllRecordsMap, isAllSpeciesMap, MapName, specie
   if (isAllSpeciesMap) {
     geojson.properties.subtitle = 'Species: ' + speciesCount.toLocaleString('en')
   } else {
+    if (reccount === 0) errors.push('reccount zero for ' + MapName)
     geojson.properties.subtitle = 'Records: ' + reccount.toLocaleString('en')
     if (taxonLookupName && taxonLookupExtra && taxonLookup.length > 0) {
       const found = taxonLookup.find(taxon => taxon[taxonLookupName] === MapName)
