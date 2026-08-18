@@ -238,6 +238,17 @@ export async function run (argv) {
     if (!(typeof config === 'object' && 'maptype' in config)) {
       config.maptype = 'date'
     }
+    // Default dateRange to 10
+    if (!(typeof config === 'object' && 'dateRange' in config)) {
+      config.dateRange = 10
+    }
+    console.log('config.dateRangeStart', config.dateRangeStart)
+    if (typeof config === 'object' && typeof config.dateRangeStart !== 'number') {
+      config.dateRangeStart = false
+    }
+    if (config.dateRangeStart && (config.dateRangeStart > dtStart.getFullYear())) {
+      config.dateRangeStart = false
+    }
     // Default makeAllMap to false
     if (!(typeof config === 'object' && 'makeAllMap' in config)) {
       config.makeAllMap = false
@@ -271,6 +282,13 @@ export async function run (argv) {
 
     // If maptype is count and makeAllMap then make "All species" map
     config.makeAllSpeciesMap = config.maptype === 'count' && config.makeAllMap
+
+    // Work out date range counting basics
+    config.dateRangeCount = false
+    if (config.dateRangeStart && config.dateRange) {
+      const yearsRange = dtStart.getFullYear() - config.dateRangeStart
+      config.dateRangeCount = Math.ceil(yearsRange / config.dateRange) + 1
+    }
 
     // Set default datecolours if need be
     if (!(typeof config === 'object' && 'datecolours' in config)) {
@@ -663,6 +681,9 @@ function updateSpeciesesGrids (TaxonName, box, Year, DateOrRange, isGenus, fileS
       allCount++
     }
   }
+  if (config.dateRangeCount && !speciesGrids.rangeCounts) {
+    speciesGrids.rangeCounts = Array(config.dateRangeCount).fill(0)
+  }
   if (!speciesGrids.boxes[box]) {
     speciesGrids.boxes[box] = { count: 0, minyear: 3000, maxyear: 0, species: [], moreinfo: false }
   }
@@ -686,6 +707,12 @@ function updateSpeciesesGrids (TaxonName, box, Year, DateOrRange, isGenus, fileS
   if (Year < speciesGrids.boxes[box].minyear) {
     speciesGrids.boxes[box].minyear = Year
   }
+  if (config.dateRangeCount) {
+    const rangeix = Year < config.dateRangeStart ? 0 : Math.ceil((Year - config.dateRangeStart) / config.dateRange)
+    speciesGrids.rangeCounts[rangeix]++
+    // console.log('rangeCounts', speciesGrids.boxes[box].rangeCounts)
+  }
+
   if (DateOrRange && (DateOrRange.substring(4, 7) === ' - ')) {
     speciesGrids.boxes[box].range = DateOrRange
   }
@@ -1307,6 +1334,7 @@ async function makeImages (rowCount) {
 }
 
 async function makeOneGeojson (isAllRecordsMap, isAllSpeciesMap, MapName, speciesGrids) {
+  // console.log('makeOneGeojson', MapName)
   const geojson = {}
   geojson.type = 'FeatureCollection'
   // https://wiki.openstreetmap.org/wiki/Geojson_CSS
@@ -1490,6 +1518,20 @@ async function makeOneGeojson (isAllRecordsMap, isAllSpeciesMap, MapName, specie
         geojson.features.push(feature)
         // if (boxcount++>1)break
       }
+    }
+    if (speciesGrids.rangeCounts) {
+      const rangeCounts = Array(config.dateRangeCount)
+      let rangeix = 0
+      let year = config.dateRangeStart
+      for (const range of speciesGrids.rangeCounts) {
+        const legend = rangeix === 0 ? ('< ' + year) : ((year - config.dateRange) + ' - ' + (year - 1))
+        rangeCounts[rangeix++] = {
+          legend,
+          count: range
+        }
+        year += config.dateRange
+      }
+      geojson.properties.rangeCounts = rangeCounts
     }
   }
   if (isAllSpeciesMap) {
