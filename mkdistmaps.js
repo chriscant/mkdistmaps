@@ -20,6 +20,8 @@ let config = false
 let SCALE = false
 // let usesGB = false
 // let usesIE = false
+const IEVCregex = /[H]\d\d/
+const GBVCregex = /[V][C]\s\d\d/
 
 const dtStart = new Date()
 
@@ -665,7 +667,7 @@ const boxes = {} // gets a prop for each square, eg A10, NY51, and SD23L or NC12
 let excluded = 0
 let included = 0
 
-function updateSpeciesesGrids (TaxonName, box, Year, DateOrRange, isGenus, fileSpecieses, inTotal, makeAllSpeciesMapTaxon, MoreInfo) {
+function updateSpeciesesGrids (TaxonName, box, Year, DateOrRange, isGenus, fileSpecieses, inTotal, makeAllSpeciesMapTaxon, MoreInfo, VC) {
   // console.log('updateSpeciesesGrids', TaxonName, box, Year, MoreInfo)
   if (isGenus) TaxonName += ' -all'
   let speciesGrids = speciesesGrids[TaxonName]
@@ -682,6 +684,16 @@ function updateSpeciesesGrids (TaxonName, box, Year, DateOrRange, isGenus, fileS
   }
   if (config.dateRangeCount && !speciesGrids.rangeCounts) {
     speciesGrids.rangeCounts = Array(config.dateRangeCount).fill(0)
+  }
+  if (config.vcCol) {
+    if (!speciesGrids.vcCounts) speciesGrids.vcCounts = []
+    if (!VC) VC = 'No VC'
+    let vc = speciesGrids.vcCounts.find(vc => vc.vc == VC) // eslint-disable-line eqeqeq
+    if (!vc) {
+      vc = { vc: VC, count: 0 }
+      speciesGrids.vcCounts.push(vc)
+    }
+    vc.count++
   }
   if (!speciesGrids.boxes[box]) {
     speciesGrids.boxes[box] = { count: 0, minyear: 3000, maxyear: 0, species: [], moreinfo: false }
@@ -709,7 +721,6 @@ function updateSpeciesesGrids (TaxonName, box, Year, DateOrRange, isGenus, fileS
   if (config.dateRangeCount) {
     const rangeix = Year < config.dateRangeStart ? 0 : Math.ceil((Year - config.dateRangeStart) / config.dateRange)
     speciesGrids.rangeCounts[rangeix]++
-    // console.log('rangeCounts', speciesGrids.boxes[box].rangeCounts)
   }
 
   if (DateOrRange && (DateOrRange.substring(4, 7) === ' - ')) {
@@ -856,6 +867,16 @@ function processLine (file, row, fileSpecieses) {
   let DateOrRange = null
   if (config.recordset.DateOrRangeCol) {
     DateOrRange = row[config.recordset.DateOrRangeCol] // May still be null
+  }
+
+  let VC = null
+  if (config.vcCol) {
+    VC = row[config.vcCol] // May still be null
+    if (VC && VC.length >= 3) {
+      if (IEVCregex.test(VC)) VC = VC.substring(0, 3)
+      else if (GBVCregex.test(VC)) VC = VC.substring(0, 5)
+      else VC = null
+    }
   }
 
   // From grid reference, work out Eastings and Northings and box name eg NY51 or NY5714
@@ -1068,19 +1089,19 @@ function processLine (file, row, fileSpecieses) {
   // console.log('boxloc', box.padStart(21), boxes[box].e.toString().padStart(3, '0'), ' ', boxes[box].n.toString().padStart(3, '0'))
 
   // Add/Update record for species ie count, min and max year for each box
-  updateSpeciesesGrids(TaxonName, box, Year, DateOrRange, false, fileSpecieses, true, false, MoreInfo)
+  updateSpeciesesGrids(TaxonName, box, Year, DateOrRange, false, fileSpecieses, true, false, MoreInfo, VC)
 
   if (config.makeAllMap) {
-    updateSpeciesesGrids(makeAllMapName, box, Year, DateOrRange, false, fileSpecieses, false, false, MoreInfo)
+    updateSpeciesesGrids(makeAllMapName, box, Year, DateOrRange, false, fileSpecieses, false, false, MoreInfo, VC)
   }
 
   if (config.makeAllSpeciesMap) {
-    updateSpeciesesGrids(makeAllSpeciesMapName, box, Year, DateOrRange, false, fileSpecieses, false, TaxonName, MoreInfo)
+    updateSpeciesesGrids(makeAllSpeciesMapName, box, Year, DateOrRange, false, fileSpecieses, false, TaxonName, MoreInfo, VC)
   }
 
   if (config.makeGenusMaps) {
     const words = TaxonName.split(' ')
-    updateSpeciesesGrids(words[0], box, Year, DateOrRange, true, fileSpecieses, true, false, MoreInfo)
+    updateSpeciesesGrids(words[0], box, Year, DateOrRange, true, fileSpecieses, true, false, MoreInfo, VC)
   }
 }
 
@@ -1531,6 +1552,9 @@ async function makeOneGeojson (isAllRecordsMap, isAllSpeciesMap, MapName, specie
         year += config.dateRange
       }
       geojson.properties.rangeCounts = rangeCounts
+    }
+    if (speciesGrids.vcCounts) {
+      geojson.properties.vcCounts = speciesGrids.vcCounts
     }
   }
   if (isAllSpeciesMap) {
