@@ -1,6 +1,6 @@
 {
   "name": "mkdistmaps",
-  "version": "3.0.0",
+  "version": "3.0.1",
   "description": "Make Distribution Maps from CSV file(s)",
   "exports": "./mkdistmaps.js",
   "type": "module",

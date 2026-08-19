@@ -2,8 +2,6 @@
 
 // mkdistmaps
 
-// For each new release, update in package.json and create a new tag in GitHub - used in version string
-
 // ls -m | sed ':a;N;$!ba;s/\n//g' | sed 's/ //g' >../files.txt
 // Remove .geojson and move All_species,All_records, to the start
 
@@ -12,7 +10,6 @@ import { glob } from 'glob'
 import path from 'path'
 import csv from 'fast-csv'
 import PImage from 'pureimage'
-import { execSync } from 'child_process'
 import moment from 'moment'
 import rgbHex from 'rgb-hex'
 import * as geotools2em from './geotools2em.js' // http://www.nearby.org.uk/tests/GeoTools2.html
@@ -153,9 +150,11 @@ const propertiesLookup = []
 let propertiesLookupName = false
 const speciesNotMatchedToProperties = []
 
-// Get version from last git commit
-const gitdescr = execSync('git describe --tags --long')
-let version = 'mkdistmaps ' + gitdescr.toString('utf8', 0, gitdescr.length - 1) + ' - run at ' + moment().format('Do MMMM YYYY, h:mm:ss a')
+// Get version from package.json
+const packageJson = fs.readFileSync('./package.json')
+const now = new Date()
+const iversion = JSON.parse(packageJson).version || 0
+let version = 'mkdistmaps ' + iversion + ' - run at ' + now.toLocaleString()
 
 /// ////////////////////////////////////////////////////////////////////////////////////
 // run: called when run from command line
