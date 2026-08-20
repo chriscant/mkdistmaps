@@ -156,7 +156,7 @@ const speciesNotMatchedToProperties = []
 const packageJson = fs.readFileSync('./package.json')
 const now = new Date()
 const iversion = JSON.parse(packageJson).version || 0
-let version = 'mkdistmaps ' + iversion + ' - run at ' + now.toLocaleString()
+let version = 'mkdistmaps ' + iversion + ' - run on ' + now.toLocaleString('en-GB', { dateStyle: 'long', timeStyle: 'short' })
 
 /// ////////////////////////////////////////////////////////////////////////////////////
 // run: called when run from command line
