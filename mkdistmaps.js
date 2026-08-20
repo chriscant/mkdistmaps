@@ -1554,7 +1554,7 @@ async function makeOneGeojson (isAllRecordsMap, isAllSpeciesMap, MapName, specie
       geojson.properties.rangeCounts = rangeCounts
     }
     if (speciesGrids.vcCounts) {
-      geojson.properties.vcCounts = speciesGrids.vcCounts.sort((a, b) => b.vc - a.vc)
+      geojson.properties.vcCounts = speciesGrids.vcCounts.sort((a, b) => a.vc.localeCompare(b.vc))
     }
   }
   if (isAllSpeciesMap) {
