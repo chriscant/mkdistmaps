@@ -687,7 +687,7 @@ function updateSpeciesesGrids (TaxonName, box, Year, DateOrRange, isGenus, fileS
   }
   if (config.vcCol) {
     if (!speciesGrids.vcCounts) speciesGrids.vcCounts = []
-    if (!VC) VC = 'No VC'
+    if (!VC) VC = '- No VC'
     let vc = speciesGrids.vcCounts.find(vc => vc.vc == VC) // eslint-disable-line eqeqeq
     if (!vc) {
       vc = { vc: VC, count: 0 }
