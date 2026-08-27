@@ -833,7 +833,7 @@ function processLine (file, row, fileSpecieses) {
   let MoreInfo = false
   if ('MoreInfo' in config.recordset) MoreInfo = row[config.recordset.MoreInfo]
   if (MoreInfo && config.recordset.FixForBLS) {
-    if (MoreInfo == 'BLS Mapping Scheme: Britain 2009') MoreInfo = false // eslint-disable-line eqeqeq
+    if (MoreInfo == 'MS Britain' || MoreInfo == 'MS Ireland') MoreInfo = false // eslint-disable-line eqeqeq
     else if (MoreInfo.startsWith('VC')) {
       let ch6 = MoreInfo.charAt(5)
       if (ch6 === 'a' || ch6 === 'c') MoreInfo = MoreInfo.substring(0, 5) + MoreInfo.substring(6) // Remove c from "VC 01c" - and same for a
