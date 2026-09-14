@@ -21,7 +21,7 @@ let SCALE = false
 // let usesGB = false
 // let usesIE = false
 const IEVCregex = /[H]\d\d/
-const GBVCregex = /[V][C]\s\d\d/
+const GBVCregex = /[V][C][\s\d]\d\d/
 
 const dtStart = new Date()
 
